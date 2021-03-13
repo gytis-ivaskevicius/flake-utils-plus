@@ -31,7 +31,7 @@ otherArguments //
   pkgs = builtins.mapAttrs
     (name: value: import value.input {
       system = (if (value ? system) then value.system else defaultSystem);
-      overlays = sharedOverlays;
+      overlays = sharedOverlays ++ (if (value ? overlays) then value.overlays else [ ]);
       config = pkgsConfig // (if (value ? config) then value.config else { });
     })
     pkgs;
