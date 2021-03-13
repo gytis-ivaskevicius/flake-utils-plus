@@ -30,10 +30,10 @@
       defaultSystem = "xyz";      # Specifies default `pkgs.<name>.system` defaults to "x86_64-linux"
 
       pkgs.nixpkgs = {
-        #overlays = [];   # TODO:
         #patches = [];    # TODO:
-        system = "xyz";   # Overwrites `defaultSystem`
         input = nixpkgs;  # Sources to import
+        overlays = [];    # Channel specific overlays
+        system = "xyz";   # Overwrites `defaultSystem`
         config = {        # Overwrites `pkgsConfig`
           allowUnfree = false;
         };
