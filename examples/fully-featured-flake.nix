@@ -29,7 +29,7 @@
       inherit self inputs;
       defaultSystem = "xyz";      # Specifies default `pkgs.<name>.system` defaults to "x86_64-linux"
 
-      pkgs.nixpkgs = {
+      channels.nixpkgs = {
         #patches = [];    # TODO:
         input = nixpkgs;  # Sources to import
         overlays = [];    # Channel specific overlays
@@ -40,9 +40,9 @@
       };
 
       # Unstable packages
-      pkgs.unstable.input = unstable;
+      channels.unstable.input = unstable;
 
-      pkgsConfig = {              # Default configuration values for `pkgs.<name>.config = {...}`
+      channelsConfig = {          # Default configuration values for `pkgs.<name>.config = {...}`
         allowBroken = true;
         allowUnfree = true;
       };

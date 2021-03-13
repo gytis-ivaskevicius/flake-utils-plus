@@ -5,8 +5,8 @@
 , inputs
 , nixosConfigurations ? { }
 , nixosProfiles ? { }
-, pkgs ? { }
-, pkgsConfig ? { }
+, channels ? { }
+, channelsConfig ? { }
 , sharedModules ? [ ]
 , sharedOverlays ? [ ]
 , ...
@@ -19,8 +19,8 @@ let
     "extraArgs"
     "inputs"
     "nixosProfiles"
-    "pkgs"
-    "pkgsConfig"
+    "channels"
+    "channelsConfig"
     "self"
     "sharedModules"
     "sharedOverlays"
@@ -33,9 +33,9 @@ otherArguments //
     (name: value: import value.input {
       system = (if (value ? system) then value.system else defaultSystem);
       overlays = sharedOverlays ++ (if (value ? overlays) then value.overlays else [ ]);
-      config = pkgsConfig // (if (value ? config) then value.config else { });
+      config = channelsConfig // (if (value ? config) then value.config else { });
     })
-    pkgs;
+    channels;
 
   nixosConfigurations = nixosConfigurations // builtins.mapAttrs
     (name: value:
