@@ -1,13 +1,14 @@
 {}:
 { self
-, inputs
 , defaultSystem ? "x86_64-linux"
+, extraArgs ? { inherit inputs; }
+, inputs
+, nixosConfigurations ? { }
 , nixosProfiles ? { }
 , pkgs ? { }
 , pkgsConfig ? { }
 , sharedModules ? [ ]
 , sharedOverlays ? [ ]
-, extraArgs ? { inherit inputs; }
 , ...
 }@args:
 
@@ -36,7 +37,7 @@ otherArguments //
     })
     pkgs;
 
-  nixosConfigurations = builtins.mapAttrs
+  nixosConfigurations = nixosConfigurations // builtins.mapAttrs
     (name: value:
       let
         selectedNixpkgs = if (value ? nixpkgs) then value.nixpkgs else self.pkgs.nixpkgs;
