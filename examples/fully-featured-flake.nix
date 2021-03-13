@@ -26,7 +26,7 @@
     in
     utils.lib.systemFlake {
 
-      inherit self inputs utils;
+      inherit self inputs;
       defaultSystem = "xyz";      # Specifies default `pkgs.<name>.system` defaults to "x86_64-linux"
 
       pkgs.nixpkgs = {
