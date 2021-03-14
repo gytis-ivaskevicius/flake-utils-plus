@@ -10,6 +10,15 @@
 , channelsConfig ? { }
 , sharedModules ? [ ]
 , sharedOverlays ? [ ]
+
+# Very experimental
+, packagesFunc ? null
+, defaultPackageFunc ? null
+, appsFunc ? null
+, defaultAppFunc ? null
+, devShellFunc ? null
+, checksFunc ? null
+
 , ...
 }@args:
 
@@ -24,6 +33,14 @@ let
     "self"
     "sharedModules"
     "sharedOverlays"
+
+    # Very experimental
+    "packagesFunc"
+    "defaultPackageFunc"
+    "appsFunc"
+    "defaultAppFunc"
+    "devShellFunc"
+    "checksFunc"
   ];
 
   nixosConfigurationBuilder = name: value: (
@@ -33,10 +50,12 @@ let
 
   genericConfigurationBuilder = name: value: (
     let
-      selectedNixpkgs = if (value ? nixpkgs) then value.nixpkgs else self.pkgs.nixpkgs;
+      system =if (value ? system) then value.system else defaultSystem;
+      channelName = if (value ? channelName) then value.channelName else "nixpkgs";
+      selectedNixpkgs = self.pkgs."${system}"."${channelName}";
     in
     with selectedNixpkgs.lib; {
-      inherit (selectedNixpkgs) system;
+      inherit system;
       modules = [
         {
           networking.hostName = name;
@@ -56,16 +75,32 @@ let
     }
   );
 in
-otherArguments //
-{
+otherArguments
+// flake-utils.lib.eachSystem flake-utils.lib.defaultSystems (system:
 
+let
   pkgs = builtins.mapAttrs
     (name: value: import value.input {
-      system = (if (value ? system) then value.system else defaultSystem);
+      inherit system;
       overlays = sharedOverlays ++ (if (value ? overlays) then value.overlays else [ ]);
       config = channelsConfig // (if (value ? config) then value.config else { });
     })
     channels;
+
+  shouldBePassed = check: value: (if check != null then value else {});
+
+in { inherit pkgs;}
+  // shouldBePassed packagesFunc {packages = packagesFunc pkgs.nixpkgs;}
+  // shouldBePassed defaultPackageFunc {defaultPackage = defaultPackageFunc pkgs.nixpkgs;}
+  // shouldBePassed appsFunc {apps = appsFunc pkgs.nixpkgs; }
+  // shouldBePassed defaultAppFunc {defaultApp = defaultAppFunc pkgs.nixpkgs; }
+  // shouldBePassed devShellFunc {devShell = devShellFunc pkgs.nixpkgs; }
+  // shouldBePassed checksFunc {checks = checksFunc pkgs.nixpkgs; }
+  #// (if defaultPackageFunc != null then {inherit defaultPackage;} else {})
+)
+
+// {
+
 
   nixosConfigurations = nixosConfigurations // (builtins.mapAttrs nixosConfigurationBuilder nixosProfiles);
 
