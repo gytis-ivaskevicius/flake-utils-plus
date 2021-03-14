@@ -27,32 +27,33 @@ let
   ];
 
   nixosConfigurationBuilder = name: value: (
+    # It would be nice to get `nixosSystem` reference from `selectedNixpkgs` but it is not possible at this moment
+    inputs.nixpkgs.lib.nixosSystem (genericConfigurationBuilder name value)
+  );
+
+  genericConfigurationBuilder = name: value: (
     let
       selectedNixpkgs = if (value ? nixpkgs) then value.nixpkgs else self.pkgs.nixpkgs;
     in
-    # It would be nice to get `nixosSystem` reference from `selectedNixpkgs` but it is not possible at this moment
-    inputs.nixpkgs.lib.nixosSystem (
-      with selectedNixpkgs.lib;
-      {
-        inherit (selectedNixpkgs) system;
-        modules = [
-          {
-            networking.hostName = name;
+    with selectedNixpkgs.lib; {
+      inherit (selectedNixpkgs) system;
+      modules = [
+        {
+          networking.hostName = name;
 
-            nixpkgs = {
-              pkgs = selectedNixpkgs;
-              config = selectedNixpkgs.config;
-            };
+          nixpkgs = {
+            pkgs = selectedNixpkgs;
+            config = selectedNixpkgs.config;
+          };
 
-            system.configurationRevision = mkIf (self ? rev) self.rev;
-            nix.package = mkDefault selectedNixpkgs.nixFlakes;
-          }
-        ]
-        ++ sharedModules
-        ++ (optionals (value ? modules) value.modules);
-        extraArgs = sharedExtraArgs // optionalAttrs (value ? extraArgs) value.extraArgs;
-      }
-    )
+          system.configurationRevision = mkIf (self ? rev) self.rev;
+          nix.package = mkDefault selectedNixpkgs.nixFlakes;
+        }
+      ]
+      ++ sharedModules
+      ++ (optionals (value ? modules) value.modules);
+      extraArgs = sharedExtraArgs // optionalAttrs (value ? extraArgs) value.extraArgs;
+    }
   );
 in
 otherArguments //
