@@ -1,7 +1,7 @@
 {}:
 { self
 , defaultSystem ? "x86_64-linux"
-, extraArgs ? { inherit inputs; }
+, sharedExtraArgs ? { inherit inputs; }
 , inputs
 , nixosConfigurations ? { }
 , nixosProfiles ? { }
@@ -16,7 +16,7 @@
 let
   otherArguments = builtins.removeAttrs args [
     "defaultSystem"
-    "extraArgs"
+    "sharedExtraArgs"
     "inputs"
     "nixosProfiles"
     "channels"
@@ -25,6 +25,31 @@ let
     "sharedModules"
     "sharedOverlays"
   ];
+
+  nixosConfigurationBuilder = name: value: (
+    let
+      selectedNixpkgs = if (value ? nixpkgs) then value.nixpkgs else self.pkgs.nixpkgs;
+    in
+    # It would be nice to get `nixosSystem` reference from `selectedNixpkgs` but it is not possible at this moment
+    inputs.nixpkgs.lib.nixosSystem (
+      with selectedNixpkgs.lib;
+      {
+        inherit (selectedNixpkgs) system;
+        modules = [
+          {
+            networking.hostName = name;
+            nixpkgs = rec { pkgs = selectedNixpkgs; config = pkgs.config; };
+            system.configurationRevision = mkIf (self ? rev) self.rev;
+
+            nix.package = mkDefault selectedNixpkgs.nixFlakes;
+          }
+        ]
+        ++ sharedModules
+        ++ (optionals (value ? modules) value.modules);
+        extraArgs = sharedExtraArgs // optionalAttrs (value ? extraArgs) value.extraArgs;
+      }
+    )
+  );
 in
 otherArguments //
 {
@@ -37,30 +62,8 @@ otherArguments //
     })
     channels;
 
-  nixosConfigurations = nixosConfigurations // builtins.mapAttrs
-    (name: value:
-      let
-        selectedNixpkgs = if (value ? nixpkgs) then value.nixpkgs else self.pkgs.nixpkgs;
-      in
-      inputs.nixpkgs.lib.nixosSystem (
-        with selectedNixpkgs.lib;
-        {
-          system = selectedNixpkgs.system;
-          modules = [
-            {
-              networking.hostName = name;
-              nixpkgs = rec { pkgs = selectedNixpkgs; config = pkgs.config; };
-              system.configurationRevision = mkIf (self ? rev) self.rev;
-
-              nix.package = mkDefault selectedNixpkgs.nixFlakes;
-            }
-          ]
-          ++ sharedModules
-          ++ (optionals (value ? modules) value.modules);
-          extraArgs = extraArgs // optionalAttrs (value ? extraArgs) value.extraArgs;
-        }
-      ))
-    nixosProfiles;
+  nixosConfigurations = nixosConfigurations //
+  builtins.mapAttrs nixosConfigurationBuilder nixosProfiles;
 
 }
 
