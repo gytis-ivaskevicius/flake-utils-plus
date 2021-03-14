@@ -1,4 +1,5 @@
-{}:
+{ flake-utils }:
+
 { self
 , defaultSystem ? "x86_64-linux"
 , sharedExtraArgs ? { inherit inputs; }
@@ -11,7 +12,6 @@
 , sharedOverlays ? [ ]
 , ...
 }@args:
-
 
 let
   otherArguments = builtins.removeAttrs args [
@@ -38,9 +38,13 @@ let
         modules = [
           {
             networking.hostName = name;
-            nixpkgs = rec { pkgs = selectedNixpkgs; config = pkgs.config; };
-            system.configurationRevision = mkIf (self ? rev) self.rev;
 
+            nixpkgs = {
+              pkgs = selectedNixpkgs;
+              config = selectedNixpkgs.config;
+            };
+
+            system.configurationRevision = mkIf (self ? rev) self.rev;
             nix.package = mkDefault selectedNixpkgs.nixFlakes;
           }
         ]
@@ -62,8 +66,7 @@ otherArguments //
     })
     channels;
 
-  nixosConfigurations = nixosConfigurations //
-  builtins.mapAttrs nixosConfigurationBuilder nixosProfiles;
+  nixosConfigurations = nixosConfigurations // (builtins.mapAttrs nixosConfigurationBuilder nixosProfiles);
 
 }
 
