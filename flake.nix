@@ -14,7 +14,7 @@
         nixRegistryFromInputs = inputs: builtins.mapAttrs (name: v: { flake = v; }) inputs;
 
         nixDefaultsFromInputs = inputs: {
-          extraOptions = "experimental-features = nix-command flakes";
+          extraOptions = "experimental-features = nix-command ca-references flakes";
           nixPath = nixPathFromInputs inputs;
           registry = nixRegistryFromInputs inputs;
         };
