@@ -9,7 +9,8 @@
         mapAttrsToList = f: attrs:
           map (name: f name attrs.${name}) (builtins.attrNames attrs);
       in
-      rec {
+      flake-utils.lib
+      // rec {
         systemFlake = import ./systemFlake.nix { inherit flake-utils; };
 
         nixPathFromInputs = inputs:

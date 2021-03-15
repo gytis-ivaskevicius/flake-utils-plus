@@ -26,6 +26,9 @@
       # Required arguments
       inherit self inputs;
 
+      # Supported systems, used for packages, apps, devShell and multiple other definitions. Defaults to `flake-utils.lib.defaultSystems`
+      supportedSystems = [ "aarch64-linux" "x86_64-linux" ];
+
       # Default architecture to be used for `nixosProfiles` defaults to "x86_64-linux". Might get renamed in near future
       defaultSystem = "aarch64-linux";
 

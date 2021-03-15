@@ -3,6 +3,7 @@
 { self
 , defaultSystem ? "x86_64-linux"
 , sharedExtraArgs ? { inherit inputs; }
+, supportedSystems ? flake-utils.lib.defaultSystems
 , inputs
 , nixosConfigurations ? { }
 , nixosProfiles ? { }
@@ -77,7 +78,7 @@ let
 in
 otherArguments
 
-// flake-utils.lib.eachSystem flake-utils.lib.defaultSystems (system:
+// flake-utils.lib.eachSystem supportedSystems (system:
   let
     pkgs = builtins.mapAttrs
       (name: value: import value.input {
