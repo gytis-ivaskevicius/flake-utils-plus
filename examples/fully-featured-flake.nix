@@ -21,9 +21,6 @@
 
 
   outputs = inputs@{ self, nixpkgs, unstable, nur, utils, home-manager, neovim }:
-    let
-      pkgs = self.pkgs.nixpkgs;
-    in
     utils.lib.systemFlake {
 
       # Required arguments
@@ -52,7 +49,7 @@
       channels.unstable.input = unstable;
       channels.unstable.overlaysFunc = channels: [
         (final: prev: {
-          neovim-nightly = neovim.defaultPackage."${channels.nixpkgs.system}";
+          neovim-nightly = neovim.defaultPackage.${prev.system};
         })
       ];
 
@@ -82,6 +79,9 @@
         };
       };
 
+      # Extra arguments to be passed to modules
+      sharedExtraArgs = { inherit utils; };
+
       # Overlays, gets applied to all `channels.<name>.input`
       sharedOverlays = [
         # Overlay imported from `./overlays`. (Defined below)
@@ -102,6 +102,8 @@
           home-manager.useUserPackages = true;
         }
       ];
+
+
 
       ### Postfix of keys below might change in soon future.
 
