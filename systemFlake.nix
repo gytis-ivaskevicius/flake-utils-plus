@@ -11,7 +11,7 @@
 , sharedModules ? [ ]
 , sharedOverlays ? [ ]
 
-# Very experimental
+  # Very experimental
 , packagesFunc ? null
 , defaultPackageFunc ? null
 , appsFunc ? null
@@ -50,7 +50,7 @@ let
 
   genericConfigurationBuilder = name: value: (
     let
-      system =if (value ? system) then value.system else defaultSystem;
+      system = if (value ? system) then value.system else defaultSystem;
       channelName = if (value ? channelName) then value.channelName else "nixpkgs";
       selectedNixpkgs = self.pkgs."${system}"."${channelName}";
     in
@@ -76,33 +76,29 @@ let
   );
 in
 otherArguments
+
 // flake-utils.lib.eachSystem flake-utils.lib.defaultSystems (system:
+  let
+    pkgs = builtins.mapAttrs
+      (name: value: import value.input {
+        inherit system;
+        overlays = sharedOverlays ++ (if (value ? overlaysFunc) then (value.overlaysFunc pkgs) else [ ]);
+        config = channelsConfig // (if (value ? config) then value.config else { });
+      })
+      channels;
 
-let
-  pkgs = builtins.mapAttrs
-    (name: value: import value.input {
-      inherit system;
-      overlays = sharedOverlays ++ (if (value ? overlays) then value.overlays else [ ]);
-      config = channelsConfig // (if (value ? config) then value.config else { });
-    })
-    channels;
-
-  shouldBePassed = check: value: (if check != null then value else {});
-
-in { inherit pkgs;}
-  // shouldBePassed packagesFunc {packages = packagesFunc pkgs.nixpkgs;}
-  // shouldBePassed defaultPackageFunc {defaultPackage = defaultPackageFunc pkgs.nixpkgs;}
-  // shouldBePassed appsFunc {apps = appsFunc pkgs.nixpkgs; }
-  // shouldBePassed defaultAppFunc {defaultApp = defaultAppFunc pkgs.nixpkgs; }
-  // shouldBePassed devShellFunc {devShell = devShellFunc pkgs.nixpkgs; }
-  // shouldBePassed checksFunc {checks = checksFunc pkgs.nixpkgs; }
-  #// (if defaultPackageFunc != null then {inherit defaultPackage;} else {})
+    optional = check: value: (if check != null then value else { });
+  in
+  { inherit pkgs; }
+  // optional packagesFunc { packages = packagesFunc pkgs; }
+  // optional defaultPackageFunc { defaultPackage = defaultPackageFunc pkgs; }
+  // optional appsFunc { apps = appsFunc pkgs; }
+  // optional defaultAppFunc { defaultApp = defaultAppFunc pkgs; }
+  // optional devShellFunc { devShell = devShellFunc pkgs; }
+  // optional checksFunc { checks = checksFunc pkgs; }
 )
 
-// {
-
-
+  // {
   nixosConfigurations = nixosConfigurations // (builtins.mapAttrs nixosConfigurationBuilder nixosProfiles);
-
 }
 
