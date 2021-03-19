@@ -101,7 +101,7 @@ otherArguments
         patches = patches;
       };
 
-    importChannel = name: value: import (patchChannel value.input (value.patches or [])) {
+    importChannel = name: value: import (patchChannel value.input (value.patches or [ ])) {
       inherit system;
       overlays = sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ]);
       config = channelsConfig // (if (value ? config) then value.config else { });
