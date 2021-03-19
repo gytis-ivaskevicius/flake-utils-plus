@@ -12,7 +12,7 @@
 , sharedModules ? [ ]
 , sharedOverlays ? [ ]
 
-  # Very experimental
+  # `Func` postfix is soon to be deprecated. Replaced with `Builder` instead
 , packagesFunc ? null
 , defaultPackageFunc ? null
 , appsFunc ? null
@@ -20,6 +20,12 @@
 , devShellFunc ? null
 , checksFunc ? null
 
+, packagesBuilder ? packagesFunc
+, defaultPackageBuilder ? defaultPackageFunc
+, appsBuilder ? appsFunc
+, defaultAppBuilder ? defaultAppFunc
+, devShellBuilder ? devShellFunc
+, checksBuilder ? checksFunc
 , ...
 }@args:
 
@@ -35,13 +41,20 @@ let
     "sharedModules"
     "sharedOverlays"
 
-    # Very experimental
+    # `Func` postfix is soon to be deprecated. Replaced with `Builder` instead
     "packagesFunc"
     "defaultPackageFunc"
     "appsFunc"
     "defaultAppFunc"
     "devShellFunc"
     "checksFunc"
+
+    "packagesBuilder"
+    "defaultPackageBuilder"
+    "appsBuilder"
+    "defaultAppBuilder"
+    "devShellBuilder"
+    "checksBuilder"
   ];
 
   nixosConfigurationBuilder = name: value: (
@@ -90,7 +103,7 @@ otherArguments
 
     importChannel = name: value: import (patchChannel value.input (value.patches or [])) {
       inherit system;
-      overlays = sharedOverlays ++ (if (value ? overlaysFunc) then (value.overlaysFunc pkgs) else [ ]);
+      overlays = sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ]);
       config = channelsConfig // (if (value ? config) then value.config else { });
     };
 
@@ -99,12 +112,12 @@ otherArguments
     optional = check: value: (if check != null then value else { });
   in
   { inherit pkgs; }
-  // optional packagesFunc { packages = packagesFunc pkgs; }
-  // optional defaultPackageFunc { defaultPackage = defaultPackageFunc pkgs; }
-  // optional appsFunc { apps = appsFunc pkgs; }
-  // optional defaultAppFunc { defaultApp = defaultAppFunc pkgs; }
-  // optional devShellFunc { devShell = devShellFunc pkgs; }
-  // optional checksFunc { checks = checksFunc pkgs; }
+  // optional packagesBuilder { packages = packagesBuilder pkgs; }
+  // optional defaultPackageBuilder { defaultPackage = defaultPackageBuilder pkgs; }
+  // optional appsBuilder { apps = appsBuilder pkgs; }
+  // optional defaultAppBuilder { defaultApp = defaultAppBuilder pkgs; }
+  // optional devShellBuilder { devShell = devShellBuilder pkgs; }
+  // optional checksBuilder { checks = checksBuilder pkgs; }
 )
 
   // {

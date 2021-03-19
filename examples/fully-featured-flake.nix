@@ -32,13 +32,13 @@
       # Default architecture to be used for `nixosProfiles` defaults to "x86_64-linux". Might get renamed in near future
       defaultSystem = "aarch64-linux";
 
-      # Channel definitions. `channels.<name>.{input,overlaysFunc,config}`
+      # Channel definitions. `channels.<name>.{input,overlaysBuilder,config}`
       channels.nixpkgs = {
         # Channel input to import
         input = nixpkgs;
 
         # Channel specific overlays
-        overlaysFunc = channels: [
+        overlaysBuilder = channels: [
           (final: prev: { inherit (channels.unstable) zsh; })
         ];
 
@@ -52,7 +52,7 @@
       channels.unstable.input = unstable;
       # Yep, you see it first folks - you can patch nixpkgs!
       channels.unstable.patches = [ ./myNixpkgsPatch.patch ];
-      channels.unstable.overlaysFunc = channels: [
+      channels.unstable.overlaysBuilder = channels: [
         (final: prev: {
           neovim-nightly = neovim.defaultPackage.${prev.system};
         })
@@ -113,17 +113,17 @@
       ### Postfix of keys below might change in soon future.
 
       # Evaluates to `packages.<system>.attributeKey = "attributeValue"`
-      packagesFunc = channels: { attributeKey = "attributeValue"; };
+      packagesBuilder = channels: { attributeKey = "attributeValue"; };
       # Evaluates to `defaultPackage.<system>.attributeKey = "attributeValue"`
-      defaultPackageFunc = channels: { attributeKey = "attributeValue"; };
+      defaultPackageBuilder = channels: { attributeKey = "attributeValue"; };
       # Evaluates to `apps.<system>.attributeKey = "attributeValue"`
-      appsFunc = channels: { attributeKey = "attributeValue"; };
+      appsBuilder = channels: { attributeKey = "attributeValue"; };
       # Evaluates to `defaultApp.<system>.attributeKey = "attributeValue"`
-      defaultAppFunc = channels: { attributeKey = "attributeValue"; };
+      defaultAppBuilder = channels: { attributeKey = "attributeValue"; };
       # Evaluates to `devShell.<system>.attributeKey = "attributeValue"`
-      devShellFunc = channels: { attributeKey = "attributeValue"; };
+      devShellBuilder = channels: { attributeKey = "attributeValue"; };
       # Evaluates to `checks.<system>.attributeKey = "attributeValue"`
-      checksFunc = channels: { attributeKey = "attributeValue"; };
+      checksBuilder = channels: { attributeKey = "attributeValue"; };
 
       # All other values gets passed down to the flake
       overlay = import ./overlays;
