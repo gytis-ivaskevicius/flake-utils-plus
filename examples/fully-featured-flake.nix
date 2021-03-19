@@ -50,6 +50,8 @@
 
       # Additional channel input
       channels.unstable.input = unstable;
+      # Yep, you see it first folks - you can patch nixpkgs!
+      channels.unstable.patches = [ ./myNixpkgsPatch.patch ];
       channels.unstable.overlaysFunc = channels: [
         (final: prev: {
           neovim-nightly = neovim.defaultPackage.${prev.system};

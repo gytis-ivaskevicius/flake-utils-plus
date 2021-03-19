@@ -80,13 +80,21 @@ otherArguments
 
 // flake-utils.lib.eachSystem supportedSystems (system:
   let
-    pkgs = builtins.mapAttrs
-      (name: value: import value.input {
-        inherit system;
-        overlays = sharedOverlays ++ (if (value ? overlaysFunc) then (value.overlaysFunc pkgs) else [ ]);
-        config = channelsConfig // (if (value ? config) then value.config else { });
-      })
-      channels;
+    patchChannel = channel: patches:
+      if patches == [ ] then channel else
+      (import channel { inherit system; }).pkgs.applyPatches {
+        name = "nixpkgs-patched-${channel.shortRev}";
+        src = channel;
+        patches = patches;
+      };
+
+    importChannel = name: value: import (patchChannel value.input (value.patches or [])) {
+      inherit system;
+      overlays = sharedOverlays ++ (if (value ? overlaysFunc) then (value.overlaysFunc pkgs) else [ ]);
+      config = channelsConfig // (if (value ? config) then value.config else { });
+    };
+
+    pkgs = builtins.mapAttrs importChannel channels;
 
     optional = check: value: (if check != null then value else { });
   in
