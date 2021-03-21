@@ -4,6 +4,8 @@
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
   outputs = { self, flake-utils }: {
+    nixosModules.saneFlakeDefaults = import ./modules/saneFlakeDefaults.nix;
+
     lib =
       let
         removeSuffix = suffix: str:
@@ -22,6 +24,7 @@
       in
       flake-utils.lib
       // rec {
+
 
         modulesFromList = paths:
           genAttrs'
