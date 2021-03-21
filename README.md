@@ -1,3 +1,4 @@
+
 # What is this flake #
 
 This flake exposes a library abstraction to *painlessly* generate nixos flake configurations.
@@ -10,7 +11,7 @@ This flake provides two main features (visible from `flake.nix`):
 
 - `nixosModules.saneFlakeDefaults` - Configures `nix.*` attributes. Generates `nix.nixPath`/`nix.registry` from flake `inputs`, sets `pkgs.nixUnstable` as the default also enables `ca-references` and `flakes`.
 - `lib.systemFlake { ... }` - Generates a system flake that may then be built.
-- `lib.modulesFromList [ a.nix b.nix ]` - Generates attribute set of modules (`{ a = import a.nix; b = import b.nix; }`)
+- `lib.modulesFromList [ ./a.nix ./b.nix ]` - Generates modules attributes which looks like this `{ a = import ./a.nix; b = import ./b.nix; }`.
 
 
 # Examples #
@@ -20,8 +21,9 @@ This flake provides two main features (visible from `flake.nix`):
 
 # How to use this flake #
 
-Example flake with all available attributes can be found [Here](https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/master/examples/fully-featured-flake.nix)
-And more realistic flake example can be found [Here](https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/master/examples/somewhat-realistic-flake.nix)
+Example flake with all available attributes can be found [Here](https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/master/examples/fully-featured-flake.nix).
+
+And more realistic flake example can be found [Here](https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/master/examples/somewhat-realistic-flake.nix).
 
 ```nix
 {
