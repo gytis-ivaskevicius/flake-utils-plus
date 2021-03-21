@@ -17,11 +17,12 @@ This flake provides two main features (visible from `flake.nix`):
 
 - [Gytis Dotfiles (Author of this project)](https://github.com/gytis-ivaskevicius/nixfiles/blob/master/flake.nix)
 - [fufexan Dotfiles](https://github.com/fufexan/nixos-config/blob/master/flake.nix)
-- [Bobbbay Dotfiles](https://github.com/Bobbbay/dotfiles/blob/master/flake.nix)
 
 # How to use this flake #
 
-(Example flake with all available attributes can be found [Here](https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/master/examples/fully-featured-flake.nix))
+Example flake with all available attributes can be found [Here](https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/master/examples/fully-featured-flake.nix)
+And more realistic flake example can be found [Here](https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/master/examples/somewhat-realistic-flake.nix)
+
 ```nix
 {
   outputs = inputs@{ self, nixpkgs, unstable, nur, utils, home-manager, neovim }:
