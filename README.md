@@ -9,7 +9,10 @@ The biggest design goal is to keep down the fluff. The library is meant to be ea
 This flake provides two main features (visible from `flake.nix`):
 
 - `nixosModules.saneFlakeDefaults` - Configures `nix.*` attributes. Generates `nix.nixPath`/`nix.registry` from flake `inputs`, sets `pkgs.nixUnstable` as the default also enables `ca-references` and `flakes`.
-- `lib.systemFlake` generates a system flake that may then be built.
+- `lib.systemFlake { ... }` - Generates a system flake that may then be built.
+- `lib.modulesFromList [ a.nix b.nix ]` - Generates attribute set of modules (`{ a = import a.nix; b = import b.nix; }`)
+- `lib.modulesFromDir ./modules/` - Same as `modulesFromList`, only lists the directory and generates list modules from it
+
 
 # Examples #
 

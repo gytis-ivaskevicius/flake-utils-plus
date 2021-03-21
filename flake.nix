@@ -26,7 +26,6 @@
       flake-utils.lib
       // rec {
 
-
         modulesFromList = paths:
           genAttrs'
             (path: {
