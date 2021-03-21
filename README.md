@@ -23,124 +23,88 @@ This flake provides two main features (visible from `flake.nix`):
   outputs = inputs@{ self, nixpkgs, unstable, nur, utils, home-manager, neovim }:
     utils.lib.systemFlake {
 
-      # Required arguments
+      # `self` and `inputs` arguments are REQUIRED!!!!!!!!!
       inherit self inputs;
 
       # Supported systems, used for packages, apps, devShell and multiple other definitions. Defaults to `flake-utils.lib.defaultSystems`
       supportedSystems = [ "aarch64-linux" "x86_64-linux" ];
 
-      # Default architecture to be used for `nixosProfiles` defaults to "x86_64-linux". Might get renamed in near future
+      # Default architecture to be used for `nixosProfiles` defaults to "x86_64-linux"
       defaultSystem = "aarch64-linux";
 
-      # Channel definitions. `channels.<name>.{input,overlaysBuilder,config}`
+      # Channel definitions. `channels.<name>.{input,overlaysBuilder,config,patches}`
       channels.nixpkgs = {
         # Channel input to import
         input = nixpkgs;
 
         # Channel specific overlays
-        overlaysBuilder = channels: [
-          (final: prev: { inherit (channels.unstable) zsh; })
-        ];
+        overlaysBuilder = channels: [ ];
 
         # Channel specific configuration. Overwrites `channelsConfig` argument
-        config = {
-          allowUnfree = false;
-        };
+        config = { allowUnfree = false; };
       };
 
       # Additional channel input
       channels.unstable.input = unstable;
       # Yep, you see it first folks - you can patch nixpkgs!
       channels.unstable.patches = [ ./myNixpkgsPatch.patch ];
-      channels.unstable.overlaysBuilder = channels: [
-        (final: prev: {
-          neovim-nightly = neovim.defaultPackage.${prev.system};
-        })
-      ];
 
 
       # Default configuration values for `channels.<name>.config = {...}`
-      channelsConfig = {
-        allowBroken = true;
-        allowUnfree = true;
-      };
+      channelsConfig.allowUnfree = true;
 
       # Profiles, gets parsed into `nixosConfigurations`
       nixosProfiles = {
         # Profile name / System hostname
-        Morty = {
+        FirstHost = {
           # System architecture. Defaults to `defaultSystem` argument
-          system = "x96_64-linux";
-          # <name> of the channel to be used
+          system = "x86_64-linux";
+          # <name> of the channel to be used. Defaults to `nixpkgs`
           channelName = "unstable";
           # Extra arguments to be passed to the modules. Overwrites `sharedExtraArgs` argument
-          extraArgs = {
-            abc = 123;
-          };
-          # Host specific configuration. Same as `sharedModules`
-          modules = [
-            (import ./configurations/Morty.host.nix)
-          ];
+          extraArgs = { };
+          # Host specific configuration
+          modules = [ ];
         };
+
+        OtherHost = { ... };
       };
 
-      # Extra arguments to be passed to modules
-      sharedExtraArgs = { inherit utils; };
+      # Extra arguments to be passed to modules. Defaults to `{ inherit inputs; }`
+      sharedExtraArgs = { };
 
-      # Overlays, gets applied to all `channels.<name>.input`
-      sharedOverlays = [
-        # Overlay imported from `./overlays`. (Defined below)
-        self.overlays
-        # Nix User Repository overlay
-        nur.overlay
-      ];
+      # Shared overlays between channels, gets applied to all `channels.<name>.input`
+      sharedOverlays = [ ];
 
-      # Shared modules/configurations between `nixProfiles`
-      sharedModules = [
-        home-manager.nixosModules.home-manager
-        (import ./modules)
-        {
-          # Sets sane `nix.*` defaults. Please refer to implementation/readme for more details.
-          nix = utils.lib.nixDefaultsFromInputs inputs;
+      # Shared modules/configurations between `nixosProfiles`
+      sharedModules = [ ];
 
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-        }
-      ];
-
-
-
-      ### Postfix of keys below might change in soon future.
 
       # Evaluates to `packages.<system>.attributeKey = "attributeValue"`
       packagesBuilder = channels: { attributeKey = "attributeValue"; };
+
       # Evaluates to `defaultPackage.<system>.attributeKey = "attributeValue"`
       defaultPackageBuilder = channels: { attributeKey = "attributeValue"; };
+
       # Evaluates to `apps.<system>.attributeKey = "attributeValue"`
       appsBuilder = channels: { attributeKey = "attributeValue"; };
+
       # Evaluates to `defaultApp.<system>.attributeKey = "attributeValue"`
       defaultAppBuilder = channels: { attributeKey = "attributeValue"; };
+
       # Evaluates to `devShell.<system>.attributeKey = "attributeValue"`
       devShellBuilder = channels: { attributeKey = "attributeValue"; };
+
       # Evaluates to `checks.<system>.attributeKey = "attributeValue"`
       checksBuilder = channels: { attributeKey = "attributeValue"; };
-
-      # All other values gets passed down to the flake
-      overlay = import ./overlays;
-      abc = 132;
-      # etc
-
     };
 }
-
-
 ```
 
 
 # Other Examples #
 
 - [Gytis Dotfiles](https://github.com/gytis-ivaskevicius/nixfiles/blob/master/flake.nix)
-- [Justin Dotfiles](https://github.com/DieracDelta/flakes/blob/flakes/flake.nix)
 - [fufexan Dotfiles](https://github.com/fufexan/nixos-config/blob/master/flake.nix)
 - [Bobbbay Dotfiles](https://github.com/Bobbbay/dotfiles/blob/master/flake.nix)
 

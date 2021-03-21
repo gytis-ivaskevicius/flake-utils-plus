@@ -23,16 +23,16 @@
   outputs = inputs@{ self, nixpkgs, unstable, nur, utils, home-manager, neovim }:
     utils.lib.systemFlake {
 
-      # Required arguments
+      # `self` and `inputs` arguments are REQUIRED!!!!!!!!!!!!!!
       inherit self inputs;
 
       # Supported systems, used for packages, apps, devShell and multiple other definitions. Defaults to `flake-utils.lib.defaultSystems`
       supportedSystems = [ "aarch64-linux" "x86_64-linux" ];
 
-      # Default architecture to be used for `nixosProfiles` defaults to "x86_64-linux". Might get renamed in near future
+      # Default architecture to be used for `nixosProfiles` defaults to "x86_64-linux"
       defaultSystem = "aarch64-linux";
 
-      # Channel definitions. `channels.<name>.{input,overlaysBuilder,config}`
+      # Channel definitions. `channels.<name>.{input,overlaysBuilder,config,patches}`
       channels.nixpkgs = {
         # Channel input to import
         input = nixpkgs;
@@ -70,8 +70,8 @@
         # Profile name / System hostname
         Morty = {
           # System architecture. Defaults to `defaultSystem` argument
-          system = "x96_64-linux";
-          # <name> of the channel to be used
+          system = "x86_64-linux";
+          # <name> of the channel to be used. Defaults to `nixpkgs`
           channelName = "unstable";
           # Extra arguments to be passed to the modules. Overwrites `sharedExtraArgs` argument
           extraArgs = {
@@ -84,10 +84,10 @@
         };
       };
 
-      # Extra arguments to be passed to modules
-      sharedExtraArgs = { inherit utils; };
+      # Extra arguments to be passed to modules. Defaults to `{ inherit inputs; }`
+      sharedExtraArgs = { inherit utils inputs; };
 
-      # Overlays, gets applied to all `channels.<name>.input`
+      # Shared overlays between channels, gets applied to all `channels.<name>.input`
       sharedOverlays = [
         # Overlay imported from `./overlays`. (Defined below)
         self.overlays
@@ -95,33 +95,34 @@
         nur.overlay
       ];
 
-      # Shared modules/configurations between `nixProfiles`
+      # Shared modules/configurations between `nixosProfiles`
       sharedModules = [
         home-manager.nixosModules.home-manager
+        # Sets sane `nix.*` defaults. Please refer to implementation/readme for more details.
+        utils.nixosModules.saneFlakeDefaults
         (import ./modules)
         {
-          # Sets sane `nix.*` defaults. Please refer to implementation/readme for more details.
-          nix = utils.lib.nixDefaultsFromInputs inputs;
-
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
         }
       ];
 
 
-
-      ### Postfix of keys below might change in soon future.
-
       # Evaluates to `packages.<system>.attributeKey = "attributeValue"`
       packagesBuilder = channels: { attributeKey = "attributeValue"; };
+
       # Evaluates to `defaultPackage.<system>.attributeKey = "attributeValue"`
       defaultPackageBuilder = channels: { attributeKey = "attributeValue"; };
+
       # Evaluates to `apps.<system>.attributeKey = "attributeValue"`
       appsBuilder = channels: { attributeKey = "attributeValue"; };
+
       # Evaluates to `defaultApp.<system>.attributeKey = "attributeValue"`
       defaultAppBuilder = channels: { attributeKey = "attributeValue"; };
+
       # Evaluates to `devShell.<system>.attributeKey = "attributeValue"`
       devShellBuilder = channels: { attributeKey = "attributeValue"; };
+
       # Evaluates to `checks.<system>.attributeKey = "attributeValue"`
       checksBuilder = channels: { attributeKey = "attributeValue"; };
 
