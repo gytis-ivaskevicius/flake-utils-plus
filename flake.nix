@@ -34,9 +34,6 @@
             })
             paths;
 
-        modulesFromDir = dir:
-          modulesFromList (mapAttrsToList (name: value: name) (builtins.readDir dir));
-
         systemFlake = import ./systemFlake.nix { inherit flake-utils; };
 
         nixPathFromInputs = inputs:
