@@ -2,22 +2,24 @@
 
 This flake exposes a library abstraction to *painlessly* generate nixos flake configurations.
 
-The biggest design goal is to keep down the fluff. The library is
-meant to be easy to understand and use. It aims to be far simpler
-than frameworks such as devos (previously called nixflk).
+The biggest design goal is to keep down the fluff. The library is meant to be easy to understand and use. It aims to be far simpler than frameworks such as devos (previously called nixflk).
 
 # Features of flake #
 
 This flake provides two main features (visible from `flake.nix`):
 
+- `nixosModules.saneFlakeDefaults` - Configures `nix.*` attributes. Generates `nix.nixPath`/`nix.registry` from flake `inputs`, sets `pkgs.nixUnstable` as the default also enables `ca-references` and `flakes`.
+- `lib.systemFlake` generates a system flake that may then be built.
 
-- `nixPathFromInputs` generates list for nixpath to include flake inputs.
-- `nixRegistryFromInputs` generates attribute set for registry to include flake inputs.
-- `nixDefaultsFromInputs` generates `nix` configuration attribute set. Invokes `nixPathFromInputs` and `nixRegistreyFromInputs` as well as enables flakes.
-- `systemFlake` generates a system flake that may then be built.
+# Examples #
+
+- [Gytis Dotfiles (Author of this project)](https://github.com/gytis-ivaskevicius/nixfiles/blob/master/flake.nix)
+- [fufexan Dotfiles](https://github.com/fufexan/nixos-config/blob/master/flake.nix)
+- [Bobbbay Dotfiles](https://github.com/Bobbbay/dotfiles/blob/master/flake.nix)
 
 # How to use this flake #
 
+(Example flake with all available attributes can be found [Here](https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/master/examples/fully-featured-flake.nix))
 ```nix
 {
   outputs = inputs@{ self, nixpkgs, unstable, nur, utils, home-manager, neovim }:
@@ -77,7 +79,7 @@ This flake provides two main features (visible from `flake.nix`):
       sharedOverlays = [ ];
 
       # Shared modules/configurations between `nixosProfiles`
-      sharedModules = [ ];
+      sharedModules = [ utils.nixosModules.saneFlakeDefaults ];
 
 
       # Evaluates to `packages.<system>.attributeKey = "attributeValue"`
@@ -101,10 +103,4 @@ This flake provides two main features (visible from `flake.nix`):
 }
 ```
 
-
-# Other Examples #
-
-- [Gytis Dotfiles](https://github.com/gytis-ivaskevicius/nixfiles/blob/master/flake.nix)
-- [fufexan Dotfiles](https://github.com/fufexan/nixos-config/blob/master/flake.nix)
-- [Bobbbay Dotfiles](https://github.com/Bobbbay/dotfiles/blob/master/flake.nix)
 

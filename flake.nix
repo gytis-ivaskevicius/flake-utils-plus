@@ -4,6 +4,7 @@
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
   outputs = { self, flake-utils }: {
+
     nixosModules.saneFlakeDefaults = import ./modules/saneFlakeDefaults.nix;
 
     lib =

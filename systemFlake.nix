@@ -87,7 +87,7 @@ let
           };
 
           system.configurationRevision = mkIf (self ? rev) self.rev;
-          nix.package = mkDefault selectedNixpkgs.nixFlakes;
+          nix.package = mkDefault selectedNixpkgs.nixUnstable;
         }
       ]
       ++ sharedModules
