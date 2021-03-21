@@ -40,8 +40,9 @@ let
     "self"
     "sharedModules"
     "sharedOverlays"
+    "supportedSystems"
 
-    # `Func` postfix is soon to be deprecated. Replaced with `Builder` instead
+    # `Func` postfix is deprecated. Replaced with `Builder` instead
     "packagesFunc"
     "defaultPackageFunc"
     "appsFunc"
