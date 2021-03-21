@@ -17,7 +17,7 @@ This flake provides two main features (visible from `flake.nix`):
 # Examples #
 
 - [Gytis Dotfiles (Author of this project)](https://github.com/gytis-ivaskevicius/nixfiles/blob/master/flake.nix)
-- [fufexan Dotfiles](https://github.com/fufexan/nixos-config/blob/master/flake.nix)
+- [fufexan Dotfiles](https://github.com/fufexan/dotfiles/blob/main/flake.nix)
 
 # How to use this flake #
 
