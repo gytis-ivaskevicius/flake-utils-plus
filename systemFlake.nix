@@ -6,8 +6,6 @@
 , supportedSystems ? flake-utils.lib.defaultSystems
 , inputs
 , nixosConfigurations ? { }
-, darwinConfigurations ? { }
-, darwinProfiles ? { }
 , nixosProfiles ? { }
 , channels ? { }
 , channelsConfig ? { }
@@ -58,11 +56,6 @@ let
     "devShellBuilder"
     "checksBuilder"
   ];
-
-  darwinConfigurationBuilder  = name: value: (
-    # It would be nice to get `darwinSystem` reference from `selectedNixpkgs` but it is not possible at this moment
-    inputs.nixpkgs.lib.darwinSystem (genericConfigurationBuilder name value)
-  );
 
   nixosConfigurationBuilder = name: value: (
     # It would be nice to get `nixosSystem` reference from `selectedNixpkgs` but it is not possible at this moment
@@ -129,6 +122,5 @@ otherArguments
 
   // {
   nixosConfigurations = nixosConfigurations // (builtins.mapAttrs nixosConfigurationBuilder nixosProfiles);
-  darwinConfigurations = darwinConfigurations // (builtins.mapAttrs darwinConfigurationBuilder darwinProfiles);
 }
 
