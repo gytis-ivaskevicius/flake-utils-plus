@@ -22,6 +22,10 @@
 }@args:
 
 let
+
+  channelNameFromProfile = profile: profile.channelName or "nixpkgs";
+  systemFromProfile = profile: profile.system or defaultSystem;
+
   otherArguments = builtins.removeAttrs args [
     "defaultSystem"
     "sharedExtraArgs"
@@ -44,17 +48,15 @@ let
 
   nixosConfigurationBuilder = hostname: profile: (
     # It would be nice to get `nixosSystem` reference from `selectedNixpkgs` but it is not possible at this moment
-    inputs.nixpkgs.lib.nixosSystem (genericConfigurationBuilder (getNixpkgs profile) hostname profile)
+    inputs."${channelNameFromProfile profile}".lib.nixosSystem (genericConfigurationBuilder hostname profile)
   );
 
-  getNixpkgs = channelDefinition:
-    let
-      system = channelDefinition.system or defaultSystem;
-      channelName = channelDefinition.channelName or "nixpkgs";
-    in
-    self.pkgs."${system}"."${channelName}";
+  getNixpkgs = profile: self.pkgs."${systemFromProfile profile}"."${channelNameFromProfile profile}";
 
-  genericConfigurationBuilder = selectedNixpkgs: hostname: profile: (
+  genericConfigurationBuilder = hostname: profile: (
+    let
+      selectedNixpkgs = getNixpkgs profile;
+    in
     {
       inherit (selectedNixpkgs) system;
       modules = [
@@ -90,7 +92,7 @@ otherArguments
     importChannel = name: value: import (patchChannel value.input (value.patches or [ ])) {
       inherit system;
       overlays = sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ]);
-      config = channelsConfig // (value.config or {});
+      config = channelsConfig // (value.config or { });
     };
 
     pkgs = builtins.mapAttrs importChannel channels;
