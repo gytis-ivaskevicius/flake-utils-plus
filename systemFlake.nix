@@ -68,25 +68,23 @@ let
       system = if (value ? system) then value.system else defaultSystem;
       channelName = if (value ? channelName) then value.channelName else "nixpkgs";
       selectedNixpkgs = self.pkgs."${system}"."${channelName}";
-    in
-    with selectedNixpkgs.lib; {
+    in {
       inherit system;
       modules = [
-        {
+        ({ pkgs, lib, ...}: {
           networking.hostName = name;
 
           nixpkgs = {
-            pkgs = selectedNixpkgs;
-            config = selectedNixpkgs.config;
+            inherit (selectedNixpkgs) overlays config system;
           };
 
-          system.configurationRevision = mkIf (self ? rev) self.rev;
-          nix.package = mkDefault selectedNixpkgs.nixUnstable;
-        }
+          system.configurationRevision = lib.mkIf (self ? rev) self.rev;
+          nix.package = lib.mkDefault pkgs.nixUnstable;
+        })
       ]
       ++ sharedModules
-      ++ (optionals (value ? modules) value.modules);
-      extraArgs = sharedExtraArgs // optionalAttrs (value ? extraArgs) value.extraArgs;
+      ++ (selectedNixpkgs.lib.optionals (value ? modules) value.modules);
+      extraArgs = sharedExtraArgs // selectedNixpkgs.lib.optionalAttrs (value ? extraArgs) value.extraArgs;
     }
   );
 in
