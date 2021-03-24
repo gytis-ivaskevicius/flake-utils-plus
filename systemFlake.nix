@@ -42,22 +42,24 @@ let
     "checksBuilder"
   ];
 
-  nixosConfigurationBuilder = name: value: (
+  nixosConfigurationBuilder = hostname: profile: (
     # It would be nice to get `nixosSystem` reference from `selectedNixpkgs` but it is not possible at this moment
-    inputs.nixpkgs.lib.nixosSystem (genericConfigurationBuilder name value)
+    inputs.nixpkgs.lib.nixosSystem (genericConfigurationBuilder (getNixpkgs profile) hostname profile)
   );
 
-  genericConfigurationBuilder = name: value: (
+  getNixpkgs = channelDefinition:
     let
-      system = if (value ? system) then value.system else defaultSystem;
-      channelName = if (value ? channelName) then value.channelName else "nixpkgs";
-      selectedNixpkgs = self.pkgs."${system}"."${channelName}";
+      system = channelDefinition.system or defaultSystem;
+      channelName = channelDefinition.channelName or "nixpkgs";
     in
+    self.pkgs."${system}"."${channelName}";
+
+  genericConfigurationBuilder = selectedNixpkgs: hostname: profile: (
     {
-      inherit system;
+      inherit (selectedNixpkgs) system;
       modules = [
         ({ pkgs, lib, ... }: {
-          networking.hostName = name;
+          networking.hostName = hostname;
 
           nixpkgs = {
             inherit (selectedNixpkgs) overlays config system;
@@ -68,8 +70,8 @@ let
         })
       ]
       ++ sharedModules
-      ++ (selectedNixpkgs.lib.optionals (value ? modules) value.modules);
-      extraArgs = sharedExtraArgs // selectedNixpkgs.lib.optionalAttrs (value ? extraArgs) value.extraArgs;
+      ++ (selectedNixpkgs.lib.optionals (profile ? modules) profile.modules);
+      extraArgs = sharedExtraArgs // selectedNixpkgs.lib.optionalAttrs (profile ? extraArgs) profile.extraArgs;
     }
   );
 in
@@ -88,7 +90,7 @@ otherArguments
     importChannel = name: value: import (patchChannel value.input (value.patches or [ ])) {
       inherit system;
       overlays = sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ]);
-      config = channelsConfig // (if (value ? config) then value.config else { });
+      config = channelsConfig // (value.config or {});
     };
 
     pkgs = builtins.mapAttrs importChannel channels;
