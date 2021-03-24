@@ -12,20 +12,12 @@
 , sharedModules ? [ ]
 , sharedOverlays ? [ ]
 
-  # `Func` postfix is soon to be deprecated. Replaced with `Builder` instead
-, packagesFunc ? null
-, defaultPackageFunc ? null
-, appsFunc ? null
-, defaultAppFunc ? null
-, devShellFunc ? null
-, checksFunc ? null
-
-, packagesBuilder ? packagesFunc
-, defaultPackageBuilder ? defaultPackageFunc
-, appsBuilder ? appsFunc
-, defaultAppBuilder ? defaultAppFunc
-, devShellBuilder ? devShellFunc
-, checksBuilder ? checksFunc
+, packagesBuilder ? null
+, defaultPackageBuilder ? null
+, appsBuilder ? null
+, defaultAppBuilder ? null
+, devShellBuilder ? null
+, checksBuilder ? null
 , ...
 }@args:
 
@@ -41,14 +33,6 @@ let
     "sharedModules"
     "sharedOverlays"
     "supportedSystems"
-
-    # `Func` postfix is deprecated. Replaced with `Builder` instead
-    "packagesFunc"
-    "defaultPackageFunc"
-    "appsFunc"
-    "defaultAppFunc"
-    "devShellFunc"
-    "checksFunc"
 
     "packagesBuilder"
     "defaultPackageBuilder"
@@ -68,10 +52,11 @@ let
       system = if (value ? system) then value.system else defaultSystem;
       channelName = if (value ? channelName) then value.channelName else "nixpkgs";
       selectedNixpkgs = self.pkgs."${system}"."${channelName}";
-    in {
+    in
+    {
       inherit system;
       modules = [
-        ({ pkgs, lib, ...}: {
+        ({ pkgs, lib, ... }: {
           networking.hostName = name;
 
           nixpkgs = {

@@ -6,9 +6,10 @@ let
   nixRegistry = builtins.mapAttrs
     (name: v: { flake = v; })
     flakes;
-in {
+in
+{
 
-  nix =  {
+  nix = {
     extraOptions = "experimental-features = nix-command ca-references flakes";
     registry = nixRegistry;
     package = pkgs.nixUnstable;

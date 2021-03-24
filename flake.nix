@@ -20,11 +20,9 @@
             str;
 
         genAttrs' = func: values: builtins.listToAttrs (map func values);
-        mapAttrsToList = f: attrs:
-          map (name: f name attrs.${name}) (builtins.attrNames attrs);
       in
       flake-utils.lib
-      // rec {
+      // {
 
         modulesFromList = paths:
           genAttrs'
@@ -35,18 +33,6 @@
             paths;
 
         systemFlake = import ./systemFlake.nix { inherit flake-utils; };
-
-        nixPathFromInputs = inputs:
-          mapAttrsToList (name: _: "${name}=${inputs.${name}}") inputs;
-
-        nixRegistryFromInputs = inputs:
-          builtins.mapAttrs (name: v: { flake = v; }) inputs;
-
-        nixDefaultsFromInputs = inputs: {
-          extraOptions = "experimental-features = nix-command ca-references flakes";
-          nixPath = nixPathFromInputs inputs;
-          registry = nixRegistryFromInputs inputs;
-        };
 
       };
   };
