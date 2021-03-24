@@ -24,6 +24,12 @@
       flake-utils.lib
       // {
 
+        replApp = pkgs: flake-utils.lib.mkApp {
+          drv = pkgs.writeShellScriptBin "repl" ''
+            ${pkgs.nixUnstable}/bin/nix repl ${./repl.nix}
+          '';
+        };
+
         modulesFromList = paths:
           genAttrs'
             (path: {
