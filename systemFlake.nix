@@ -1,9 +1,9 @@
-{ flake-utils }:
+{ lib }:
 
 { self
 , defaultSystem ? "x86_64-linux"
-, sharedExtraArgs ? { inherit inputs; }
-, supportedSystems ? flake-utils.lib.defaultSystems
+, sharedExtraArgs ? { }
+, supportedSystems ? lib.defaultSystems
 , inputs
 , nixosConfigurations ? { }
 , nixosProfiles ? { }
@@ -54,9 +54,7 @@ let
   getNixpkgs = profile: self.pkgs."${systemFromProfile profile}"."${channelNameFromProfile profile}";
 
   genericConfigurationBuilder = hostname: profile: (
-    let
-      selectedNixpkgs = getNixpkgs profile;
-    in
+    let selectedNixpkgs = getNixpkgs profile; in
     {
       inherit (selectedNixpkgs) system;
       modules = [
@@ -72,14 +70,14 @@ let
         })
       ]
       ++ sharedModules
-      ++ (selectedNixpkgs.lib.optionals (profile ? modules) profile.modules);
-      extraArgs = sharedExtraArgs // selectedNixpkgs.lib.optionalAttrs (profile ? extraArgs) profile.extraArgs;
+      ++ (profile.modules or [ ]);
+      extraArgs = { inherit inputs; } // sharedExtraArgs // profile.extraArgs or { };
     }
   );
 in
 otherArguments
 
-// flake-utils.lib.eachSystem supportedSystems (system:
+// lib.eachSystem supportedSystems (system:
   let
     patchChannel = channel: patches:
       if patches == [ ] then channel else
