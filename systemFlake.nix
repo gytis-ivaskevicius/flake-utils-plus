@@ -1,11 +1,12 @@
-{ lib }:
+{ flake-utils-plus }:
 
 { self
 , defaultSystem ? "x86_64-linux"
-, sharedExtraArgs ? { }
-, supportedSystems ? lib.defaultSystems
+, supportedSystems ? flake-utils-plus.lib.defaultSystems
 , inputs
+
 , nixosConfigurations ? { }
+, sharedExtraArgs ? { }
 , nixosProfiles ? { }
 , channels ? { }
 , channelsConfig ? { }
@@ -22,6 +23,7 @@
 }@args:
 
 let
+  inherit (flake-utils-plus.lib) eachSystem;
 
   channelNameFromProfile = profile: profile.channelName or "nixpkgs";
   systemFromProfile = profile: profile.system or defaultSystem;
@@ -77,7 +79,7 @@ let
 in
 otherArguments
 
-// lib.eachSystem supportedSystems (system:
+// eachSystem supportedSystems (system:
   let
     patchChannel = channel: patches:
       if patches == [ ] then channel else

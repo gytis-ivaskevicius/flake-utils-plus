@@ -24,7 +24,7 @@
       lib = flake-utils.lib // {
 
         repl = ./repl.nix;
-        systemFlake = import ./systemFlake.nix { inherit lib; };
+        systemFlake = import ./systemFlake.nix { flake-utils-plus = self; };
 
         modulesFromList = paths: genAttrs'
           (path: {

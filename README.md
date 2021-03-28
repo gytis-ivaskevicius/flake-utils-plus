@@ -1,4 +1,9 @@
 
+[![built with nix](https://builtwithnix.org/badge.svg)](https://builtwithnix.org)
+[![Discord](https://img.shields.io/discord/591914197219016707.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.com/invite/RbvHtGa)
+
+Need help? Createn an issue or ping @Gytis#0001 in discord server above.
+
 # What is this flake #
 
 This flake exposes a library abstraction to *painlessly* generate nixos flake configurations.
@@ -17,13 +22,28 @@ This flake provides two main features (visible from `flake.nix`):
 # Examples #
 
 - [Gytis Dotfiles (Author of this project)](https://github.com/gytis-ivaskevicius/nixfiles/blob/master/flake.nix)
-- [fufexan Dotfiles](https://github.com/fufexan/dotfiles/blob/main/flake.nix)
+- [Fufexan Dotfiles](https://github.com/fufexan/dotfiles/blob/main/flake.nix)
+- [Bobbbay Dotfiles](https://github.com/Bobbbay/dotfiles/blob/master/flake.nix)
+- [Charlotte Dotfiles](https://github.com/chvp/nixos-config/blob/master/flake.nix)
 
 # How to use this flake #
 
 Example flake with all available attributes can be found [Here](https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/master/examples/fully-featured-flake.nix).
 
 And more realistic flake example can be found [Here](https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/master/examples/somewhat-realistic-flake.nix).
+
+Looking to add a kick-ass repl to your config? Create and import something along the lines of this:
+```nix
+{ inputs, ... }:
+
+{
+  environment.shellAliases = {
+    very-cool-nix-repl = "nix repl ${inputs.utils.lib.repl}";
+  };
+}
+
+```
+
 
 ```nix
 {
