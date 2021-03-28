@@ -1,5 +1,4 @@
 
-[![built with nix](https://builtwithnix.org/badge.svg)](https://builtwithnix.org)
 [![Discord](https://img.shields.io/discord/591914197219016707.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.com/invite/RbvHtGa)
 
 Need help? Createn an issue or ping @Gytis#0001 in discord server above.
