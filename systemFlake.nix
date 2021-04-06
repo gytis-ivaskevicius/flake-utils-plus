@@ -66,6 +66,8 @@ let
   genericConfigurationBuilder = name: value: (
     let
       system = if (value ? system) then value.system else defaultSystem;
+      modules = optionals (value ? modules) value.modules;
+      extraArgs = optionalAttrs (value ? extraArgs) value.extraArgs;
       channelName = if (value ? channelName) then value.channelName else "nixpkgs";
       selectedNixpkgs = self.pkgs."${system}"."${channelName}";
     in
@@ -85,8 +87,8 @@ let
         }
       ]
       ++ sharedModules
-      ++ (optionals (value ? modules) value.modules);
-      extraArgs = sharedExtraArgs // optionalAttrs (value ? extraArgs) value.extraArgs;
+      ++ modules;
+      extraArgs = sharedExtraArgs // extraArgs;
     }
   );
 in
@@ -102,10 +104,15 @@ otherArguments
         patches = patches;
       };
 
-    importChannel = name: value: import (patchChannel value.input (value.patches or [ ])) {
+    importChannel = name: value: import (patchChannel value.input (value.patches or [ ])) 
+    let
+      overlays = optionals (value ? overlaysBuilder) (value.overlaysBuilder pkgs);
+      config = optionalAttrs (value ? config) value.config;
+    in 
+    {
       inherit system;
-      overlays = sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ]);
-      config = channelsConfig // (if (value ? config) then value.config else { });
+      overlays = sharedOverlays ++ overlays;
+      config = channelsConfig // config;
     };
 
     pkgs = builtins.mapAttrs importChannel channels;
