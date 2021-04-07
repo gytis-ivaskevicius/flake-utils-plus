@@ -7,6 +7,7 @@
 
 , nixosConfigurations ? { }
 , sharedExtraArgs ? { }
+, defaultHostAttrs ? { }
 , nixosProfiles ? { } # will be deprecated soon, use nixosHosts, instead.
 , nixosHosts ? nixosProfiles
 , channels ? { }
@@ -34,6 +35,7 @@ let
     "sharedExtraArgs"
     "inputs"
     "nixosHosts"
+    "defaultHostAttrs"
     "channels"
     "channelsConfig"
     "self"
@@ -57,7 +59,10 @@ let
   getNixpkgs = profile: self.pkgs."${systemFromProfile profile}"."${channelNameFromProfile profile}";
 
   genericConfigurationBuilder = hostname: profile: (
-    let selectedNixpkgs = getNixpkgs profile; in
+    let
+      selectedNixpkgs = getNixpkgs profile;
+      profileAttrs = defaultHostAttrs // profile;
+    in
     {
       inherit (selectedNixpkgs) system;
       modules = [
@@ -73,8 +78,8 @@ let
         })
       ]
       ++ sharedModules
-      ++ (profile.modules or [ ]);
-      extraArgs = { inherit inputs; } // sharedExtraArgs // profile.extraArgs or { };
+      ++ (profileAttrs.modules or [ ]);
+      extraArgs = { inherit inputs; } // sharedExtraArgs // profileAttrs.extraArgs or { };
     }
   );
 in
