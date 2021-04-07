@@ -121,6 +121,6 @@ otherArguments
 )
 
   // {
-  nixosConfigurations = (builtins.mapAttrs nixosConfigurationBuilder nixosProfiles);
+  nixosConfigurations = builtins.mapAttrs nixosConfigurationBuilder nixosProfiles;
 }
 
