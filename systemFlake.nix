@@ -5,7 +5,6 @@
 , sharedExtraArgs ? { inherit inputs; }
 , supportedSystems ? flake-utils.lib.defaultSystems
 , inputs
-, nixosConfigurations ? { }
 , nixosProfiles ? { }
 , channels ? { }
 , channelsConfig ? { }
@@ -122,6 +121,6 @@ otherArguments
 )
 
   // {
-  nixosConfigurations = nixosConfigurations // (builtins.mapAttrs nixosConfigurationBuilder nixosProfiles);
+  nixosConfigurations = (builtins.mapAttrs nixosConfigurationBuilder nixosProfiles);
 }
 
