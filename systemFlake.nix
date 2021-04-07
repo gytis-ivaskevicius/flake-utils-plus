@@ -40,6 +40,8 @@ let
 
   inherit (flake-utils-plus.lib) eachSystem;
 
+  optionalAttrs = check: value: if check then value else { };
+
   otherArguments = builtins.removeAttrs args [
     "defaultSystem"
     "sharedExtraArgs"
@@ -73,15 +75,28 @@ let
     {
       inherit (selectedNixpkgs) system;
       modules = [
-        ({ pkgs, lib, ... }: {
-          networking.hostName = hostname;
+        ({ pkgs, lib, options, ... }: {
+          # 'mkMerge` to separate out each part into its own module
+          _type = "merge";
+          contents = [
+            (optionalAttrs (options ? networking.hostName) { 
+              networking.hostName = hostname; 
+            })
 
-          nixpkgs = {
-            inherit (selectedNixpkgs) overlays config system;
-          };
+            (if options ? nixpkgs then {
+              nixpkgs = {
+                inherit (selectedNixpkgs) overlays config system;
+              };
+            } else { _module.args.pkgs = selectedNixpkgs; })
 
-          system.configurationRevision = lib.mkIf (self ? rev) self.rev;
-          nix.package = lib.mkDefault pkgs.nixUnstable;
+            (optionalAttrs (options ? system.configurationRevision) {
+              system.configurationRevision = lib.mkIf (self ? rev) self.rev;
+            })
+
+            (optionalAttrs (options ? nix.package) { 
+              nix.package = lib.mkDefault pkgs.nixUnstable;
+            })
+          ];
         })
       ]
       ++ profile.modules;
@@ -109,7 +124,7 @@ otherArguments
 
     pkgs = builtins.mapAttrs importChannel channels;
 
-    optional = check: value: (if check != null then value else { });
+    optional = check: optionalAttrs (check != null);
   in
   { inherit pkgs; }
   // optional packagesBuilder { packages = packagesBuilder pkgs; }
