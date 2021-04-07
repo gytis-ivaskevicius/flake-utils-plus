@@ -7,7 +7,8 @@
 
 , nixosConfigurations ? { }
 , sharedExtraArgs ? { }
-, nixosProfiles ? { }
+, nixosProfiles ? { } # will be deprecated soon, use nixosHosts, instead.
+, nixosHosts ? nixosProfiles
 , channels ? { }
 , channelsConfig ? { }
 , sharedModules ? [ ]
@@ -32,7 +33,7 @@ let
     "defaultSystem"
     "sharedExtraArgs"
     "inputs"
-    "nixosProfiles"
+    "nixosHosts"
     "channels"
     "channelsConfig"
     "self"
@@ -109,6 +110,6 @@ otherArguments
 )
 
   // {
-  nixosConfigurations = nixosConfigurations // (builtins.mapAttrs nixosConfigurationBuilder nixosProfiles);
+  nixosConfigurations = nixosConfigurations // (builtins.mapAttrs nixosConfigurationBuilder nixosHosts);
 }
 

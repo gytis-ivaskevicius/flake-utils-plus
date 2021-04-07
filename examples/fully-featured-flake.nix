@@ -29,7 +29,7 @@
       # Supported systems, used for packages, apps, devShell and multiple other definitions. Defaults to `flake-utils.lib.defaultSystems`
       supportedSystems = [ "aarch64-linux" "x86_64-linux" ];
 
-      # Default architecture to be used for `nixosProfiles` defaults to "x86_64-linux"
+      # Default architecture to be used for `nixosHosts` defaults to "x86_64-linux"
       defaultSystem = "aarch64-linux";
 
       # Channel definitions. `channels.<name>.{input,overlaysBuilder,config,patches}`
@@ -66,7 +66,7 @@
       };
 
       # Profiles, gets parsed into `nixosConfigurations`
-      nixosProfiles = {
+      nixosHosts = {
         # Profile name / System hostname
         Morty = {
           # System architecture. Defaults to `defaultSystem` argument
@@ -95,7 +95,7 @@
         nur.overlay
       ];
 
-      # Shared modules/configurations between `nixosProfiles`
+      # Shared modules/configurations between `nixosHosts`
       sharedModules = [
         home-manager.nixosModules.home-manager
         # Sets sane `nix.*` defaults. Please refer to implementation/readme for more details.
