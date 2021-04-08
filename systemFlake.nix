@@ -1,7 +1,7 @@
 { flake-utils-plus }:
 
 { self
-, defaultSystem ? "x86_64-linux"
+, defaultSystem ? "x86_64-linux" # will be deprecated soon use defaultHostAttrs.system instead
 , supportedSystems ? flake-utils-plus.lib.defaultSystems
 , inputs
 
@@ -25,25 +25,37 @@
 }@args:
 
 let
-  evalHostArgs =
-    { channelName ? "nixpkgs"
-    , modules ? []
-    , system ? defaultSystem
-    , extraArgs ? {}
-    , ...
-    }: defaultHostAttrs
-      // { 
-        inherit channelName system; 
-        modules = sharedModules ++ modules;
-        extraArgs = sharedExtraArgs // extraArgs;
+  evalHostAttrs = let
+    defaultHostAttrs' =
+      { channelName ? "nixpkgs"
+      , system ? defaultSystem # replace with x86_64-linux eventually
+      , modules ? []
+      , extraArgs ? {}
+      }:
+      {
+        inherit channelName system;
+        modules = modules  ++ sharedModules;
+        extraArgs = extraArgs // sharedExtraArgs;
       };
+    defaultHostsAttrs_ = defaultHostAttrs' defaultHostAttrs;
+  in
+    { channelName ? defaultHostAttrs_.channelName
+    , system ? defaultHostAttrs_.system
+    , modules ? []
+    , extraArgs ? {}
+    }:
+    {
+      inherit channelName system;
+      modules = modules ++ defaultHostAttrs_.modules;
+      extraArgs = extraArgs // defaultHostAttrs_.extraArgs;
+    };
 
   inherit (flake-utils-plus.lib) eachSystem;
 
   optionalAttrs = check: value: if check then value else { };
 
   otherArguments = builtins.removeAttrs args [
-    "defaultSystem"
+    "defaultSystem" # TODO: deprecated, remove
     "sharedExtraArgs"
     "inputs"
     "nixosHosts"
