@@ -6,6 +6,7 @@
     unstable.url = github:nixos/nixpkgs/nixos-unstable;
     utils.url = github:gytis-ivaskevicius/flake-utils-plus;
 
+    nix-darwin.url = github:LnL7/nix-darwin;
     home-manager = {
       url = github:nix-community/home-manager/master;
       inputs.nixpkgs.follows = "nixpkgs";
@@ -13,7 +14,7 @@
   };
 
 
-  outputs = inputs@{ self, nixpkgs, unstable, utils, home-manager }:
+  outputs = inputs@{ self, nixpkgs, unstable, utils, nix-darwin, home-manager }:
     utils.lib.systemFlake {
 
       # `self` and `inputs` arguments are REQUIRED!!!!!!!!!!!!!!
@@ -56,6 +57,21 @@
         ];
       };
 
+      hosts."HostNameThree" = {
+        # This host will be exported under the flake's `darwinConfigurations` output
+        output = "darwinConfigurations";
+
+        # Build host with darwinSystem
+        builder = nix-darwin.lib.darwinSystem;
+
+        # This host uses `channels.unstable.{input,overlaysBuilder,config,patches}` attributes instead of `channels.nixpkgs.<...>`
+        channelName = "unstable";
+
+        # Host specific configuration. Same as `sharedModules`
+        modules = [
+          (import ./configurations/Morty.home.nix)
+        ];
+      };
 
 
 
