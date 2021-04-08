@@ -7,6 +7,7 @@
 
 , nixosConfigurations ? { }
 , sharedExtraArgs ? { }
+, defaultHostAttrs ? { }
 , nixosProfiles ? { } # will be deprecated soon, use nixosHosts, instead.
 , nixosHosts ? nixosProfiles
 , channels ? { }
@@ -24,18 +25,29 @@
 }@args:
 
 let
+  evalHostArgs =
+    { channelName ? "nixpkgs"
+    , modules ? []
+    , system ? defaultSystem
+    , extraArgs ? {}
+    , ...
+    }: defaultHostAttrs
+      // { 
+        inherit channelName system; 
+        modules = sharedModules ++ modules;
+        extraArgs = sharedExtraArgs // extraArgs;
+      };
+
   inherit (flake-utils-plus.lib) eachSystem;
 
   optionalAttrs = check: value: if check then value else { };
-
-  channelNameFromProfile = profile: profile.channelName or "nixpkgs";
-  systemFromProfile = profile: profile.system or defaultSystem;
 
   otherArguments = builtins.removeAttrs args [
     "defaultSystem"
     "sharedExtraArgs"
     "inputs"
     "nixosHosts"
+    "defaultHostAttrs"
     "channels"
     "channelsConfig"
     "self"
@@ -51,12 +63,12 @@ let
     "checksBuilder"
   ];
 
-  nixosConfigurationBuilder = hostname: profile: (
+  nixosConfigurationBuilder = hostname: profile: 
+    let hostAttrs = evalHostArgs profile; in
     # It would be nice to get `nixosSystem` reference from `selectedNixpkgs` but it is not possible at this moment
-    inputs."${channelNameFromProfile profile}".lib.nixosSystem (genericConfigurationBuilder hostname profile)
-  );
+    inputs."${hostAttrs.channelName}".lib.nixosSystem (genericConfigurationBuilder hostname hostAttrs);
 
-  getNixpkgs = profile: self.pkgs."${systemFromProfile profile}"."${channelNameFromProfile profile}";
+  getNixpkgs = profile: self.pkgs."${profile.system}"."${profile.channelName}";
 
   genericConfigurationBuilder = hostname: profile: (
     let selectedNixpkgs = getNixpkgs profile; in
@@ -87,9 +99,8 @@ let
           ];
         })
       ]
-      ++ sharedModules
-      ++ (profile.modules or [ ]);
-      extraArgs = { inherit inputs; } // sharedExtraArgs // profile.extraArgs or { };
+      ++ profile.modules;
+      extraArgs = { inherit inputs; } // profile.extraArgs;
     }
   );
 in
