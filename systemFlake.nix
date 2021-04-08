@@ -25,30 +25,23 @@
 }@args:
 
 let
-  evalHostAttrs = let
-    defaultHostAttrs' =
-      { channelName ? "nixpkgs"
-      , system ? defaultSystem # replace with x86_64-linux eventually
-      , modules ? []
-      , extraArgs ? {}
-      }:
-      {
-        inherit channelName system;
-        modules = modules  ++ sharedModules;
-        extraArgs = extraArgs // sharedExtraArgs;
-      };
-    defaultHostsAttrs_ = defaultHostAttrs' defaultHostAttrs;
-  in
-    { channelName ? defaultHostAttrs_.channelName
-    , system ? defaultHostAttrs_.system
+  # clean dirty api input / ensure for that all expected, but no extra attrs are present
+  validateHostAttrs = {
+      channelName ? null
+    , system ? null
     , modules ? []
     , extraArgs ? {}
-    }:
-    {
-      inherit channelName system;
-      modules = modules ++ defaultHostAttrs_.modules;
-      extraArgs = extraArgs // defaultHostAttrs_.extraArgs;
-    };
+  } @ args: { inherit channelName system modules extraArgs; };
+
+  mergeHostAttrs = defaultAttrs: attrs: let
+    defaultTo = lhs: rhs: if rhs != null then rhs else lhs;
+  in
+  {
+    channelName = defaultTo (defaultTo "nixpkgs" defaultAttrs.channelName) attrs.channelName;
+    system = defaultTo (defaultTo defaultSystem defaultAttrs.system) attrs.system; # replace deaultSystem with x86_64-linux
+    modules = modules ++ defaultAttrs.modules ++ sharedModules;
+    extraArgs = extraArgs // defaultAttrs.extraArgs // sharedExtraArgs;
+  };
 
   inherit (flake-utils-plus.lib) eachSystem;
 
@@ -76,7 +69,7 @@ let
   ];
 
   nixosConfigurationBuilder = hostname: profile: 
-    let hostAttrs = evalHostArgs profile; in
+    let hostAttrs = mergeHostAttrs (validateHostAttrs defaultHostAttrs) (validateHostAttrs profile); in
     # It would be nice to get `nixosSystem` reference from `selectedNixpkgs` but it is not possible at this moment
     inputs."${hostAttrs.channelName}".lib.nixosSystem (genericConfigurationBuilder hostname hostAttrs);
 
