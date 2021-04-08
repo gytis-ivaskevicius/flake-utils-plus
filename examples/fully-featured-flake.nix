@@ -65,6 +65,11 @@
         allowUnfree = true;
       };
 
+      # Passed to all hosts
+      defaultHostAttrs {
+        channelName = "unstable";
+      };
+
       # Profiles, gets parsed into `nixosConfigurations`
       nixosHosts = {
         # Profile name / System hostname
