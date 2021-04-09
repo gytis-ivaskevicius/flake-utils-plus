@@ -39,7 +39,19 @@
       ];
 
 
-
+      # Shared modules/configurations between `hosts`
+      hostDefaults = {
+        modules = [
+          home-manager.nixosModules.home-manager
+          # Sets sane `nix.*` defaults. Please refer to implementation/readme for more details.
+          utils.nixosModules.saneFlakeDefaults
+          (import ./modules)
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+          }
+        ];
+      };
 
 
       # Profiles, gets parsed into `nixosConfigurations`
@@ -74,10 +86,6 @@
         ];
       };
 
-
-
-
-
       overlay = import ./overlays;
 
       # Shared overlays between channels, gets applied to all `channels.<name>.input`
@@ -85,26 +93,6 @@
         # Overlay imported from `./overlays`. (Defined above)
         self.overlay
       ];
-
-
-
-
-
-      # Shared modules/configurations between `hosts`
-      hostDefaults = {
-        modules = [
-          home-manager.nixosModules.home-manager
-          # Sets sane `nix.*` defaults. Please refer to implementation/readme for more details.
-          utils.nixosModules.saneFlakeDefaults
-          (import ./modules)
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-          }
-        ];
-      };
-
-
 
     };
 }
