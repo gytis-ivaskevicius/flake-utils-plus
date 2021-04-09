@@ -33,23 +33,6 @@ let
     , extraArgs ? {}
   }: { inherit channelName system modules extraArgs; };
 
-  mergeHostAttrs = defaultAttrs: attrs: let
-    # convoluted nix-kell, but clean(er) english-german below :-)
-    _ = x: op: y: op x y;
-    oder = lhs: rhs: if lhs != null then lhs else rhs;
-
-    attrs.channelName' = _ attrs.channelName;
-    defaultAttrs.channelName' = _ defaultAttrs.channelName;
-    attrs.system' = _ attrs.system;
-    defaultAttrs.system' = _ defaultAttrs.system;
-  in
-  {
-    channelName = attrs.channelName' oder (defaultAttrs.channelName' oder "nixpkgs") ;
-    system = attrs.system' oder (defaultAttrs.system' oder defaultSystem) ; # replace deaultSystem with x86_64-linux
-    modules = modules ++ defaultAttrs.modules ++ sharedModules;
-    extraArgs = sharedExtraArgs // defaultAttrs.extraArgs // extraArgs;
-  };
-
   inherit (flake-utils-plus.lib) eachSystem;
 
   optionalAttrs = check: value: if check then value else { };
@@ -74,6 +57,23 @@ let
     "devShellBuilder"
     "checksBuilder"
   ];
+
+  mergeHostAttrs = defaultAttrs: attrs: let
+    # convoluted nix-kell, but clean(er) english-german below :-)
+    _ = x: op: y: op x y;
+    oder = lhs: rhs: if lhs != null then lhs else rhs;
+
+    attrs.channelName' = _ attrs.channelName;
+    defaultAttrs.channelName' = _ defaultAttrs.channelName;
+    attrs.system' = _ attrs.system;
+    defaultAttrs.system' = _ defaultAttrs.system;
+  in
+  {
+    channelName = attrs.channelName' oder (defaultAttrs.channelName' oder "nixpkgs") ;
+    system = attrs.system' oder (defaultAttrs.system' oder defaultSystem) ; # replace deaultSystem with x86_64-linux
+    modules = modules ++ defaultAttrs.modules ++ sharedModules;
+    extraArgs = sharedExtraArgs // defaultAttrs.extraArgs // extraArgs;
+  };
 
   nixosConfigurationBuilder = hostname: profile: 
     let hostAttrs = mergeHostAttrs (validateHostAttrs defaultHostAttrs) (validateHostAttrs profile); in
