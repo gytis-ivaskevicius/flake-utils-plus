@@ -25,20 +25,27 @@
 }@args:
 
 let
-  # clean dirty api input / ensure for that all expected, but no extra attrs are present
+  # ensure for that all expected, but no extra attrs are present
   validateHostAttrs = {
       channelName ? null
     , system ? null
     , modules ? []
     , extraArgs ? {}
-  } @ args: { inherit channelName system modules extraArgs; };
+  }: { inherit channelName system modules extraArgs; };
 
   mergeHostAttrs = defaultAttrs: attrs: let
-    defaultTo = lhs: rhs: if rhs != null then rhs else lhs;
+    # convoluted nix-kell, but clean(er) english-german below :-)
+    _ = x: op: y: op x y;
+    oder = lhs: rhs: if lhs != null then lhs else rhs;
+
+    attrs.channelName' = _ attrs.channelName;
+    defaultAttrs.channelName' = _ defaultAttrs.channelName;
+    attrs.system' = _ attrs.system;
+    defaultAttrs.system' = _ defaultAttrs.system;
   in
   {
-    channelName = defaultTo (defaultTo "nixpkgs" defaultAttrs.channelName) attrs.channelName;
-    system = defaultTo (defaultTo defaultSystem defaultAttrs.system) attrs.system; # replace deaultSystem with x86_64-linux
+    channelName = attrs.channelName' oder (defaultAttrs.channelName' oder "nixpkgs") ;
+    system = attrs.system' oder (defaultAttrs.system' oder defaultSystem) ; # replace deaultSystem with x86_64-linux
     modules = modules ++ defaultAttrs.modules ++ sharedModules;
     extraArgs = sharedExtraArgs // defaultAttrs.extraArgs // extraArgs;
   };
