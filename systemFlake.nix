@@ -1,13 +1,13 @@
 { flake-utils-plus }:
 
 { self
-, defaultSystem ? "x86_64-linux" # will be deprecated soon use defaultHostAttrs.system instead
+, defaultSystem ? "x86_64-linux" # will be deprecated soon use hostDefaults.system instead
 , supportedSystems ? flake-utils-plus.lib.defaultSystems
 , inputs
 
 , nixosConfigurations ? { }
 , sharedExtraArgs ? { }
-, defaultHostAttrs ? { }
+, hostDefaults ? { }
 , nixosProfiles ? { } # will be deprecated soon, use nixosHosts, instead.
 , nixosHosts ? nixosProfiles
 , channels ? { }
@@ -25,15 +25,31 @@
 }@args:
 
 let
+  inherit (flake-utils-plus.lib) eachSystem;
+
   # ensure for that all expected, but no extra attrs are present
-  validateHostAttrs = {
+  validateHost = {
       channelName ? null
     , system ? null
     , modules ? []
     , extraArgs ? {}
   }: { inherit channelName system modules extraArgs; };
 
-  inherit (flake-utils-plus.lib) eachSystem;
+  mergeHosts = lhs: rhs:
+  let
+    # convoluted nix-kell, but clean(er) english-german below :-)
+    _ = x: op: y: op x y;
+    oder = lhs: rhs: if lhs != null then lhs else rhs;
+
+    rhs' = { channelName = _ rhs.channelName; system = _ rhs.system; };
+    lhs' = { channelName = _ lhs.channelName; system = _ lhs.system; };
+  in 
+  {
+    channelName = rhs'.channelName oder (lhs'.channelName oder "nixpkgs") ;
+    system = rhs'.system oder (lhs'.system oder defaultSystem) ; # replace deaultSystem with x86_64-linux
+    modules = rhs.modules ++ lhs.modules ++ sharedModules;
+    extraArgs = sharedExtraArgs // lhs.extraArgs // rhs.extraArgs;
+  };
 
   optionalAttrs = check: value: if check then value else { };
 
@@ -42,7 +58,7 @@ let
     "sharedExtraArgs"
     "inputs"
     "nixosHosts"
-    "defaultHostAttrs"
+    "hostDefaults"
     "channels"
     "channelsConfig"
     "self"
@@ -58,32 +74,19 @@ let
     "checksBuilder"
   ];
 
-  mergeHostAttrs = defaultAttrs: attrs: let
-    # convoluted nix-kell, but clean(er) english-german below :-)
-    _ = x: op: y: op x y;
-    oder = lhs: rhs: if lhs != null then lhs else rhs;
+  nixosConfigurationBuilder = hostname: host:
+    let
+      host' =
+        mergeHosts (validateHost hostDefaults) (validateHost host);
+    in
+      # It would be nice to get `nixosSystem` reference from `selectedNixpkgs` but it is not possible at this moment
+      inputs."${host'.channelName}".lib.nixosSystem
+        (genericConfigurationBuilder hostname host');
 
-    attrs.channelName' = _ attrs.channelName;
-    defaultAttrs.channelName' = _ defaultAttrs.channelName;
-    attrs.system' = _ attrs.system;
-    defaultAttrs.system' = _ defaultAttrs.system;
-  in
-  {
-    channelName = attrs.channelName' oder (defaultAttrs.channelName' oder "nixpkgs") ;
-    system = attrs.system' oder (defaultAttrs.system' oder defaultSystem) ; # replace deaultSystem with x86_64-linux
-    modules = modules ++ defaultAttrs.modules ++ sharedModules;
-    extraArgs = sharedExtraArgs // defaultAttrs.extraArgs // extraArgs;
-  };
+  getNixpkgs = host: self.pkgs."${host.system}"."${host.channelName}";
 
-  nixosConfigurationBuilder = hostname: hostAttrs: 
-    let hostAttrs = mergeHostAttrs (validateHostAttrs defaultHostAttrs) (validateHostAttrs profile); in
-    # It would be nice to get `nixosSystem` reference from `selectedNixpkgs` but it is not possible at this moment
-    inputs."${hostAttrs.channelName}".lib.nixosSystem (genericConfigurationBuilder hostname hostAttrs);
-
-  getNixpkgs = hostAttrs: self.pkgs."${hostAttrs.system}"."${hostAttrs.channelName}";
-
-  genericConfigurationBuilder = hostname: hostAttrs: (
-    let selectedNixpkgs = getNixpkgs hostAttrs; in
+  genericConfigurationBuilder = hostname: host: (
+    let selectedNixpkgs = getNixpkgs host; in
     {
       inherit (selectedNixpkgs) system;
       modules = [
@@ -111,8 +114,8 @@ let
           ];
         })
       ]
-      ++ hostAttrs.modules;
-      extraArgs = { inherit inputs; } // hostAttrs.extraArgs;
+      ++ host.modules;
+      extraArgs = { inherit inputs; } // host.extraArgs;
     }
   );
 in
