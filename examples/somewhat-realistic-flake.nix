@@ -74,16 +74,18 @@
 
 
       # Shared modules/configurations between `nixosHosts`
-      sharedModules = [
-        home-manager.nixosModules.home-manager
-        # Sets sane `nix.*` defaults. Please refer to implementation/readme for more details.
-        utils.nixosModules.saneFlakeDefaults
-        (import ./modules)
-        {
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-        }
-      ];
+      defaultHostsAttrs = {
+        modules = [
+          home-manager.nixosModules.home-manager
+          # Sets sane `nix.*` defaults. Please refer to implementation/readme for more details.
+          utils.nixosModules.saneFlakeDefaults
+          (import ./modules)
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+          }
+        ];
+      };
 
 
 

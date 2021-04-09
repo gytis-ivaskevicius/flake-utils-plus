@@ -29,8 +29,43 @@
       # Supported systems, used for packages, apps, devShell and multiple other definitions. Defaults to `flake-utils.lib.defaultSystems`
       supportedSystems = [ "aarch64-linux" "x86_64-linux" ];
 
-      # Default architecture to be used for `nixosHosts` defaults to "x86_64-linux"
-      defaultSystem = "aarch64-linux";
+
+      # Default host settings.
+      defaultHostAttrs = {
+        # Default architecture to be used for `nixosHosts` defaults to "x86_64-linux"
+        system = "aarch64-linux";
+        # Default channel to be used for `nixosHosts` defaults to "nixpkgs"
+        channelName = "unstable";
+        # Extra arguments to be passed to modules. Merged with sharedExtraArgs on its left hand side and the host's extraArgs on its right hand side
+        extraArgs = { foo = "foo" };
+        # Default modules to be passed to all hosts. Equivalent to sharedModules (additive merge).
+        modules = [ ];
+      };
+
+      # Extra arguments to be passed to modules. Defaults to `{ inherit inputs; }`
+      sharedExtraArgs = { inherit utils inputs; };
+
+      # Shared modules/configurations between `nixosHosts`
+      sharedModules = [
+        home-manager.nixosModules.home-manager
+        # Sets sane `nix.*` defaults. Please refer to implementation/readme for more details.
+        utils.nixosModules.saneFlakeDefaults
+        (import ./modules)
+        {
+          home-manager.useGlobalPkgs = true;
+          home-manager.useUserPackages = true;
+        }
+      ];
+
+      # Shared overlays between channels, gets applied to all `channels.<name>.input`
+      sharedOverlays = [
+        # Overlay imported from `./overlays`. (Defined below)
+        self.overlays
+        # Nix User Repository overlay
+        nur.overlay
+      ];
+
+
 
       # Channel definitions. `channels.<name>.{input,overlaysBuilder,config,patches}`
       channels.nixpkgs = {
@@ -65,11 +100,6 @@
         allowUnfree = true;
       };
 
-      # Passed to all hosts
-      defaultHostAttrs {
-        channelName = "unstable";
-      };
-
       # Profiles, gets parsed into `nixosConfigurations`
       nixosHosts = {
         # Profile name / System hostname
@@ -88,30 +118,6 @@
           ];
         };
       };
-
-      # Extra arguments to be passed to modules. Defaults to `{ inherit inputs; }`
-      sharedExtraArgs = { inherit utils inputs; };
-
-      # Shared overlays between channels, gets applied to all `channels.<name>.input`
-      sharedOverlays = [
-        # Overlay imported from `./overlays`. (Defined below)
-        self.overlays
-        # Nix User Repository overlay
-        nur.overlay
-      ];
-
-      # Shared modules/configurations between `nixosHosts`
-      sharedModules = [
-        home-manager.nixosModules.home-manager
-        # Sets sane `nix.*` defaults. Please refer to implementation/readme for more details.
-        utils.nixosModules.saneFlakeDefaults
-        (import ./modules)
-        {
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-        }
-      ];
-
 
       # Evaluates to `packages.<system>.attributeKey = "attributeValue"`
       packagesBuilder = channels: { attributeKey = "attributeValue"; };
