@@ -75,15 +75,15 @@ let
     extraArgs = sharedExtraArgs // defaultAttrs.extraArgs // extraArgs;
   };
 
-  nixosConfigurationBuilder = hostname: profile: 
+  nixosConfigurationBuilder = hostname: hostAttrs: 
     let hostAttrs = mergeHostAttrs (validateHostAttrs defaultHostAttrs) (validateHostAttrs profile); in
     # It would be nice to get `nixosSystem` reference from `selectedNixpkgs` but it is not possible at this moment
     inputs."${hostAttrs.channelName}".lib.nixosSystem (genericConfigurationBuilder hostname hostAttrs);
 
-  getNixpkgs = profile: self.pkgs."${profile.system}"."${profile.channelName}";
+  getNixpkgs = hostAttrs: self.pkgs."${hostAttrs.system}"."${hostAttrs.channelName}";
 
-  genericConfigurationBuilder = hostname: profile: (
-    let selectedNixpkgs = getNixpkgs profile; in
+  genericConfigurationBuilder = hostname: hostAttrs: (
+    let selectedNixpkgs = getNixpkgs hostAttrs; in
     {
       inherit (selectedNixpkgs) system;
       modules = [
@@ -111,8 +111,8 @@ let
           ];
         })
       ]
-      ++ profile.modules;
-      extraArgs = { inherit inputs; } // profile.extraArgs;
+      ++ hostAttrs.modules;
+      extraArgs = { inherit inputs; } // hostAttrs.extraArgs;
     }
   );
 in
