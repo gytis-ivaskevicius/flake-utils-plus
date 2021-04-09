@@ -40,7 +40,7 @@ let
     channelName = defaultTo (defaultTo "nixpkgs" defaultAttrs.channelName) attrs.channelName;
     system = defaultTo (defaultTo defaultSystem defaultAttrs.system) attrs.system; # replace deaultSystem with x86_64-linux
     modules = modules ++ defaultAttrs.modules ++ sharedModules;
-    extraArgs = extraArgs // defaultAttrs.extraArgs // sharedExtraArgs;
+    extraArgs = sharedExtraArgs // defaultAttrs.extraArgs // extraArgs;
   };
 
   inherit (flake-utils-plus.lib) eachSystem;
