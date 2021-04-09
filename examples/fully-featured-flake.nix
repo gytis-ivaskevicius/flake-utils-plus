@@ -31,13 +31,13 @@
 
 
       # Default host settings.
-      defaultHostAttrs = {
+      hostDefaults = {
         # Default architecture to be used for `nixosHosts` defaults to "x86_64-linux"
         system = "aarch64-linux";
         # Default channel to be used for `nixosHosts` defaults to "nixpkgs"
         channelName = "unstable";
         # Extra arguments to be passed to modules. Merged with sharedExtraArgs on its left hand side and the host's extraArgs on its right hand side
-        extraArgs = { foo = "foo" };
+        extraArgs = { foo = "foo"; };
         # Default modules to be passed to all hosts. Equivalent to sharedModules (additive merge).
         modules = [ ];
       };
