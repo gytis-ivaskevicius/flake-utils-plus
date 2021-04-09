@@ -4,7 +4,8 @@
   inputs = {
     nixpkgs.url = github:nixos/nixpkgs/release-20.09;
     unstable.url = github:nixos/nixpkgs/nixos-unstable;
-    utils.url = github:gytis-ivaskevicius/flake-utils-plus;
+    # utils.url = github:gytis-ivaskevicius/flake-utils-plus;
+    utils.url = path:../../;
 
     nix-darwin.url = github:LnL7/nix-darwin;
     home-manager = {
@@ -43,7 +44,7 @@
 
       # Profiles, gets parsed into `nixosConfigurations`
       hosts.HostnameOne.modules = [
-        (import ./HostnameOneConfiguration.nix)
+        (import ./hosts/One.nix)
       ];
 
 
@@ -53,7 +54,7 @@
 
         # Host specific configuration. Same as `sharedModules`
         modules = [
-          (import ./configurations/Morty.host.nix)
+          (import ./hosts/Two.nix)
         ];
       };
 
@@ -82,7 +83,7 @@
       # Shared overlays between channels, gets applied to all `channels.<name>.input`
       sharedOverlays = [
         # Overlay imported from `./overlays`. (Defined above)
-        self.overlays
+        self.overlay
       ];
 
 
