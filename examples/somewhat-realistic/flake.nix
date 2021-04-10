@@ -9,7 +9,7 @@
 
     nix-darwin.url = github:LnL7/nix-darwin;
     home-manager = {
-      url = github:nix-community/home-manager/master;
+      url = github:nix-community/home-manager/release-20.09;
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -20,8 +20,6 @@
 
       # `self` and `inputs` arguments are REQUIRED!!!!!!!!!!!!!!
       inherit self inputs;
-
-
 
       # Channel definitions. `channels.<name>.{input,overlaysBuilder,config,patches}`
       channels.nixpkgs.input = nixpkgs;
