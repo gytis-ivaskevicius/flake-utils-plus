@@ -5,15 +5,16 @@
 , supportedSystems ? flake-utils-plus.lib.defaultSystems
 , inputs
 
-, nixosConfigurations ? { }
-, sharedExtraArgs ? { }
-, hostDefaults ? { }
-, nixosProfiles ? { } # will be deprecated soon, use nixosHosts, instead.
-, nixosHosts ? nixosProfiles
 , channels ? { }
 , channelsConfig ? { }
-, sharedModules ? [ ]
 , sharedOverlays ? [ ]
+
+, nixosConfigurations ? { } # deprecate soon, no longer used or works
+, hostDefaults ? { }
+, nixosProfiles ? { } # will be deprecated soon, use hosts, instead.
+, hosts ? nixosProfiles
+, sharedExtraArgs ? { }
+, sharedModules ? [ ]
 
 , packagesBuilder ? null
 , defaultPackageBuilder ? null

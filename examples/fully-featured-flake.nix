@@ -32,9 +32,9 @@
 
       # Default host settings.
       hostDefaults = {
-        # Default architecture to be used for `nixosHosts` defaults to "x86_64-linux"
+        # Default architecture to be used for `hosts` defaults to "x86_64-linux"
         system = "aarch64-linux";
-        # Default channel to be used for `nixosHosts` defaults to "nixpkgs"
+        # Default channel to be used for `hosts` defaults to "nixpkgs"
         channelName = "unstable";
         # Extra arguments to be passed to modules. Merged with sharedExtraArgs on its left hand side and the host's extraArgs on its right hand side
         extraArgs = { foo = "foo"; };
@@ -45,7 +45,7 @@
       # Extra arguments to be passed to modules. Defaults to `{ inherit inputs; }`
       sharedExtraArgs = { inherit utils inputs; };
 
-      # Shared modules/configurations between `nixosHosts`
+      # Shared modules/configurations between `hosts`
       sharedModules = [
         home-manager.nixosModules.home-manager
         # Sets sane `nix.*` defaults. Please refer to implementation/readme for more details.
@@ -101,7 +101,7 @@
       };
 
       # Profiles, gets parsed into `nixosConfigurations`
-      nixosHosts = {
+      hosts = {
         # Profile name / System hostname
         Morty = {
           # System architecture. Defaults to `defaultSystem` argument
