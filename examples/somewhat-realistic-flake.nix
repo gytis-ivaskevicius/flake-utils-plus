@@ -67,7 +67,7 @@
         # This host uses `channels.unstable.{input,overlaysBuilder,config,patches}` attributes instead of `channels.nixpkgs.<...>`
         channelName = "unstable";
 
-        # Host specific configuration. Same as `sharedModules`
+        # Host specific configuration.
         modules = [
           (import ./configurations/Morty.home.nix)
         ];
@@ -90,7 +90,7 @@
 
 
       # Shared modules/configurations between `hosts`
-      defaultHostsAttrs = {
+      hostDefaults = {
         modules = [
           home-manager.nixosModules.home-manager
           # Sets sane `nix.*` defaults. Please refer to implementation/readme for more details.
@@ -107,7 +107,6 @@
 
     };
 }
-
 
 
 
