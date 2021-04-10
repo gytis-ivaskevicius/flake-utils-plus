@@ -36,7 +36,8 @@ let
     , builder ? null
     , modules ? [ ]
     , extraArgs ? { }
-    }: { inherit channelName system output builder modules extraArgs; };
+    , specialArgs ? { }
+    }: { inherit channelName system output builder modules extraArgs specialArgs; };
 
   mergeHosts = lhs: rhs:
     let
@@ -64,6 +65,7 @@ let
       builder = rhs'.builder oder (lhs'.builder oder channels.${channelName}.input.lib.nixosSystem);
       modules = rhs.modules ++ lhs.modules ++ sharedModules;
       extraArgs = sharedExtraArgs // lhs.extraArgs // rhs.extraArgs;
+      specialArgs = lhs.specialArgs // rhs.specialArgs;
     };
 
   optionalAttrs = check: value: if check then value else { };
@@ -130,6 +132,7 @@ let
             ];
           })
         ] ++ host.modules;
+        specialArgs = host.specialArgs;
       };
     }
   );
