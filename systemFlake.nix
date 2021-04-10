@@ -122,10 +122,14 @@ let
               (optionalAttrs (options ? nix.package) {
                 nix.package = lib.mkDefault pkgs.nixUnstable;
               })
+
+              { # at this point we assume, that an evaluator at least
+                # uses nixpkgs.lib to evaluate modules.
+                _module.args = { inherit inputs; } // host.extraArgs;
+              }
             ];
           })
         ] ++ host.modules;
-        extraArgs = { inherit inputs; } // host.extraArgs;
       };
     }
   );
