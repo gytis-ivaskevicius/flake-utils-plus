@@ -41,12 +41,12 @@
 
 
       # Profiles, gets parsed into `nixosConfigurations`
-      nixosHosts.HostnameOne.modules = [
+      hosts.HostnameOne.modules = [
         (import ./HostnameOneConfiguration.nix)
       ];
 
 
-      nixosHosts.HostnameTwo = {
+      hosts.HostnameTwo = {
         # This host uses `channels.unstable.{input,overlaysBuilder,config,patches}` attributes instead of `channels.nixpkgs.<...>`
         channelName = "unstable";
 
@@ -73,7 +73,7 @@
 
 
 
-      # Shared modules/configurations between `nixosHosts`
+      # Shared modules/configurations between `hosts`
       defaultHostsAttrs = {
         modules = [
           home-manager.nixosModules.home-manager

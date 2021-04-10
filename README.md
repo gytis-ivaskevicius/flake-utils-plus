@@ -55,7 +55,7 @@ Looking to add a kick-ass repl to your config? Create and import something along
       # Supported systems, used for packages, apps, devShell and multiple other definitions. Defaults to `flake-utils.lib.defaultSystems`
       supportedSystems = [ "aarch64-linux" "x86_64-linux" ];
 
-      # Default architecture to be used for `nixosHosts` defaults to "x86_64-linux"
+      # Default architecture to be used for `hosts` defaults to "x86_64-linux"
       defaultSystem = "aarch64-linux";
 
       # Channel definitions. `channels.<name>.{input,overlaysBuilder,config,patches}`
@@ -80,7 +80,7 @@ Looking to add a kick-ass repl to your config? Create and import something along
       channelsConfig.allowUnfree = true;
 
       # Profiles, gets parsed into `nixosConfigurations`
-      nixosHosts = {
+      hosts = {
         # Profile name / System hostname
         FirstHost = {
           # System architecture. Defaults to `defaultSystem` argument
@@ -102,7 +102,7 @@ Looking to add a kick-ass repl to your config? Create and import something along
       # Shared overlays between channels, gets applied to all `channels.<name>.input`
       sharedOverlays = [ ];
 
-      # Shared modules/configurations between `nixosHosts`
+      # Shared modules/configurations between `hosts`
       sharedModules = [ utils.nixosModules.saneFlakeDefaults ];
 
 
