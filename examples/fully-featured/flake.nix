@@ -61,7 +61,7 @@
       # Shared overlays between channels, gets applied to all `channels.<name>.input`
       sharedOverlays = [
         # Overlay imported from `./overlays`. (Defined below)
-        self.overlays
+        self.overlay
         # Nix User Repository overlay
         nur.overlay
       ];
@@ -121,22 +121,22 @@
       };
 
       # Evaluates to `packages.<system>.attributeKey = "attributeValue"`
-      packagesBuilder = channels: { attributeKey = "attributeValue"; };
+      packagesBuilder = channels: { package = channels.nixpkgs.runCommandNoCC "package" {} "echo package > $out"; };
 
       # Evaluates to `defaultPackage.<system>.attributeKey = "attributeValue"`
-      defaultPackageBuilder = channels: { attributeKey = "attributeValue"; };
+      defaultPackageBuilder = channels: channels.nixpkgs.runCommandNoCC "package" {} "echo package > $out";
 
       # Evaluates to `apps.<system>.attributeKey = "attributeValue"`
-      appsBuilder = channels: { attributeKey = "attributeValue"; };
+      appsBuilder = channels: { package = { type = "app"; program = channels.nixpkgs.runCommandNoCC "package" {} "echo test > $out"; }; };
 
       # Evaluates to `defaultApp.<system>.attributeKey = "attributeValue"`
-      defaultAppBuilder = channels: { attributeKey = "attributeValue"; };
+      defaultAppBuilder = channels: { type = "app"; program = channels.nixpkgs.runCommandNoCC "package" {} "echo test > $out"; };
 
       # Evaluates to `devShell.<system>.attributeKey = "attributeValue"`
-      devShellBuilder = channels: { attributeKey = "attributeValue"; };
+      devShellBuilder = channels: channels.nixpkgs.mkShell { name = "devShell"; };
 
       # Evaluates to `checks.<system>.attributeKey = "attributeValue"`
-      checksBuilder = channels: { attributeKey = "attributeValue"; };
+      checksBuilder = channels: { check = channels.nixpkgs.runCommandNoCC "test" {} "echo test > $out"; };
 
       # All other values gets passed down to the flake
       overlay = import ./overlays;
