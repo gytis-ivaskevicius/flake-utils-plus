@@ -121,22 +121,22 @@
       };
 
       # Evaluates to `packages.<system>.attributeKey = "attributeValue"`
-      packagesBuilder = channels: { package = channels.nixpkgs.runCommandNoCC "package" {} "echo package > $out"; };
+      packagesBuilder = channels: { package = channels.nixpkgs.runCommandNoCC "package" { } "echo package > $out"; };
 
       # Evaluates to `defaultPackage.<system>.attributeKey = "attributeValue"`
-      defaultPackageBuilder = channels: channels.nixpkgs.runCommandNoCC "package" {} "echo package > $out";
+      defaultPackageBuilder = channels: channels.nixpkgs.runCommandNoCC "package" { } "echo package > $out";
 
       # Evaluates to `apps.<system>.attributeKey = "attributeValue"`
-      appsBuilder = channels: { package = { type = "app"; program = channels.nixpkgs.runCommandNoCC "package" {} "echo test > $out"; }; };
+      appsBuilder = channels: { package = { type = "app"; program = channels.nixpkgs.runCommandNoCC "package" { } "echo test > $out"; }; };
 
       # Evaluates to `defaultApp.<system>.attributeKey = "attributeValue"`
-      defaultAppBuilder = channels: { type = "app"; program = channels.nixpkgs.runCommandNoCC "package" {} "echo test > $out"; };
+      defaultAppBuilder = channels: { type = "app"; program = channels.nixpkgs.runCommandNoCC "package" { } "echo test > $out"; };
 
       # Evaluates to `devShell.<system>.attributeKey = "attributeValue"`
       devShellBuilder = channels: channels.nixpkgs.mkShell { name = "devShell"; };
 
       # Evaluates to `checks.<system>.attributeKey = "attributeValue"`
-      checksBuilder = channels: { check = channels.nixpkgs.runCommandNoCC "test" {} "echo test > $out"; };
+      checksBuilder = channels: { check = channels.nixpkgs.runCommandNoCC "test" { } "echo test > $out"; };
 
       # All other values gets passed down to the flake
       overlay = import ./overlays;
