@@ -5,7 +5,6 @@
     nixpkgs.url = github:nixos/nixpkgs/release-20.09;
     unstable.url = github:nixos/nixpkgs/nixos-unstable;
     nur.url = github:nix-community/NUR;
-    # utils.url = github:gytis-ivaskevicius/flake-utils-plus;
     utils.url = path:../../;
 
     home-manager = {
