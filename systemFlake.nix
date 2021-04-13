@@ -1,4 +1,4 @@
-{ flake-utils-plus }:
+{ flake-utils-plus, lib }:
 
 { self
 , defaultSystem ? "x86_64-linux" # will be deprecated soon use hostDefaults.system instead
@@ -134,9 +134,6 @@ let
     }
   );
 
-  mapAttrs' = f: set:
-    builtins.listToAttrs (map (attr: f attr set.${attr}) (builtins.attrNames set));
-
 in
 otherArguments
 
@@ -171,4 +168,4 @@ otherArguments
   # produces attrset in the shape of
   # { nixosConfigurations = {}; darwinConfigurations = {};  ... } 
   # according to profile.output or the default `nixosConfigurations`
-  // mapAttrs' configurationBuilder hosts
+  // lib.mapAttrs' configurationBuilder hosts

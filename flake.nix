@@ -2,8 +2,9 @@
   description = "Pure Nix flake utility functions";
 
   inputs.flake-utils.url = "github:numtide/flake-utils";
+  inputs.lib.url = "https://github.com/divnix/nixpkgs.lib";
 
-  outputs = { self, flake-utils }:
+  outputs = { self, flake-utils, lib }:
     let
       removeSuffix = suffix: str:
         let
@@ -24,7 +25,7 @@
       lib = flake-utils.lib // {
 
         repl = ./repl.nix;
-        systemFlake = import ./systemFlake.nix { flake-utils-plus = self; };
+        systemFlake = import ./systemFlake.nix { flake-utils-plus = self; inherit lib; };
 
         modulesFromList = paths: genAttrs'
           (path: {
