@@ -4,7 +4,6 @@
   inputs = {
     nixpkgs.url = github:nixos/nixpkgs/release-20.09;
     unstable.url = github:nixos/nixpkgs/nixos-unstable;
-    # utils.url = github:gytis-ivaskevicius/flake-utils-plus;
     utils.url = path:../../;
 
     nix-darwin.url = github:LnL7/nix-darwin;
@@ -21,6 +20,15 @@
       # `self` and `inputs` arguments are REQUIRED!!!!!!!!!!!!!!
       inherit self inputs;
 
+
+
+
+      # Shared overlays between channels, gets applied to all `channels.<name>.input`
+      sharedOverlays = [
+        # Overlay imported from `./overlays`. (Defined above)
+        self.overlay
+      ];
+
       # Channel definitions. `channels.<name>.{input,overlaysBuilder,config,patches}`
       channels.nixpkgs.input = nixpkgs;
       channels.unstable.input = unstable;
@@ -35,6 +43,10 @@
           inherit (channels.unstable) alacritty ranger jdk15_headless;
         })
       ];
+
+
+
+
 
 
       # Shared modules/configurations between `hosts`
@@ -84,13 +96,11 @@
         ];
       };
 
-      overlay = import ./overlays;
 
-      # Shared overlays between channels, gets applied to all `channels.<name>.input`
-      sharedOverlays = [
-        # Overlay imported from `./overlays`. (Defined above)
-        self.overlay
-      ];
+
+
+
+      overlay = import ./overlays;
 
     };
 }
