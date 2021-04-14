@@ -27,6 +27,7 @@
 
 let
   inherit (flake-utils-plus.lib) eachSystem;
+  inherit (builtins) foldl' mapAttrs removeAttrs attrValues;
 
   # ensure for that all expected, but no extra attrs are present
   validateHost =
@@ -66,14 +67,26 @@ let
       extraArgs = sharedExtraArgs // lhs.extraArgs // rhs.extraArgs;
     };
 
+  foldHosts = 
+    let 
+      mergeOutput = lhs: rhs:
+        let output = rhs.name; in
+        lhs // { 
+          # manually merge whats inside the output to prevent // override
+          ${output} = lhs.${output} or { } // rhs.value; 
+        };
+    in
+    foldl' mergeOutput { };
+
   optionalAttrs = check: value: if check then value else { };
 
-  otherArguments = builtins.removeAttrs args [
+  otherArguments = removeAttrs args [
     "defaultSystem" # TODO: deprecated, remove
     "sharedExtraArgs"
     "inputs"
     "hosts"
     "hostDefaults"
+    "nixosProfiles"
     "channels"
     "channelsConfig"
     "self"
@@ -134,9 +147,6 @@ let
     }
   );
 
-  mapAttrs' = f: set:
-    builtins.listToAttrs (map (attr: f attr set.${attr}) (builtins.attrNames set));
-
 in
 otherArguments
 
@@ -156,7 +166,7 @@ otherArguments
       config = channelsConfig // (value.config or { });
     };
 
-    pkgs = builtins.mapAttrs importChannel channels;
+    pkgs = mapAttrs importChannel channels;
 
     optional = check: optionalAttrs (check != null);
   in
@@ -171,4 +181,4 @@ otherArguments
   # produces attrset in the shape of
   # { nixosConfigurations = {}; darwinConfigurations = {};  ... } 
   # according to profile.output or the default `nixosConfigurations`
-  // mapAttrs' configurationBuilder hosts
+  // foldHosts (attrValues (mapAttrs configurationBuilder hosts))
