@@ -9,7 +9,6 @@
 , channelsConfig ? { }
 , sharedOverlays ? [ ]
 
-, nixosConfigurations ? { } # deprecate soon, no longer used or works
 , hostDefaults ? { }
 , nixosProfiles ? { } # will be deprecated soon, use hosts, instead.
 , hosts ? nixosProfiles
@@ -26,7 +25,7 @@
 }@args:
 
 let
-  inherit (flake-utils-plus.lib) eachSystem;
+  inherit (flake-utils-plus.lib) eachSystem patchChannel;
   inherit (builtins) foldl' mapAttrs removeAttrs attrValues;
 
   # ensure for that all expected, but no extra attrs are present
@@ -67,16 +66,13 @@ let
       extraArgs = sharedExtraArgs // lhs.extraArgs // rhs.extraArgs;
     };
 
-  foldHosts = 
-    let 
-      mergeOutput = lhs: rhs:
-        let output = rhs.name; in
-        lhs // { 
-          # manually merge whats inside the output to prevent // override
-          ${output} = lhs.${output} or { } // rhs.value; 
-        };
-    in
-    foldl' mergeOutput { };
+  foldHosts = foldl'
+    (lhs: rhs:
+      let output = rhs.name; in
+      # manually merge whats inside the output to prevent // override
+      lhs // { ${output} = lhs.${output} or { } // rhs.value; }
+    )
+    { };
 
   optionalAttrs = check: value: if check then value else { };
 
@@ -136,7 +132,8 @@ let
                 nix.package = lib.mkDefault pkgs.nixUnstable;
               })
 
-              { # at this point we assume, that an evaluator at least
+              {
+                # at this point we assume, that an evaluator at least
                 # uses nixpkgs.lib to evaluate modules.
                 _module.args = { inherit inputs; } // host.extraArgs;
               }
@@ -152,15 +149,7 @@ otherArguments
 
 // eachSystem supportedSystems (system:
   let
-    patchChannel = channel: patches:
-      if patches == [ ] then channel else
-      (import channel { inherit system; }).pkgs.applyPatches {
-        name = "nixpkgs-patched-${channel.shortRev}";
-        src = channel;
-        patches = patches;
-      };
-
-    importChannel = name: value: import (patchChannel value.input (value.patches or [ ])) {
+    importChannel = name: value: import (patchChannel system value.input (value.patches or [ ])) {
       inherit system;
       overlays = sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ]);
       config = channelsConfig // (value.config or { });
@@ -179,6 +168,6 @@ otherArguments
   // optional checksBuilder { checks = checksBuilder pkgs; }
 )
   # produces attrset in the shape of
-  # { nixosConfigurations = {}; darwinConfigurations = {};  ... } 
+  # { nixosConfigurations = {}; darwinConfigurations = {};  ... }
   # according to profile.output or the default `nixosConfigurations`
   // foldHosts (attrValues (mapAttrs configurationBuilder hosts))
