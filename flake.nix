@@ -14,6 +14,7 @@
         systemFlake = import ./systemFlake.nix { flake-utils-plus = self; };
 
         exporter = {
+          overlaysFromChannelsExporter = import ./overlaysFromChannelsExporter.nix { flake-utils-plus = self; };
           modulesFromListExporter = import ./modulesFromListExporter.nix { flake-utils-plus = self; };
         };
 
