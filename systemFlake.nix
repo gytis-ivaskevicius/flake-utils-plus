@@ -19,7 +19,7 @@
     extraArgs = sharedExtraArgs;
   }
 
-, packagesBuilder ? null
+, packagesBuilder ? (flake-utils-plus.lib.builder.packagesFromOverlayBuilderConstructor channels)
 , defaultPackageBuilder ? null
 , appsBuilder ? null
 , defaultAppBuilder ? null
