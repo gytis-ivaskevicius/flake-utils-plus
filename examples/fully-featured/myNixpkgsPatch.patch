@@ -1,0 +1,12 @@
+diff --git a/pkgs/top-level/all-packages.nix b/pkgs/top-level/all-packages.nix
+index 6dd393492c8..c8456afc28d 100644
+--- a/pkgs/top-level/all-packages.nix
++++ b/pkgs/top-level/all-packages.nix
+@@ -30930,4 +30930,6 @@ in
+   lc3tools = callPackage ../development/tools/lc3tools {};
+
+   zktree = callPackage ../applications/misc/zktree {};
++
++  flake-utils-plus-test = callPackage ../applications/misc/hello { };
+ }
+
