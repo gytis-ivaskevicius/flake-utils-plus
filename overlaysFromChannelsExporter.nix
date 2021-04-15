@@ -39,11 +39,11 @@
     overlayNames = overlay: attrNames ( overlay null null );
 
     extractAndNamespaceEachOverlay = channelName: overlay:
-      map (ovrlName:
+      map (overlayName:
         nameValuePair
-          ( pathStr [ channelName ovrlName ] )
+          ( pathStr [ channelName overlayName ] )
           ( final: prev: {
-            ${ovrlName} = (overlay final prev).${ovrlName};
+            ${overlayName} = (overlay final prev).${overlayName};
           })
       )
       (overlayNames overlay);
@@ -51,8 +51,8 @@
   in
     listToAttrs (
       concatMap (channelName:
-        concatMap (ovrl:
-          extractAndNamespaceEachOverlay channelName ovrl
+        concatMap (overlay:
+          extractAndNamespaceEachOverlay channelName overlay
         ) channels.${channelName}.overlays
       ) channelNames
     );
