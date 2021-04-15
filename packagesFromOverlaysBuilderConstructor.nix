@@ -43,7 +43,7 @@
     let
 
       inherit (flake-utils-plus.lib) flattenTree filterPackages;
-      inherit (builtins) attrNames mapAttrs attrValues concatStringSep concatMap any;
+      inherit (builtins) attrNames mapAttrs listToAttrs attrValues concatStringSep concatMap any;
       nameValuePair = name: value: { inherit name value; };
       filterAttrs = pred: set:
         listToAttrs (concatMap (name: let v = set.${name}; in if pred name v then [(nameValuePair name v)] else []) (attrNames set));
@@ -65,7 +65,7 @@
           allOverlays = concatMap (c: c.overlays) (attrValues channels);
 
           overlayNamesList = overlay:
-            attrsNames (overlay null null);
+            attrNames (overlay null null);
         in
           concatMap (o: overlayNamesList o) allOverlays;
 

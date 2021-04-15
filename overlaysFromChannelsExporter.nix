@@ -33,7 +33,7 @@
     inherit (builtins) mapAttrs attrNames concatMap listToAttrs;
     nameValuePair = name: value: { inherit name value; };
 
-    pathStr = builtins.concatStringsSep "/" path;
+    pathStr = path: builtins.concatStringsSep "/" path;
 
     channelNames = attrNames channels;
     overlayNames = overlay: attrNames ( overlay null null );
