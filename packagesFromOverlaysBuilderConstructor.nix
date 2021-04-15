@@ -42,67 +42,42 @@
     **/
     let
 
+      inherit (flake-utils-plus.lib) flattenTree filterPackages;
+      inherit (builtins) attrNames mapAttrs attrValues concatStringSep concatMap any;
+      nameValuePair = name: value: { inherit name value; };
+      filterAttrs = pred: set:
+        listToAttrs (concatMap (name: let v = set.${name}; in if pred name v then [(nameValuePair name v)] else []) (attrNames set));
+      hasPrefix =
+        pref:
+        str: builtins.substring 0 (builtins.stringLength pref) str == pref;
+
+
       # first, flatten and filter on valid packages (by nix flake check criterion)
-      pkgs' =
+      flattenedPackages =
         let
-
-          inherit (flake-utils-plus.lib) flattenTree filterPackages;
-          inherit (builtins) mapAttrs;
-
-          flattenTreeFilterSystem = pkgs:
-            let
-              f = system: tree: (filterPackages system (flattenTree tree));
-            in
-              mapAttrs f pkgs;
+          f = system: tree: (filterPackages system (flattenTree tree));
         in
-        flattenTreeFilterSystem pkgs;
+        mapAttrs f pkgs;
 
       # second, flatten all overlays' packages' keys into a single list
-      overlays' = channels:
+      flattendOverlaysNames =
         let
-
-          inherit (builtins) attrNames mapAttrs attrValues concatStringSep concatMap;
+          allOverlays = concatMap (c: c.overlays) (attrValues channels);
 
           overlayNamesList = overlay:
-            let
-              f = overlay:
-                attrsNames (overlay null null);
-            in
-              mapAttrs f overlay;
-
-          overlays = map (c: c.overlays) (attrValues channels);
-
-          flattendOverlaysNames =
-            let
-              f = _: overlays:
-                concatMap (o: overlayNamesList o) overlays;
-            in
-              concatMap f overlays;
-
+            attrsNames (overlay null null);
         in
-          flattendOverlaysNames;
+          concatMap (o: overlayNamesList o) allOverlays;
 
     in
       # finally, only retain those packages defined by overlays
-      let
-
-        nameValuePair = name: value: { inherit name value; };
-
-        filterAttrs = pred: set:
-          listToAttrs (concatMap (name: let v = set.${name}; in if pred name v then [(nameValuePair name v)] else []) (attrNames set));
-
-        hasPrefix =
-          pref:
-          str: builtins.substring 0 (builtins.stringLength pref) str == pref;
-
-      in
       # pkgs'.<system>.<prefix/flattend/tree/attributes>
       # overlays' = [ "prefix" ... ];
-      builtins.mapAttrs (_: pkgs:
-        filterAttrs (name:
-          builtins.any (overlay: builtins.hasPrefix name overlay) overlays'
+      mapAttrs (_: pkgs:
+        filterAttrs (pkgName:
+          any (overlayName: hasPrefix pkgName overlayName) flattendOverlaysNames
         ) pkgs
-      ) pkgs';
+      ) flattenedPackages;
 
   in
   overlayFromPackagesBuilder;
