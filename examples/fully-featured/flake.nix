@@ -120,7 +120,7 @@
       };
 
       # Evaluates to `packages.<system>.attributeKey = "attributeValue"`
-      packagesBuilder = channels: { package = channels.nixpkgs.runCommandNoCC "package" { } "echo package > $out"; };
+      packagesBuilder = channels: { inherit (channels.unstable) flake-utils-plus-test; };
 
       # Evaluates to `defaultPackage.<system>.attributeKey = "attributeValue"`
       defaultPackageBuilder = channels: channels.nixpkgs.runCommandNoCC "package" { } "echo package > $out";

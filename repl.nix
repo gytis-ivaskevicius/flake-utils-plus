@@ -6,6 +6,6 @@ in
 { inherit flake; }
 // flake
 // builtins
-// nixpkgs
+// flake.nixosConfigurations.${hostname}
 // nixpkgs.lib
-  // flake.nixosConfigurations.${hostname}
+  // nixpkgs
