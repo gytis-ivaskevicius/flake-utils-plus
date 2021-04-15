@@ -100,7 +100,7 @@
       # overlays' = [ "prefix" ... ];
       builtins.mapAttrs (_: pkgs:
         filterAttrs (name:
-          builtins.any (ovrl: builtins.hasPrefix name ovrl) overlays'
+          builtins.any (overlay: builtins.hasPrefix name overlay) overlays'
         ) pkgs
       ) pkgs';
 
