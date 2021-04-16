@@ -133,6 +133,7 @@
       checksBuilder = channels: { check = channels.nixpkgs.runCommandNoCC "test" { } "echo test > $out"; };
 
       # All other values gets passed down to the flake
+      checks.x86_64-linux.merge-with-checksBuilder-test = self.pkgs.x86_64-linux.nixpkgs.hello;
       overlay = import ./overlays;
       abc = 132;
       # etc

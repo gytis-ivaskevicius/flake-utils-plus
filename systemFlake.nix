@@ -124,29 +124,35 @@ let
   );
 
 in
-otherArguments
+mergeAny otherArguments (
 
-// eachSystem supportedSystems (system:
-  let
-    importChannel = name: value: import (patchChannel system value.input (value.patches or [ ])) {
-      inherit system;
-      overlays = sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ]);
-      config = channelsConfig // (value.config or { });
-    };
+  eachSystem supportedSystems
+    (system:
+      let
+        importChannel = name: value: import (patchChannel system value.input (value.patches or [ ])) {
+          inherit system;
+          overlays = sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ]);
+          config = channelsConfig // (value.config or { });
+        };
 
-    pkgs = mapAttrs importChannel channels;
+        pkgs = mapAttrs importChannel channels;
 
-    optional = check: optionalAttrs (check != null);
-  in
-  { inherit pkgs; }
-  // optional packagesBuilder { packages = packagesBuilder pkgs; }
-  // optional defaultPackageBuilder { defaultPackage = defaultPackageBuilder pkgs; }
-  // optional appsBuilder { apps = appsBuilder pkgs; }
-  // optional defaultAppBuilder { defaultApp = defaultAppBuilder pkgs; }
-  // optional devShellBuilder { devShell = devShellBuilder pkgs; }
-  // optional checksBuilder { checks = checksBuilder pkgs; }
-)
+        mkOutput = output: builder: {
+          ${output} = otherArguments.${output}.${system} or { }
+          // optionalAttrs (args ? ${builder}) (args.${builder} pkgs);
+        };
+
+      in
+      { inherit pkgs; }
+      // mkOutput "packages" "packagesBuilder"
+      // mkOutput "defaultPackage" "defaultPackageBuilder"
+      // mkOutput "apps" "appsBuilder"
+      // mkOutput "defaultApp" "defaultAppBuilder"
+      // mkOutput "devShell" "devShellBuilder"
+      // mkOutput "checks" "checksBuilder"
+    )
   # produces attrset in the shape of
   # { nixosConfigurations = {}; darwinConfigurations = {};  ... }
   # according to profile.output or the default `nixosConfigurations`
   // foldHosts (attrValues (mapAttrs configurationBuilder hosts))
+)
