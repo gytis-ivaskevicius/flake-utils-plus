@@ -40,7 +40,7 @@ let
     , builder ? channels.${channelName}.input.lib.nixosSystem
     , modules ? [ ]
     , extraArgs ? { }
-    # These are not part of the module system, so they can be used in `imports` lines without infinite recursion
+      # These are not part of the module system, so they can be used in `imports` lines without infinite recursion
     , specialArgs ? { }
     }: { inherit channelName system output builder modules extraArgs specialArgs; };
 
