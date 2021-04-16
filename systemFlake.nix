@@ -9,11 +9,15 @@
 , channelsConfig ? { }
 , sharedOverlays ? [ ]
 
-, hostDefaults ? { }
 , nixosProfiles ? { } # will be deprecated soon, use hosts, instead.
 , hosts ? nixosProfiles
-, sharedExtraArgs ? { }
-, sharedModules ? [ ]
+, sharedExtraArgs ? { } # deprecate soon, prefer hostDefaults
+, sharedModules ? [ ] # deprecate soon, prefer hostDefaults
+, hostDefaults ? {
+    system = defaultSystem;
+    modules = sharedModules;
+    extraArgs = sharedExtraArgs;
+  }
 
 , packagesBuilder ? null
 , defaultPackageBuilder ? null
@@ -26,59 +30,35 @@
 
 let
   inherit (flake-utils-plus.lib) eachSystem patchChannel;
-  inherit (builtins) foldl' mapAttrs removeAttrs attrValues;
+  inherit (builtins) foldl' mapAttrs removeAttrs attrValues isAttrs isList;
 
-  # ensure for that all expected, but no extra attrs are present
-  validateHost =
-    { channelName ? null
-    , system ? null
-    , output ? null
-    , builder ? null
+  # set defaults and validate host arguments
+  evalHostArgs =
+    { channelName ? "nixpkgs"
+    , system ? "x86_64-linux"
+    , output ? "nixosConfigurations"
+    , builder ? channels.${channelName}.input.lib.nixosSystem
     , modules ? [ ]
     , extraArgs ? { }
     }: { inherit channelName system output builder modules extraArgs; };
 
-  mergeHosts = lhs: rhs:
-    let
-      # convoluted nix-kell, but clean(er) english-german below :-)
-      _ = x: op: y: op x y;
-      oder = lhs: rhs: if lhs != null then lhs else rhs;
+  # recursively merge attribute sets and lists up to a certain depth
+  mergeAny = lhs: rhs:
+    lhs // mapAttrs
+      (name: value:
+        if isAttrs value then lhs.${name} or { } // value
+        else if isList value then lhs.${name} or [ ] ++ value
+        else value
+      )
+      rhs;
 
-      rhs' = {
-        channelName = _ rhs.channelName;
-        system = _ rhs.system;
-        output = _ rhs.output;
-        builder = _ rhs.builder;
-      };
-      lhs' = {
-        channelName = _ lhs.channelName;
-        system = _ lhs.system;
-        output = _ lhs.output;
-        builder = _ lhs.builder;
-      };
-    in
-    rec {
-      channelName = rhs'.channelName oder (lhs'.channelName oder "nixpkgs");
-      system = rhs'.system oder (lhs'.system oder defaultSystem); # replace deaultSystem with x86_64-linux
-      output = rhs'.output oder (lhs'.output oder "nixosConfigurations");
-      builder = rhs'.builder oder (lhs'.builder oder channels.${channelName}.input.lib.nixosSystem);
-      modules = rhs.modules ++ lhs.modules ++ sharedModules;
-      extraArgs = sharedExtraArgs // lhs.extraArgs // rhs.extraArgs;
-    };
-
-  foldHosts = foldl'
-    (lhs: rhs:
-      let output = rhs.name; in
-      # manually merge whats inside the output to prevent // override
-      lhs // { ${output} = lhs.${output} or { } // rhs.value; }
-    )
-    { };
+  foldHosts = foldl' mergeAny { };
 
   optionalAttrs = check: value: if check then value else { };
 
   otherArguments = removeAttrs args [
     "defaultSystem" # TODO: deprecated, remove
-    "sharedExtraArgs"
+    "sharedExtraArgs" # deprecated
     "inputs"
     "hosts"
     "hostDefaults"
@@ -86,7 +66,7 @@ let
     "channels"
     "channelsConfig"
     "self"
-    "sharedModules"
+    "sharedModules" # deprecated
     "sharedOverlays"
     "supportedSystems"
 
@@ -103,11 +83,10 @@ let
   configurationBuilder = hostname: host': (
     let
       selectedNixpkgs = getNixpkgs host;
-      host = mergeHosts (validateHost hostDefaults) (validateHost host');
+      host = evalHostArgs (mergeAny hostDefaults host');
     in
     {
-      name = host.output;
-      value.${hostname} = host.builder {
+      ${host.output}.${hostname} = host.builder {
         inherit (selectedNixpkgs) system;
         modules = [
           ({ pkgs, lib, options, ... }: {
@@ -145,29 +124,35 @@ let
   );
 
 in
-otherArguments
+mergeAny otherArguments (
 
-// eachSystem supportedSystems (system:
-  let
-    importChannel = name: value: import (patchChannel system value.input (value.patches or [ ])) {
-      inherit system;
-      overlays = sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ]);
-      config = channelsConfig // (value.config or { });
-    };
+  eachSystem supportedSystems
+    (system:
+      let
+        importChannel = name: value: import (patchChannel system value.input (value.patches or [ ])) {
+          inherit system;
+          overlays = sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ]);
+          config = channelsConfig // (value.config or { });
+        };
 
-    pkgs = mapAttrs importChannel channels;
+        pkgs = mapAttrs importChannel channels;
 
-    optional = check: optionalAttrs (check != null);
-  in
-  { inherit pkgs; }
-  // optional packagesBuilder { packages = packagesBuilder pkgs; }
-  // optional defaultPackageBuilder { defaultPackage = defaultPackageBuilder pkgs; }
-  // optional appsBuilder { apps = appsBuilder pkgs; }
-  // optional defaultAppBuilder { defaultApp = defaultAppBuilder pkgs; }
-  // optional devShellBuilder { devShell = devShellBuilder pkgs; }
-  // optional checksBuilder { checks = checksBuilder pkgs; }
-)
+        mkOutput = output: builder: {
+          ${output} = otherArguments.${output}.${system} or { }
+          // optionalAttrs (args ? ${builder}) (args.${builder} pkgs);
+        };
+
+      in
+      { inherit pkgs; }
+      // mkOutput "packages" "packagesBuilder"
+      // mkOutput "defaultPackage" "defaultPackageBuilder"
+      // mkOutput "apps" "appsBuilder"
+      // mkOutput "defaultApp" "defaultAppBuilder"
+      // mkOutput "devShell" "devShellBuilder"
+      // mkOutput "checks" "checksBuilder"
+    )
   # produces attrset in the shape of
   # { nixosConfigurations = {}; darwinConfigurations = {};  ... }
   # according to profile.output or the default `nixosConfigurations`
   // foldHosts (attrValues (mapAttrs configurationBuilder hosts))
+)
