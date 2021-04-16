@@ -1,24 +1,25 @@
-{ flake-utils-plus }: let
+{ flake-utils-plus }:
+let
 
   modulesFromListExporter = paths:
     /**
-    Synopsis: modulesFromListExporter _paths_
+      Synopsis: modulesFromListExporter _paths_
 
-    paths:    [ <path> <path> ]
+      paths:    [ <path> <path> ]
 
-    Returns an attribute set of modules from a list of paths by converting
-    the path's basename into the attribute key.
+      Returns an attribute set of modules from a list of paths by converting
+      the path's basename into the attribute key.
 
-    Example:
+      Example:
 
-    paths:    [ ./path/to/moduleA.nix ./path/to/moduleBfolder ]
+      paths:    [ ./path/to/moduleA.nix ./path/to/moduleBfolder ]
 
-    {
+      {
       moduleA = import ./path/to/moduleA.nix;
       moduleBfolder = import ./path/to/moduleBfolder;
-    }
+      }
 
-    **/
+      **/
 
     let
 
@@ -36,12 +37,12 @@
 
     in
 
-      genAttrs'
-        (path: {
-          name = removeSuffix ".nix" (baseNameOf path);
-          value = import path;
-        })
-        paths;
+    genAttrs'
+      (path: {
+        name = removeSuffix ".nix" (baseNameOf path);
+        value = import path;
+      })
+      paths;
 
 in
 modulesFromListExporter
