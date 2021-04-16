@@ -15,7 +15,9 @@ This flake provides two main features (visible from `flake.nix`):
 
 - `nixosModules.saneFlakeDefaults` - Configures `nix.*` attributes. Generates `nix.nixPath`/`nix.registry` from flake `inputs`, sets `pkgs.nixUnstable` as the default also enables `ca-references` and `flakes`.
 - `lib.systemFlake { ... }` - Generates a system flake that may then be built.
-- `lib.modulesFromList [ ./a.nix ./b.nix ]` - Generates modules attributes which looks like this `{ a = import ./a.nix; b = import ./b.nix; }`.
+- `lib.exporter.modulesFromListExporter [ ./a.nix ./b.nix ]` - Generates modules attributes which looks like this `{ a = import ./a.nix; b = import ./b.nix; }`.
+- `lib.exporter.overlaysFromChannelsExporter channels` - Collects all overlays from channels and exports them as an appropriately namespaced attribute set. Users can instantiate with their nixpkgs version.
+- `lib.builder.packagesFromOverlayBuilderConstructor channels pkgs` - Similar to the overlay generator, but outputs them as packages, instead. Users can use your cache.
 
 
 # Examples #
