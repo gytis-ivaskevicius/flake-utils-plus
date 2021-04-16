@@ -40,7 +40,8 @@ let
     , builder ? channels.${channelName}.input.lib.nixosSystem
     , modules ? [ ]
     , extraArgs ? { }
-    }: { inherit channelName system output builder modules extraArgs; };
+    , specialArgs ? { }
+    }: { inherit channelName system output builder modules extraArgs specialArgs; };
 
   # recursively merge attribute sets and lists up to a certain depth
   mergeAny = lhs: rhs:
@@ -119,6 +120,7 @@ let
             ];
           })
         ] ++ host.modules;
+        specialArgs = host.specialArgs;
       };
     }
   );
