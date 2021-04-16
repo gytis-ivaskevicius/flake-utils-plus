@@ -74,7 +74,7 @@
         # This host uses `channels.unstable.{input,overlaysBuilder,config,patches}` attributes instead of `channels.nixpkgs.<...>`
         channelName = "unstable";
 
-        # Host specific configuration. Same as `sharedModules`
+        # Host specific configuration.
         modules = [
           (import ./hosts/Two.nix)
         ];

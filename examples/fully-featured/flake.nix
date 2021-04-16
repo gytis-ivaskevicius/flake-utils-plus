@@ -36,26 +36,21 @@
         system = "aarch64-linux";
         # Default channel to be used for `hosts` defaults to "nixpkgs"
         channelName = "unstable";
-        # Extra arguments to be passed to modules. Merged with sharedExtraArgs on its left hand side and the host's extraArgs on its right hand side
-        extraArgs = { foo = "foo"; };
-        # Default modules to be passed to all hosts. Equivalent to sharedModules (additive merge).
-        modules = [ ];
+        # Extra arguments to be passed to modules. Merged with host's extraArgs
+        extraArgs = { inherit utils inputs; foo = "foo"; };
+        # Default modules to be passed to all hosts.
+        modules = [
+          home-manager.nixosModules.home-manager
+          # Sets sane `nix.*` defaults. Please refer to implementation/readme for more details.
+          utils.nixosModules.saneFlakeDefaults
+          (import ./modules)
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+          }
+        ];
+
       };
-
-      # Extra arguments to be passed to modules. Defaults to `{ inherit inputs; }`
-      sharedExtraArgs = { inherit utils inputs; };
-
-      # Shared modules/configurations between `hosts`
-      sharedModules = [
-        home-manager.nixosModules.home-manager
-        # Sets sane `nix.*` defaults. Please refer to implementation/readme for more details.
-        utils.nixosModules.saneFlakeDefaults
-        (import ./modules)
-        {
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-        }
-      ];
 
       # Shared overlays between channels, gets applied to all `channels.<name>.input`
       sharedOverlays = [
