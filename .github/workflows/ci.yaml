@@ -17,35 +17,35 @@ jobs:
           extra_nix_config: experimental-features = nix-command flakes
 
       - name: Check Nix parsing
-        run: find . -name "*.nix" -exec nix-instantiate --parse --quiet {} >/dev/null +
-
-      - name: Run `nix flake check`
-        run: cd examples/fully-featured && nix flake check --show-trace
-
-      - name: Run `nix flake show`
-        run: cd examples/fully-featured && nix flake show --show-trace
-
-      - name: Build Morty configuration
-        run: cd examples/fully-featured && nix build .#nixosConfigurations.Morty.config.system.build.toplevel --dry-run
-
-      - name: Build Rick configuration
-        run: cd examples/fully-featured && nix build .#someConfigurations.Rick.config.system.build.toplevel --dry-run
-
-      - name: Build Summer checks
-        run: cd examples/fully-featured && nix build .#checks.x86_64-linux.summerHasUnfreeConfigured && nix build .#checks.x86_64-linux.summerHasPackageOverridesConfigured && nix build .#checks.x86_64-linux.summerHasCustomModuleConfigured
-
-      - name: Run `nix flake check`
-        run: cd examples/somewhat-realistic && nix flake check --show-trace
-
-      - name: Run `nix flake show`
-        run: cd examples/somewhat-realistic && nix flake show --show-trace
-
-      - name: Build HostnameOne configuration
-        run: cd examples/somewhat-realistic && nix build .#nixosConfigurations.HostnameOne.config.system.build.toplevel --dry-run
+        run: nix develop --command evalnix
 
       - name: Check Nix formatting
-        run: nix shell nixpkgs\#nixpkgs-fmt -c nixpkgs-fmt --check .
+        run: nix develop --command fmt --check
 
-      - name: Build HostnameThree configuration
-        run: cd examples/somewhat-realistic && nix build .#darwinConfigurations.HostnameThree.config.system.build.toplevel --dry-run
+      - name: Run `nix flake check` (fully featured example)
+        run: nix develop --command "nix-flake-check-ff --show-trace"
+
+      - name: Run `nix flake show` (fully featured example)
+        run: nix develop --command "nix-flake-show-ff show --show-trace"
+
+      - name: Build Morty configuration (fully featured example)
+        run: nix develop --command nix-build-morty-ff
+
+      - name: Build Rick configuration (fully featured example)
+        run: nix develop --command nix-build-rick-ff
+
+      - name: Build Summer checks (fully featured example)
+        run: nix develop --command nix-build-summer-ff
+
+      - name: Run `nix flake check` (somewhat realistic example)
+        run: nix develop --command "nix-flake-check-rr-example --show-trace"
+
+      - name: Run `nix flake show` (somewhat realistic example)
+        run: nix develop --command "nix-flake-show-rr-example --show-trace"
+
+      - name: Build HostnameOne configuration (somewhat realistic example)
+        run: nix develop --command nix-build-hostnameone-rr-example
+
+      - name: Build HostnameThree configuration (somewhat realistic example)
+        run: nix develop --command nix-build-hostnamethree-rr-example
 
