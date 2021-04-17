@@ -86,12 +86,14 @@ let
     let
       selectedNixpkgs = getNixpkgs host;
       host = evalHostArgs (mergeAny hostDefaults host');
+      channelValue = channels.${host.channelName};
+      patchedChannel = patchChannel host.system channelValue.input (channelValue.patches or [ ]);
     in
     {
       ${host.output}.${hostname} = host.builder {
-        inherit (selectedNixpkgs) system;
+        inherit (host) system;
         modules = [
-          ({ pkgs, lib, options, ... }: {
+          ({ pkgs, lib, options, config, ... }: {
             # 'mkMerge` to separate out each part into its own module
             _type = "merge";
             contents = [
@@ -99,11 +101,13 @@ let
                 networking.hostName = hostname;
               })
 
-              (if options ? nixpkgs then {
-                nixpkgs = {
-                  inherit (selectedNixpkgs) overlays config system;
+              (optionalAttrs (options ? nixpkgs) {
+                nixpkgs.pkgs = import patchedChannel {
+                  inherit (host) system;
+                  overlays = sharedOverlays ++ (if (channelValue ? overlaysBuilder) then (channelValue.overlaysBuilder pkgs) else [ ]);
+                  config = channelsConfig // (channelValue.config or { }) // config.nixpkgs.config;
                 };
-              } else { _module.args.pkgs = selectedNixpkgs; })
+              })
 
               (optionalAttrs (options ? system.configurationRevision) {
                 system.configurationRevision = lib.mkIf (self ? rev) self.rev;
