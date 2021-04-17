@@ -140,11 +140,13 @@ mergeAny otherArguments (
 
         pkgs = mapAttrs importChannel channels;
 
-        mkOutput = output: builder: {
-          ${output} = otherArguments.${output}.${system} or { }
-          // optionalAttrs (args ? ${builder}) (args.${builder} pkgs);
-        };
-
+        mkOutput = output: builder:
+          mergeAny
+            # prevent override of nested outputs in otherArguments
+            (optionalAttrs (otherArguments ? ${output}.${system})
+              { ${output} = otherArguments.${output}.${system}; })
+            (optionalAttrs (args ? ${builder})
+              { ${output} = args.${builder} pkgs; });
       in
       { inherit pkgs; }
       // mkOutput "packages" "packagesBuilder"
