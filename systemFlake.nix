@@ -90,10 +90,8 @@ let
       patchedChannel = patchChannel host.system channelValue.input (channelValue.patches or [ ]);
     in
     {
-      ${host.output}.${hostname} = host.builder {
+      ${host.output}.${hostname} = host.builder ({
         inherit (host) system;
-        lib = import (patchedChannel + "/lib");
-        baseModules = import (patchedChannel + "/nixos/modules/module-list.nix");
         modules = [
           ({ pkgs, lib, options, config, ... }: {
             # 'mkMerge` to separate out each part into its own module
@@ -127,8 +125,12 @@ let
             ];
           })
         ] ++ host.modules;
+        specialArgs = host.specialArgs;
+      } // (optionalAttrs (host.output == "nixosConfigurations") {
+        lib = import (patchedChannel + "/lib");
+        baseModules = import (patchedChannel + "/nixos/modules/module-list.nix");
         specialArgs = { modulesPath = builtins.toString (patchedChannel + "/nixos/modules"); } // host.specialArgs;
-      };
+      }));
     }
   );
 
