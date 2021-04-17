@@ -101,13 +101,13 @@ let
                 networking.hostName = hostname;
               })
 
-              (optionalAttrs (options ? nixpkgs) {
+              (if options ? nixpkgs then {
                 nixpkgs.pkgs = import patchedChannel {
                   inherit (host) system;
                   overlays = sharedOverlays ++ (if (channelValue ? overlaysBuilder) then (channelValue.overlaysBuilder pkgs) else [ ]);
                   config = channelsConfig // (channelValue.config or { }) // config.nixpkgs.config;
                 };
-              })
+              } else { _module.args.pkgs = selectedNixpkgs; })
 
               (optionalAttrs (options ? system.configurationRevision) {
                 system.configurationRevision = lib.mkIf (self ? rev) self.rev;
