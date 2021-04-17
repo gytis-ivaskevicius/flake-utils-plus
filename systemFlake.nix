@@ -92,6 +92,8 @@ let
     {
       ${host.output}.${hostname} = host.builder {
         inherit (host) system;
+        lib = import (patchedChannel + "/lib");
+        baseModules = import (patchedChannel + "/nixos/modules/module-list.nix");
         modules = [
           ({ pkgs, lib, options, config, ... }: {
             # 'mkMerge` to separate out each part into its own module
@@ -104,7 +106,7 @@ let
               (if options ? nixpkgs then {
                 nixpkgs.pkgs = import patchedChannel {
                   inherit (host) system;
-                  overlays = sharedOverlays ++ (if (channelValue ? overlaysBuilder) then (channelValue.overlaysBuilder pkgs) else [ ]);
+                  overlays = sharedOverlays ++ (if (channelValue ? overlaysBuilder) then (channelValue.overlaysBuilder self.pkgs) else [ ]);
                   config = channelsConfig // (channelValue.config or { }) // config.nixpkgs.config;
                 };
               } else { _module.args.pkgs = selectedNixpkgs; })
@@ -125,7 +127,7 @@ let
             ];
           })
         ] ++ host.modules;
-        specialArgs = host.specialArgs;
+        specialArgs = { modulesPath = builtins.toString (patchedChannel + "/nixos/modules"); } // host.specialArgs;
       };
     }
   );
