@@ -33,7 +33,7 @@
       # Default host settings.
       hostDefaults = {
         # Default architecture to be used for `hosts` defaults to "x86_64-linux"
-        system = "aarch64-linux";
+        system = "x86_64-linux";
         # Default channel to be used for `hosts` defaults to "nixpkgs"
         channelName = "unstable";
         # Extra arguments to be passed to modules. Merged with host's extraArgs
