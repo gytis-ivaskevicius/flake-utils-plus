@@ -119,7 +119,7 @@
       };
 
       # Evaluates to `packages.<system>.attributeKey = "attributeValue"`
-      packagesBuilder = channels: { inherit (channels.unstable) alacritty; };
+      packagesBuilder = channels: { inherit (channels.unstable) coreutils; };
 
       # Evaluates to `defaultPackage.<system>.attributeKey = "attributeValue"`
       defaultPackageBuilder = channels: channels.nixpkgs.runCommandNoCC "package" { } "echo package > $out";
