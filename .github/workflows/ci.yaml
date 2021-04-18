@@ -30,6 +30,7 @@ jobs:
       - uses: cachix/install-nix-action@v13
         with:
           nix_path: nixpkgs=channel:nixos-unstable
+          install_url: https://github.com/numtide/nix-flakes-installer/releases/download/nix-3.0pre20201007_5257a25/install
           extra_nix_config: experimental-features = nix-command flakes
       - name: Run `nix flake check`
         run: cd examples/fully-featured && nix flake check --show-trace
@@ -47,6 +48,7 @@ jobs:
       - uses: cachix/install-nix-action@v13
         with:
           nix_path: nixpkgs=channel:nixos-unstable
+          install_url: https://github.com/numtide/nix-flakes-installer/releases/download/nix-3.0pre20201007_5257a25/install
           extra_nix_config: experimental-features = nix-command flakes
       - name: Run `nix flake check`
         run: cd examples/somewhat-realistic && nix flake check --show-trace
