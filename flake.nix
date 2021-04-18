@@ -4,23 +4,30 @@
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
   outputs = { self, flake-utils }:
+    let
+      fupArgs = { flake-utils-plus = self; };
+      systemFlake = import ./systemFlake.nix fupArgs;
+      packagesFromOverlaysBuilderConstructor = import ./packagesFromOverlaysBuilderConstructor.nix fupArgs;
+      overlaysFromChannelsExporter = import ./overlaysFromChannelsExporter.nix fupArgs;
+      modulesFromList = import ./moduleFromListExporter.nix fupArgs;
+    in
     rec {
 
       nixosModules.saneFlakeDefaults = import ./modules/saneFlakeDefaults.nix;
 
       lib = flake-utils.lib // {
-
-        repl = ./repl.nix;
-        systemFlake = import ./systemFlake.nix { flake-utils-plus = self; };
+        # modulesFromList is deprecated, will be removed in future releases
+        inherit systemFlake modulesFromList;
 
         builder = {
-          packagesFromOverlaysBuilderConstructor = import ./packagesFromOverlaysBuilderConstructor.nix { flake-utils-plus = self; };
+          inherit packagesFromOverlaysBuilderConstructor;
         };
 
         exporter = {
-          overlaysFromChannelsExporter = import ./overlaysFromChannelsExporter.nix { flake-utils-plus = self; };
-          modulesFromListExporter = import ./modulesFromListExporter.nix { flake-utils-plus = self; };
+          inherit overlaysFromChannelsExporter modulesFromList;
         };
+
+        repl = ./repl.nix;
 
         patchChannel = system: channel: patches:
           if patches == [ ] then channel else
