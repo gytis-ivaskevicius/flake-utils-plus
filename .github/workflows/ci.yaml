@@ -37,9 +37,9 @@ jobs:
       - name: Run `nix flake show`
         run: cd examples/fully-featured && nix flake show --show-trace
       - name: Build Morty configuration
-        run: nix build .#nixosConfigurations.Morty.config.system.build.toplevel --dry-run
+        run: cd examples/fully-featured && nix build .#nixosConfigurations.Morty.config.system.build.toplevel --dry-run
       - name: Build Rick configuration
-        run: nix build .#nixosConfigurations.Rick.config.system.build.toplevel --dry-run
+        run: cd examples/fully-featured && nix build .#nixosConfigurations.Rick.config.system.build.toplevel --dry-run
 
   check-somewhat-realistic-flake:
     runs-on: ubuntu-latest
@@ -55,7 +55,7 @@ jobs:
       - name: Run `nix flake show`
         run: cd examples/somewhat-realistic && nix flake show --show-trace
       - name: Build HostnameOne configuration
-        run: nix build .#nixosConfigurations.HostnameOne.config.system.build.toplevel --dry-run
+        run: cd examples/somewhat-realistic && nix build .#nixosConfigurations.HostnameOne.config.system.build.toplevel --dry-run
       - name: Build HostNameThree configuration
-        run: nix build .#darwinConfigurations.HostNameThree.config.system.build.toplevel --dry-run
+        run: cd examples/somewhat-realistic && nix build .#darwinConfigurations.HostNameThree.config.system.build.toplevel --dry-run
 
