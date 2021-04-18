@@ -95,7 +95,7 @@
         allowUnfree = true;
       };
 
-      # Profiles, gets parsed into `nixosConfigurations`
+      # Host definitions, gets parsed into `nixosConfigurations`
       hosts = {
         # Profile name / System hostname
         Morty = {
@@ -108,10 +108,14 @@
             abc = 123;
           };
           # Host specific configuration. Same as `sharedModules`
-          modules = [
-            (import ./configurations/Morty.host.nix)
-          ];
+          modules = [ ./configurations/Morty.host.nix ];
         };
+
+        Rick = {
+          modules = [ ./configurations/Rick.host.nix ];
+          output = "someConfiguration";
+        };
+
       };
 
       # Evaluates to `packages.<system>.attributeKey = "attributeValue"`
