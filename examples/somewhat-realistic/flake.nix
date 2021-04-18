@@ -65,9 +65,7 @@
 
 
       # Profiles, gets parsed into `nixosConfigurations`
-      hosts.HostnameOne.modules = [
-        (import ./hosts/One.nix)
-      ];
+      hosts.HostnameOne.modules = [ ./hosts/One.nix ];
 
 
       hosts.HostnameTwo = {
@@ -75,9 +73,7 @@
         channelName = "unstable";
 
         # Host specific configuration.
-        modules = [
-          (import ./hosts/Two.nix)
-        ];
+        modules = [ ./hosts/Two.nix ];
       };
 
       hosts."HostNameThree" = {
@@ -86,14 +82,13 @@
 
         # Build host with darwinSystem
         builder = nix-darwin.lib.darwinSystem;
+        system = null;
 
         # This host uses `channels.unstable.{input,overlaysBuilder,config,patches}` attributes instead of `channels.nixpkgs.<...>`
         channelName = "unstable";
 
         # Host specific configuration.
-        modules = [
-          (import ./configurations/Morty.home.nix)
-        ];
+        modules = [ ./hosts/Three.nix ];
       };
 
 
@@ -104,6 +99,4 @@
 
     };
 }
-
-
 
