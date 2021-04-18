@@ -88,6 +88,21 @@ let
       host = evalHostArgs (mergeAny hostDefaults host');
       channelValue = channels.${host.channelName};
       patchedChannel = patchChannel host.system channelValue.input (channelValue.patches or [ ]);
+      # Use lib from patched nixpkgs
+      lib = import (patchedChannel + "/lib");
+      # Use nixos modules from patched nixpkgs
+      baseModules = import (patchedChannel + "/nixos/modules/module-list.nix");
+      # Override `modulesPath` because otherwise imports from there will not use patched nixpkgs
+      specialArgs = { modulesPath = builtins.toString (patchedChannel + "/nixos/modules"); } // host.specialArgs;
+      # The only way to find out if a host has `nixpkgs.config` set to
+      # the non-default value is by evalling most of the config.
+      hostConfig = (lib.evalModules {
+        prefix = [ ];
+        check = false;
+        modules = baseModules ++ host.modules;
+        args = { inherit inputs; } // host.extraArgs;
+        inherit specialArgs;
+      }).config;
     in
     {
       ${host.output}.${hostname} = host.builder ({
@@ -101,13 +116,21 @@ let
                 networking.hostName = hostname;
               })
 
-              (if options ? nixpkgs then {
-                nixpkgs.pkgs = import patchedChannel {
-                  inherit (host) system;
-                  overlays = sharedOverlays ++ (if (channelValue ? overlaysBuilder) then (channelValue.overlaysBuilder self.pkgs) else [ ]);
-                  config = channelsConfig // (channelValue.config or { }) // config.nixpkgs.config;
-                };
-              } else { _module.args.pkgs = selectedNixpkgs; })
+              (if options ? nixpkgs then
+              # Make sure we don't import nixpkgs again if not
+              # necessary. We can't use `config.nixpkgs.config`
+              # because that triggers infinite recursion.
+                if (hostConfig.nixpkgs.config == { }) then
+                  { nixpkgs.pkgs = selectedNixpkgs; }
+                else
+                  {
+                    nixpkgs.pkgs = import patchedChannel {
+                      inherit (host) system;
+                      overlays = sharedOverlays ++ (if (channelValue ? overlaysBuilder) then (channelValue.overlaysBuilder self.pkgs) else [ ]);
+                      config = channelsConfig // (channelValue.config or { }) // config.nixpkgs.config;
+                    };
+                  }
+              else { _module.args.pkgs = selectedNixpkgs; })
 
               (optionalAttrs (options ? system.configurationRevision) {
                 system.configurationRevision = lib.mkIf (self ? rev) self.rev;
@@ -127,9 +150,7 @@ let
         ] ++ host.modules;
         specialArgs = host.specialArgs;
       } // (optionalAttrs (host.output == "nixosConfigurations") {
-        lib = import (patchedChannel + "/lib");
-        baseModules = import (patchedChannel + "/nixos/modules/module-list.nix");
-        specialArgs = { modulesPath = builtins.toString (patchedChannel + "/nixos/modules"); } // host.specialArgs;
+        inherit lib baseModules specialArgs;
       }));
     }
   );
