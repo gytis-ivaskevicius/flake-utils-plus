@@ -138,7 +138,7 @@
 
       # All other values gets passed down to the flake
       checks.x86_64-linux.merge-with-checksBuilder-test = self.pkgs.x86_64-linux.nixpkgs.hello;
-      packages.x86_64-linux.merge-with-checksBuilder-test = self.pkgs.x86_64-linux.nixpkgs.flake-utils-plus-test;
+      packages.x86_64-linux.patched-package = self.pkgs.x86_64-linux.unstable.flake-utils-plus-test;
       overlay = import ./overlays;
       abc = 132;
       # etc

@@ -40,8 +40,9 @@ jobs:
       - name: Build HostnameOne configuration
         run: cd examples/somewhat-realistic && nix build .#nixosConfigurations.HostnameOne.config.system.build.toplevel --dry-run
 
+      - name: Check Nix formatting
+        run: nix shell -c nixpkgs-fmt --check .
+
       - name: Build HostNameThree configuration
         run: cd examples/somewhat-realistic && nix build .#darwinConfigurations.HostNameThree.config.system.build.toplevel --dry-run
 
-      - name: Check Nix formatting
-        run: nix shell -c nixpkgs-fmt --check .
