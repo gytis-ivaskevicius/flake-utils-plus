@@ -27,7 +27,7 @@
       inherit self inputs;
 
       # Supported systems, used for packages, apps, devShell and multiple other definitions. Defaults to `flake-utils.lib.defaultSystems`
-      supportedSystems = [ "aarch64-linux" "x86_64-linux" ];
+      supportedSystems = [ "x86_64-linux" ];
 
 
       # Default host settings.
