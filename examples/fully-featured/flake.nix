@@ -113,7 +113,7 @@
 
         Rick = {
           modules = [ ./configurations/Rick.host.nix ];
-          output = "someConfiguration";
+          output = "someConfigurations";
         };
 
       };
