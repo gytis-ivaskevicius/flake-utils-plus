@@ -147,8 +147,11 @@
         in
         {
           check = channels.nixpkgs.runCommandNoCC "test" { } "echo test > $out";
+          # Modules (and lib) from patched nixpkgs are used
           summerHasCustomModuleConfigured = booleanCheck (self.nixosConfigurations.Summer.config.patchedModule.test == "test");
+          # nixpkgs config from host-specific module is used
           summerHasPackageOverridesConfigured = booleanCheck (self.nixosConfigurations.Summer.config.nixpkgs.pkgs.config ? packageOverrides);
+          # nixpkgs config from channel is also used
           summerHasUnfreeConfigured = booleanCheck (self.nixosConfigurations.Summer.config.nixpkgs.pkgs.config ? allowUnfree);
         };
 
