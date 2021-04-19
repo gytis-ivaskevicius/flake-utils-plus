@@ -116,6 +116,10 @@
           output = "someConfigurations";
         };
 
+        Summer = {
+          channelName = "unstable";
+          modules = [ ./configurations/Summer.host.nix ];
+        };
       };
 
       # Evaluates to `packages.<system>.attributeKey = "attributeValue"`
@@ -134,7 +138,19 @@
       devShellBuilder = channels: channels.nixpkgs.mkShell { name = "devShell"; };
 
       # Evaluates to `checks.<system>.attributeKey = "attributeValue"`
-      checksBuilder = channels: { check = channels.nixpkgs.runCommandNoCC "test" { } "echo test > $out"; };
+      checksBuilder = channels:
+        let
+          booleanCheck = cond:
+            if cond
+            then channels.nixpkgs.runCommandNoCC "success" { } "echo success > $out"
+            else channels.nixpkgs.runCommandNoCC "failure" { } "exit 1";
+        in
+        {
+          check = channels.nixpkgs.runCommandNoCC "test" { } "echo test > $out";
+          summerHasCustomModuleConfigured = booleanCheck (self.nixosConfigurations.Summer.config.patchedModule.test == "test");
+          summerHasPackageOverridesConfigured = booleanCheck (self.nixosConfigurations.Summer.config.nixpkgs.pkgs.config ? packageOverrides);
+          summerHasUnfreeConfigured = booleanCheck (self.nixosConfigurations.Summer.config.nixpkgs.pkgs.config ? allowUnfree);
+        };
 
       # All other values gets passed down to the flake
       checks.x86_64-linux.merge-with-checksBuilder-test = self.pkgs.x86_64-linux.nixpkgs.hello;

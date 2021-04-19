@@ -1,12 +1,38 @@
+diff --git a/lib/default.nix b/lib/default.nix
+index 50320669e28..ff835870e4a 100644
+--- a/lib/default.nix
++++ b/lib/default.nix
+@@ -145,5 +145,7 @@ let
+       nixType imap;
+     inherit (self.versions)
+       splitVersion;
++
++    patchedFunction = x: x;
+   });
+ in lib
+diff --git a/nixos/modules/module-list.nix b/nixos/modules/module-list.nix
+index f72be732216..fbbf9776a6b 100644
+--- a/nixos/modules/module-list.nix
++++ b/nixos/modules/module-list.nix
+@@ -1101,4 +1101,10 @@
+   ./virtualisation/vmware-guest.nix
+   ./virtualisation/xen-dom0.nix
+   ./virtualisation/xe-guest-utilities.nix
++  ({ lib, config, ... }: {
++    options.patchedModule.test = lib.mkOption {
++      default = null;
++      example = "test";
++    };
++  })
+ ]
 diff --git a/pkgs/top-level/all-packages.nix b/pkgs/top-level/all-packages.nix
-index 6dd393492c8..c8456afc28d 100644
+index cdf28b9782c..48ed72bf3c1 100644
 --- a/pkgs/top-level/all-packages.nix
 +++ b/pkgs/top-level/all-packages.nix
-@@ -30930,4 +30930,6 @@ in
+@@ -31025,4 +31025,6 @@ in
    lc3tools = callPackage ../development/tools/lc3tools {};
-
+ 
    zktree = callPackage ../applications/misc/zktree {};
 +
 +  flake-utils-plus-test = callPackage ../applications/misc/hello { };
  }
-
