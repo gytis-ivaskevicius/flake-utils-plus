@@ -86,10 +86,9 @@ let
     let
       selectedNixpkgs = getNixpkgs host;
       host = evalHostArgs (mergeAny hostDefaults host');
-      channelValue = channels.${host.channelName};
-      patchedChannel = patchChannel host.system channelValue.input (channelValue.patches or [ ]);
+      patchedChannel = selectedNixpkgs.path;
       # Use lib from patched nixpkgs
-      lib = import (patchedChannel + "/lib");
+      lib = selectedNixpkgs.lib;
       # Use nixos modules from patched nixpkgs
       baseModules = import (patchedChannel + "/nixos/modules/module-list.nix");
       # Override `modulesPath` because otherwise imports from there will not use patched nixpkgs
@@ -117,19 +116,20 @@ let
               })
 
               (if options ? nixpkgs then
-              # Make sure we don't import nixpkgs again if not
-              # necessary. We can't use `config.nixpkgs.config`
-              # because that triggers infinite recursion.
-                if (hostConfig.nixpkgs.config == { }) then
-                  { nixpkgs.pkgs = selectedNixpkgs; }
-                else
-                  {
-                    nixpkgs.pkgs = import patchedChannel {
-                      inherit (host) system;
-                      overlays = sharedOverlays ++ (if (channelValue ? overlaysBuilder) then (channelValue.overlaysBuilder self.pkgs) else [ ]);
-                      config = channelsConfig // (channelValue.config or { }) // config.nixpkgs.config;
-                    };
-                  }
+                {
+                  nixpkgs.pkgs =
+                    # Make sure we don't import nixpkgs again if not
+                    # necessary. We can't use `config.nixpkgs.config`
+                    # because that triggers infinite recursion.
+                    if (hostConfig.nixpkgs.config == { }) then
+                      selectedNixpkgs
+                    else
+                      import patchedChannel {
+                        inherit (host) system;
+                        overlays = selectedNixpkgs.overlays;
+                        config = selectedNixpkgs.config // config.nixpkgs.config;
+                      };
+                }
               else { _module.args.pkgs = selectedNixpkgs; })
 
               (optionalAttrs (options ? system.configurationRevision) {
