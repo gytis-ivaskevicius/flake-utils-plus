@@ -52,7 +52,6 @@
       # Shared modules/configurations between `hosts`
       hostDefaults = {
         modules = [
-          home-manager.nixosModules.home-manager
           # Sets sane `nix.*` defaults. Please refer to implementation/readme for more details.
           utils.nixosModules.saneFlakeDefaults
           (import ./modules)
@@ -65,7 +64,10 @@
 
 
       # Profiles, gets parsed into `nixosConfigurations`
-      hosts.HostnameOne.modules = [ ./hosts/One.nix ];
+      hosts.HostnameOne.modules = [
+        home-manager.nixosModules.home-manager
+        ./hosts/One.nix
+      ];
 
 
       hosts.HostnameTwo = {
@@ -73,22 +75,29 @@
         channelName = "unstable";
 
         # Host specific configuration.
-        modules = [ ./hosts/Two.nix ];
+        modules = [
+          home-manager.nixosModules.home-manager
+          ./hosts/Two.nix
+        ];
       };
 
-      hosts."HostNameThree" = {
+      hosts."HostnameThree" = {
         # This host will be exported under the flake's `darwinConfigurations` output
         output = "darwinConfigurations";
 
-        # Build host with darwinSystem
-        builder = nix-darwin.lib.darwinSystem;
-        system = null;
+        # Build host with darwinSystem. `removeAttrs` workaround due to https://github.com/LnL7/nix-darwin/issues/319
+        builder = args: nix-darwin.lib.darwinSystem (builtins.removeAttrs args [ "system" ]);
+
+        system = "x86_64-darwin";
 
         # This host uses `channels.unstable.{input,overlaysBuilder,config,patches}` attributes instead of `channels.nixpkgs.<...>`
         channelName = "unstable";
 
         # Host specific configuration.
-        modules = [ ./hosts/Three.nix ];
+        modules = [
+          home-manager.darwinModules.home-manager
+          ./hosts/Three.nix
+        ];
       };
 
 

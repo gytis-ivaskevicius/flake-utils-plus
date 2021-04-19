@@ -43,6 +43,6 @@ jobs:
       - name: Check Nix formatting
         run: nix shell nixpkgs\#nixpkgs-fmt -c nixpkgs-fmt --check .
 
-      - name: Build HostNameThree configuration
-        run: cd examples/somewhat-realistic && nix build .#darwinConfigurations.HostNameThree.config.system.build.toplevel --dry-run
+      - name: Build HostnameThree configuration
+        run: cd examples/somewhat-realistic && nix build .#darwinConfigurations.HostnameThree.config.system.build.toplevel --dry-run
 
