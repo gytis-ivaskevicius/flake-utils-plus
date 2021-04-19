@@ -115,7 +115,7 @@ let
                 networking.hostName = hostname;
               })
 
-              (if options ? nixpkgs then
+              (if options ? nixpkgs.pkgs then
                 {
                   nixpkgs.pkgs =
                     # Make sure we don't import nixpkgs again if not
