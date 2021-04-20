@@ -62,13 +62,13 @@ category = "checks (somewhat realistic example)"
 command = "cd ./examples/somewhat-realistic && nix flake show ${@}"
 
 [[commands]]
-name = "nix-build-hostnameone-sr"
-help = "Build HostnameOne configuration"
+name = "nix-build-alice-sr"
+help = "Build Alice configuration"
 category = "checks (somewhat realistic example)"
 command = "cd ./examples/somewhat-realistic && nix build .#nixosConfigurations.HostnameOne.config.system.build.toplevel --dry-run"
 
 [[commands]]
-name = "nix-build-hostnamethree-sr"
-help = "Build HostnameThree (darwin) configuration"
+name = "nix-build-carl-sr"
+help = "Build Carl (darwin) configuration"
 category = "checks (somewhat realistic example)"
 command = "cd ./examples/somewhat-realistic && nix build .#darwinConfigurations.HostnameThree.config.system.build.toplevel --dry-run"

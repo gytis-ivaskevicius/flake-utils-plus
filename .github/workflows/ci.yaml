@@ -38,14 +38,14 @@ jobs:
         run: nix develop --command nix-build-summer-ff
 
       - name: Run `nix flake check` (somewhat realistic example)
-        run: nix develop --command "nix-flake-check-rr-example --show-trace"
+        run: nix develop --command "nix-flake-check-rr --show-trace"
 
       - name: Run `nix flake show` (somewhat realistic example)
-        run: nix develop --command "nix-flake-show-rr-example --show-trace"
+        run: nix develop --command "nix-flake-show-rr --show-trace"
 
-      - name: Build HostnameOne configuration (somewhat realistic example)
-        run: nix develop --command nix-build-hostnameone-rr-example
+      - name: Build Alice configuration (somewhat realistic example)
+        run: nix develop --command nix-build-alice-rr
 
-      - name: Build HostnameThree configuration (somewhat realistic example)
-        run: nix develop --command nix-build-hostnamethree-rr-example
+      - name: Build Carl (darwin) configuration (somewhat realistic example)
+        run: nix develop --command nix-build-carl-rr
 
