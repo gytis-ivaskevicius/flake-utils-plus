@@ -64,24 +64,24 @@
 
 
       # Profiles, gets parsed into `nixosConfigurations`
-      hosts.HostnameOne.modules = [
+      hosts.Alice.modules = [
         home-manager.nixosModules.home-manager
-        ./hosts/One.nix
+        ./hosts/Alice.nix
       ];
 
 
-      hosts.HostnameTwo = {
+      hosts.Bob = {
         # This host uses `channels.unstable.{input,overlaysBuilder,config,patches}` attributes instead of `channels.nixpkgs.<...>`
         channelName = "unstable";
 
         # Host specific configuration.
         modules = [
           home-manager.nixosModules.home-manager
-          ./hosts/Two.nix
+          ./hosts/Bob.nix
         ];
       };
 
-      hosts."HostnameThree" = {
+      hosts."Carl" = {
         # This host will be exported under the flake's `darwinConfigurations` output
         output = "darwinConfigurations";
 
@@ -96,7 +96,7 @@
         # Host specific configuration.
         modules = [
           home-manager.darwinModules.home-manager
-          ./hosts/Three.nix
+          ./hosts/Carl.nix
         ];
       };
 
