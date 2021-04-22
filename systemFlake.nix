@@ -30,7 +30,7 @@
 
 let
   inherit (flake-utils-plus.lib) eachSystem patchChannel;
-  inherit (builtins) foldl' mapAttrs removeAttrs attrValues isAttrs isList;
+  inherit (builtins) foldl' mapAttrs removeAttrs attrValues attrNames isAttrs isList;
 
   # set defaults and validate host arguments
   evalHostArgs =
@@ -42,7 +42,9 @@ let
     , extraArgs ? { }
       # These are not part of the module system, so they can be used in `imports` lines without infinite recursion
     , specialArgs ? { }
-    }: { inherit channelName system output builder modules extraArgs specialArgs; };
+    }: {
+      inherit channelName system output builder modules extraArgs specialArgs;
+    };
 
   # recursively merge attribute sets and lists up to a certain depth
   mergeAny = lhs: rhs:
@@ -91,8 +93,15 @@ let
       lib = selectedNixpkgs.lib;
       # Use nixos modules from patched nixpkgs
       baseModules = import (patchedChannel + "/nixos/modules/module-list.nix");
-      # Override `modulesPath` because otherwise imports from there will not use patched nixpkgs
-      specialArgs = { modulesPath = builtins.toString (patchedChannel + "/nixos/modules"); } // host.specialArgs;
+      specialArgs = let
+        f = channelName:
+          { "${channelName}ModulesPath" = builtins.toString (channels.${channelName}.input + "/nixos/modules"); };
+      in
+        # Add `<channelName>ModulesPath`s
+        (foldl' (lhs: rhs: lhs // rhs) {} (map f (attrNames channels)))
+        # Override `modulesPath` because otherwise imports from there will not use patched nixpkgs
+        // { modulesPath = builtins.toString (patchedChannel + "/nixos/modules"); }
+        // host.specialArgs;
       # The only way to find out if a host has `nixpkgs.config` set to
       # the non-default value is by evalling most of the config.
       hostConfig = (lib.evalModules {
