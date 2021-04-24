@@ -29,9 +29,11 @@ This flake provides two main features (visible from `flake.nix`):
 
 # How to use this flake #
 
-Example flake with all available attributes can be found [Here](https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/master/examples/fully-featured-flake.nix).
+Example flake with all available attributes can be found [Here](https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/master/examples/fully-featured/flake.nix). (WARNING: Quite overwhelming)
 
-And more realistic flake example can be found [Here](https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/master/examples/somewhat-realistic-flake.nix).
+And more realistic flake example can be found [Here](https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/master/examples/somewhat-realistic/flake.nix).
+
+But in reality - you probably should be checking out the config examples listed above.
 
 Looking to add a kick-ass repl to your config? Create and import something along the lines of this:
 ```nix
@@ -45,6 +47,7 @@ Looking to add a kick-ass repl to your config? Create and import something along
 
 ```
 
+And here is TL;DR version of system config:
 
 ```nix
 {
