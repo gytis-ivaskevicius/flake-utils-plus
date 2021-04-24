@@ -8,4 +8,4 @@ in
 // builtins
 // flake.nixosConfigurations.${hostname}
 // nixpkgs.lib
-  // nixpkgs
+  // (builtins.removeAttrs nixpkgs [ "config" ])
