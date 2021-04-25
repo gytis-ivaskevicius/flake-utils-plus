@@ -93,12 +93,13 @@ let
       lib = selectedNixpkgs.lib;
       # Use nixos modules from patched nixpkgs
       baseModules = import (patchedChannel + "/nixos/modules/module-list.nix");
-      specialArgs = let
-        f = channelName:
-          { "${channelName}ModulesPath" = builtins.toString (channels.${channelName}.input + "/nixos/modules"); };
-      in
+      specialArgs =
+        let
+          f = channelName:
+            { "${channelName}ModulesPath" = builtins.toString (channels.${channelName}.input + "/nixos/modules"); };
+        in
         # Add `<channelName>ModulesPath`s
-        (foldl' (lhs: rhs: lhs // rhs) {} (map f (attrNames channels)))
+        (foldl' (lhs: rhs: lhs // rhs) { } (map f (attrNames channels)))
         # Override `modulesPath` because otherwise imports from there will not use patched nixpkgs
         // { modulesPath = builtins.toString (patchedChannel + "/nixos/modules"); }
         // host.specialArgs;
@@ -158,9 +159,9 @@ let
             ];
           })
         ] ++ host.modules;
-        specialArgs = host.specialArgs;
+        inherit specialArgs;
       } // (optionalAttrs (host.output == "nixosConfigurations") {
-        inherit lib baseModules specialArgs;
+        inherit lib baseModules;
       }));
     }
   );
