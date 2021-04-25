@@ -1,92 +1,80 @@
 { flake-utils-plus }:
 let
 
-  overlayFromPackagesBuilderConstructor = channels:
+  packagesFromOverlaysBuilderConstructor = overlays:
     let
-      # channels: channels.<name>.overlays
+      # overlays: self.overlays
 
-      overlayFromPackagesBuilder = pkgs:
+      packagesFromOverlaysBuilder = channels:
         /**
-          Synopsis: overlayFromPackagesBuilder _pkgs_
+          Synopsis: packagesFromOverlaysBuilder _channels_
 
-          pkgs:     pkgs.<system>.<tree>
+          channels: builder `channels` argument
 
           Returns valid packges that have been defined within an overlay so they
           can be shared via _self.packages_ with the world. This is especially useful
           over sharing one's art via _self.overlays_ in case you have a binary cache
           running from which third parties could benefit.
 
-          First, flattens an arbitrarily nested _pkgs_ tree for each system into a flat
-          key in which nesting is aproximated by a "/" (e.g. "development/kakoune").
-          Also filter the resulting packages for attributes that _trivially_ would
-          fail flake checks (broken, system not supported or not a derivation).
+          Steps:
+          1. merge all channels into one nixpkgs attribute set
+          2. collect all overlays' packages' keys into one flat list
+          3. pick out each package from the nixpkgs set into one packages set
+          $. flatten package set and filter out disallowed packages - by flake check requirements
 
-          Second, collects all overlays' packages' keys of all channels into a flat list.
+          example input and output:
+          ```
+          overlays = {
+          "unstable/firefox" = prev: final: {
+          firefox = prev.override { privacySupport = true; };
+          }; 
+          }
 
-          Finally, only passes packages through the seive that are prefixed with a top level
-          key exposed by any of the overlays. Since overlays override (and do not emrge)
-          top level attributes, by filtering on the prefix, an overlay's entire packages
-          tree will be correctly captured.
-
-          Example:
-
-          pkgs'.<system> = {
-          "development/kakoune" = { ... };
-          "development/vim" = { ... };
-          };
-
-          overlays' = [
-          "development"
-          ];
-
-          overlays' will pass both pkgs' through the sieve.
+          self.packages = {
+          firefox = *firefox derivation with privacySupport*;
+          }
+          ```
 
           **/
         let
 
           inherit (flake-utils-plus.lib) flattenTree filterPackages;
-          inherit (builtins) attrNames mapAttrs listToAttrs attrValues concatStringSep concatMap any;
+          inherit (builtins) foldl' attrNames mapAttrs listToAttrs
+            attrValues concatStringSep concatMap any head;
           nameValuePair = name: value: { inherit name value; };
-          filterAttrs = pred: set:
-            listToAttrs (concatMap (name: let v = set.${name}; in if pred name v then [ (nameValuePair name v) ] else [ ]) (attrNames set));
-          hasPrefix =
-            pref:
-            str: builtins.substring 0 (builtins.stringLength pref) str == pref;
 
-
-          # first, flatten and filter on valid packages (by nix flake check criterion)
           flattenedPackages =
-            let
-              f = system: tree: (filterPackages system (flattenTree tree));
-            in
-            mapAttrs f pkgs;
+            # merge all channels into one package set
+            foldl' (a: b: a // b) { } (attrValues channels);
 
-          # second, flatten all overlays' packages' keys into a single list
-          flattendOverlaysNames =
+          # flatten all overlays' packages' keys into a single list
+          flattenedOverlaysNames =
             let
-              allOverlays = concatMap (c: c.overlays) (attrValues channels);
+              allOverlays = attrValues overlays;
 
               overlayNamesList = overlay:
                 attrNames (overlay null null);
             in
-            concatMap (o: overlayNamesList o) allOverlays;
+            concatMap overlayNamesList allOverlays;
+
+          # create list of single-attribute sets that contain each package
+          exportPackagesList = map
+            (name:
+              { ${name} = flattenedPackages.${name}; }
+            )
+            flattenedOverlaysNames;
+
+          # fold list into one attribute set
+          exportPackages = foldl' (lhs: rhs: lhs // rhs) { } exportPackagesList;
+
+          system = (head (attrValues channels)).system;
 
         in
-        # finally, only retain those packages defined by overlays
-          # pkgs'.<system>.<prefix/flattend/tree/attributes>
-          # overlays' = [ "prefix" ... ];
-        mapAttrs
-          (_: pkgs:
-            filterAttrs
-              (pkgName:
-                any (overlayName: hasPrefix pkgName overlayName) flattendOverlaysNames
-              )
-              pkgs
-          )
-          flattenedPackages;
+        # flatten nested sets with "/" delimiter then drop disallowed packages
+        filterPackages system (flattenTree exportPackages);
 
     in
-    overlayFromPackagesBuilder;
+    packagesFromOverlaysBuilder;
 
 in
-overlayFromPackagesBuilderConstructor
+packagesFromOverlaysBuilderConstructor
