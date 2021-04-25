@@ -86,6 +86,9 @@
         (final: prev: {
           neovim-nightly = neovim.defaultPackage.${prev.system};
         })
+        (channels: final: prev: {
+          inherit (channels.nixpkgs) firefox;
+        })
       ];
 
 

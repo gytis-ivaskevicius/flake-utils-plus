@@ -30,7 +30,7 @@
 
 let
   inherit (flake-utils-plus.lib) eachSystem patchChannel;
-  inherit (builtins) foldl' mapAttrs removeAttrs attrValues attrNames isAttrs isList;
+  inherit (builtins) foldl' mapAttrs removeAttrs attrValues attrNames isAttrs isList isFunction;
 
   # set defaults and validate host arguments
   evalHostArgs =
@@ -172,9 +172,13 @@ mergeAny otherArguments (
   eachSystem supportedSystems
     (system:
       let
+        unifyOverlays = channels: map (o: if isFunction (o null null) then o channels else o);
+
         importChannel = name: value: import (patchChannel system value.input (value.patches or [ ])) {
           inherit system;
-          overlays = sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ]);
+          overlays = sharedOverlays
+          ++ (if (value ? overlaysBuilder) then
+            (unifyOverlays pkgs (value.overlaysBuilder pkgs)) else [ ]);
           config = channelsConfig // (value.config or { });
         };
 
