@@ -89,20 +89,23 @@ let
       selectedNixpkgs = getNixpkgs host;
       host = evalHostArgs (mergeAny hostDefaults host');
       patchedChannel = selectedNixpkgs.path;
+
+      specialArgs = host.specialArgs // { channel = selectedNixpkgs; };
+
+      /* nixos specific arguments */
       # Use lib from patched nixpkgs
       lib = selectedNixpkgs.lib;
       # Use nixos modules from patched nixpkgs
       baseModules = import (patchedChannel + "/nixos/modules/module-list.nix");
-      specialArgs =
+      nixosSpecialArgs =
         let
           f = channelName:
-            { "${channelName}ModulesPath" = builtins.toString (channels.${channelName}.input + "/nixos/modules"); };
+            { "${channelName}ModulesPath" = toString (channels.${channelName}.input + "/nixos/modules"); };
         in
         # Add `<channelName>ModulesPath`s
         (foldl' (lhs: rhs: lhs // rhs) { } (map f (attrNames channels)))
         # Override `modulesPath` because otherwise imports from there will not use patched nixpkgs
-        // { modulesPath = builtins.toString (patchedChannel + "/nixos/modules"); }
-        // host.specialArgs;
+        // { modulesPath = toString (patchedChannel + "/nixos/modules"); };
       # The only way to find out if a host has `nixpkgs.config` set to
       # the non-default value is by evalling most of the config.
       hostConfig = (lib.evalModules {
@@ -110,7 +113,7 @@ let
         check = false;
         modules = baseModules ++ host.modules;
         args = { inherit inputs; } // host.extraArgs;
-        inherit specialArgs;
+        specialArgs = nixosSpecialArgs // specialArgs;
       }).config;
     in
     {
@@ -162,6 +165,7 @@ let
         inherit specialArgs;
       } // (optionalAttrs (host.output == "nixosConfigurations") {
         inherit lib baseModules;
+        specialArgs = nixosSpecialArgs // specialArgs;
       }));
     }
   );
@@ -172,11 +176,11 @@ mergeAny otherArguments (
   eachSystem supportedSystems
     (system:
       let
-        importChannel = name: value: import (patchChannel system value.input (value.patches or [ ])) {
+        importChannel = name: value: (import (patchChannel system value.input (value.patches or [ ])) {
           inherit system;
           overlays = sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ]);
           config = channelsConfig // (value.config or { });
-        };
+        }) // { inherit name; inherit (value) input; };
 
         pkgs = mapAttrs importChannel channels;
 
