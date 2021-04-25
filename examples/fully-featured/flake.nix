@@ -95,19 +95,19 @@
         allowUnfree = true;
       };
 
-      # Host definitions, gets parsed into `nixosConfigurations`
+      # Host definitions
       hosts = {
         # Profile name / System hostname
         Morty = {
-          # System architecture. Defaults to `defaultSystem` argument
+          # System architecture.
           system = "x86_64-linux";
           # <name> of the channel to be used. Defaults to `nixpkgs`
           channelName = "unstable";
-          # Extra arguments to be passed to the modules. Overwrites `sharedExtraArgs` argument
+          # Extra arguments to be passed to the modules.
           extraArgs = {
             abc = 123;
           };
-          # Host specific configuration. Same as `sharedModules`
+          # Host specific configuration.
           modules = [ ./configurations/Morty.host.nix ];
         };
 
@@ -134,7 +134,7 @@
       # Evaluates to `defaultApp.<system>.attributeKey = "attributeValue"`
       defaultAppBuilder = channels: { type = "app"; program = channels.nixpkgs.runCommandNoCC "package" { } "echo test > $out"; };
 
-      # Evaluates to `devShell.<system>.attributeKey = "attributeValue"`
+      # Evaluates to `devShell.<system> = "attributeValue"`
       devShellBuilder = channels: channels.nixpkgs.mkShell { name = "devShell"; };
 
       # Evaluates to `checks.<system>.attributeKey = "attributeValue"`
