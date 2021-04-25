@@ -1,54 +1,76 @@
-{ flake-utils }:
+{ flake-utils-plus }:
 
 { self
-, defaultSystem ? "x86_64-linux"
-, sharedExtraArgs ? { inherit inputs; }
-, supportedSystems ? flake-utils.lib.defaultSystems
+, defaultSystem ? "x86_64-linux" # will be deprecated soon use hostDefaults.system instead
+, supportedSystems ? flake-utils-plus.lib.defaultSystems
 , inputs
-, nixosConfigurations ? { }
-, nixosProfiles ? { }
+
 , channels ? { }
 , channelsConfig ? { }
-, sharedModules ? [ ]
 , sharedOverlays ? [ ]
 
-  # `Func` postfix is soon to be deprecated. Replaced with `Builder` instead
-, packagesFunc ? null
-, defaultPackageFunc ? null
-, appsFunc ? null
-, defaultAppFunc ? null
-, devShellFunc ? null
-, checksFunc ? null
+, nixosProfiles ? { } # will be deprecated soon, use hosts, instead.
+, hosts ? nixosProfiles
+, sharedExtraArgs ? { } # deprecate soon, prefer hostDefaults
+, sharedModules ? [ ] # deprecate soon, prefer hostDefaults
+, hostDefaults ? {
+    system = defaultSystem;
+    modules = sharedModules;
+    extraArgs = sharedExtraArgs;
+  }
 
-, packagesBuilder ? packagesFunc
-, defaultPackageBuilder ? defaultPackageFunc
-, appsBuilder ? appsFunc
-, defaultAppBuilder ? defaultAppFunc
-, devShellBuilder ? devShellFunc
-, checksBuilder ? checksFunc
+, packagesBuilder ? null
+, defaultPackageBuilder ? null
+, appsBuilder ? null
+, defaultAppBuilder ? null
+, devShellBuilder ? null
+, checksBuilder ? null
 , ...
 }@args:
 
 let
-  otherArguments = builtins.removeAttrs args [
-    "defaultSystem"
-    "sharedExtraArgs"
+  inherit (flake-utils-plus.lib) eachSystem patchChannel;
+  inherit (builtins) foldl' mapAttrs removeAttrs attrValues isAttrs isList;
+
+  # set defaults and validate host arguments
+  evalHostArgs =
+    { channelName ? "nixpkgs"
+    , system ? "x86_64-linux"
+    , output ? "nixosConfigurations"
+    , builder ? channels.${channelName}.input.lib.nixosSystem
+    , modules ? [ ]
+    , extraArgs ? { }
+      # These are not part of the module system, so they can be used in `imports` lines without infinite recursion
+    , specialArgs ? { }
+    }: { inherit channelName system output builder modules extraArgs specialArgs; };
+
+  # recursively merge attribute sets and lists up to a certain depth
+  mergeAny = lhs: rhs:
+    lhs // mapAttrs
+      (name: value:
+        if isAttrs value then lhs.${name} or { } // value
+        else if isList value then lhs.${name} or [ ] ++ value
+        else value
+      )
+      rhs;
+
+  foldHosts = foldl' mergeAny { };
+
+  optionalAttrs = check: value: if check then value else { };
+
+  otherArguments = removeAttrs args [
+    "defaultSystem" # TODO: deprecated, remove
+    "sharedExtraArgs" # deprecated
     "inputs"
+    "hosts"
+    "hostDefaults"
     "nixosProfiles"
     "channels"
     "channelsConfig"
     "self"
-    "sharedModules"
+    "sharedModules" # deprecated
     "sharedOverlays"
     "supportedSystems"
-
-    # `Func` postfix is deprecated. Replaced with `Builder` instead
-    "packagesFunc"
-    "defaultPackageFunc"
-    "appsFunc"
-    "defaultAppFunc"
-    "devShellFunc"
-    "checksFunc"
 
     "packagesBuilder"
     "defaultPackageBuilder"
@@ -58,70 +80,114 @@ let
     "checksBuilder"
   ];
 
-  nixosConfigurationBuilder = name: value: (
-    # It would be nice to get `nixosSystem` reference from `selectedNixpkgs` but it is not possible at this moment
-    inputs.nixpkgs.lib.nixosSystem (genericConfigurationBuilder name value)
-  );
+  getNixpkgs = host: self.pkgs."${host.system}"."${host.channelName}";
 
-  genericConfigurationBuilder = name: value: (
+  configurationBuilder = hostname: host': (
     let
-      system = if (value ? system) then value.system else defaultSystem;
-      channelName = if (value ? channelName) then value.channelName else "nixpkgs";
-      selectedNixpkgs = self.pkgs."${system}"."${channelName}";
+      selectedNixpkgs = getNixpkgs host;
+      host = evalHostArgs (mergeAny hostDefaults host');
+      patchedChannel = selectedNixpkgs.path;
+      # Use lib from patched nixpkgs
+      lib = selectedNixpkgs.lib;
+      # Use nixos modules from patched nixpkgs
+      baseModules = import (patchedChannel + "/nixos/modules/module-list.nix");
+      # Override `modulesPath` because otherwise imports from there will not use patched nixpkgs
+      specialArgs = { modulesPath = builtins.toString (patchedChannel + "/nixos/modules"); } // host.specialArgs;
+      # The only way to find out if a host has `nixpkgs.config` set to
+      # the non-default value is by evalling most of the config.
+      hostConfig = (lib.evalModules {
+        prefix = [ ];
+        check = false;
+        modules = baseModules ++ host.modules;
+        args = { inherit inputs; } // host.extraArgs;
+        inherit specialArgs;
+      }).config;
     in
-    with selectedNixpkgs.lib; {
-      inherit system;
-      modules = [
-        {
-          networking.hostName = name;
+    {
+      ${host.output}.${hostname} = host.builder ({
+        inherit (host) system;
+        modules = [
+          ({ pkgs, lib, options, config, ... }: {
+            # 'mkMerge` to separate out each part into its own module
+            _type = "merge";
+            contents = [
+              (optionalAttrs (options ? networking.hostName) {
+                networking.hostName = hostname;
+              })
 
-          nixpkgs = {
-            pkgs = selectedNixpkgs;
-            config = selectedNixpkgs.config;
-          };
+              (if options ? nixpkgs.pkgs then
+                {
+                  nixpkgs.config = selectedNixpkgs.config;
+                  nixpkgs.pkgs =
+                    # Make sure we don't import nixpkgs again if not
+                    # necessary. We can't use `config.nixpkgs.config`
+                    # because that triggers infinite recursion.
+                    if (hostConfig.nixpkgs.config == { }) then
+                      selectedNixpkgs
+                    else
+                      import patchedChannel {
+                        inherit (host) system;
+                        overlays = selectedNixpkgs.overlays;
+                        config = selectedNixpkgs.config // config.nixpkgs.config;
+                      };
+                }
+              else { _module.args.pkgs = selectedNixpkgs; })
 
-          system.configurationRevision = mkIf (self ? rev) self.rev;
-          nix.package = mkDefault selectedNixpkgs.nixUnstable;
-        }
-      ]
-      ++ sharedModules
-      ++ (optionals (value ? modules) value.modules);
-      extraArgs = sharedExtraArgs // optionalAttrs (value ? extraArgs) value.extraArgs;
+              (optionalAttrs (options ? system.configurationRevision) {
+                system.configurationRevision = lib.mkIf (self ? rev) self.rev;
+              })
+
+              (optionalAttrs (options ? nix.package) {
+                nix.package = lib.mkDefault pkgs.nixUnstable;
+              })
+
+              {
+                # at this point we assume, that an evaluator at least
+                # uses nixpkgs.lib to evaluate modules.
+                _module.args = { inherit inputs; } // host.extraArgs;
+              }
+            ];
+          })
+        ] ++ host.modules;
+        specialArgs = host.specialArgs;
+      } // (optionalAttrs (host.output == "nixosConfigurations") {
+        inherit lib baseModules specialArgs;
+      }));
     }
   );
+
 in
-otherArguments
+mergeAny otherArguments (
 
-// flake-utils.lib.eachSystem supportedSystems (system:
-  let
-    patchChannel = channel: patches:
-      if patches == [ ] then channel else
-      (import channel { inherit system; }).pkgs.applyPatches {
-        name = "nixpkgs-patched-${channel.shortRev}";
-        src = channel;
-        patches = patches;
-      };
+  eachSystem supportedSystems
+    (system:
+      let
+        importChannel = name: value: import (patchChannel system value.input (value.patches or [ ])) {
+          inherit system;
+          overlays = sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ]);
+          config = channelsConfig // (value.config or { });
+        };
 
-    importChannel = name: value: import (patchChannel value.input (value.patches or [ ])) {
-      inherit system;
-      overlays = sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ]);
-      config = channelsConfig // (if (value ? config) then value.config else { });
-    };
+        pkgs = mapAttrs importChannel channels;
 
-    pkgs = builtins.mapAttrs importChannel channels;
-
-    optional = check: value: (if check != null then value else { });
-  in
-  { inherit pkgs; }
-  // optional packagesBuilder { packages = packagesBuilder pkgs; }
-  // optional defaultPackageBuilder { defaultPackage = defaultPackageBuilder pkgs; }
-  // optional appsBuilder { apps = appsBuilder pkgs; }
-  // optional defaultAppBuilder { defaultApp = defaultAppBuilder pkgs; }
-  // optional devShellBuilder { devShell = devShellBuilder pkgs; }
-  // optional checksBuilder { checks = checksBuilder pkgs; }
+        mkOutput = output: builder:
+          mergeAny
+            # prevent override of nested outputs in otherArguments
+            (optionalAttrs (otherArguments ? ${output}.${system})
+              { ${output} = otherArguments.${output}.${system}; })
+            (optionalAttrs (args ? ${builder})
+              { ${output} = args.${builder} pkgs; });
+      in
+      { inherit pkgs; }
+      // mkOutput "packages" "packagesBuilder"
+      // mkOutput "defaultPackage" "defaultPackageBuilder"
+      // mkOutput "apps" "appsBuilder"
+      // mkOutput "defaultApp" "defaultAppBuilder"
+      // mkOutput "devShell" "devShellBuilder"
+      // mkOutput "checks" "checksBuilder"
+    )
+  # produces attrset in the shape of
+  # { nixosConfigurations = {}; darwinConfigurations = {};  ... }
+  # according to profile.output or the default `nixosConfigurations`
+  // foldHosts (attrValues (mapAttrs configurationBuilder hosts))
 )
-
-  // {
-  nixosConfigurations = nixosConfigurations // (builtins.mapAttrs nixosConfigurationBuilder nixosProfiles);
-}
-
