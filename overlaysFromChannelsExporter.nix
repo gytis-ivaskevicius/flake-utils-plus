@@ -51,7 +51,9 @@ let
       overlayNames = overlay: attrNames (overlay null null);
 
       # get all overlays from inputs
-      inputOverlays = mapAttrs (_: v: [ v.overlay or (_: _: { }) ] ++ attrValues v.overlays or { }) inputs;
+      inputOverlays = mapAttrs
+        (_: v: [ v.overlay or (_: _: { }) ] ++ attrValues v.overlays or { })
+        (removeAttrs inputs [ "self" ]);
       # use overlayNames as a way to identify overlays
       flattenedInputOverlays = map overlayNames (foldl' (a: b: a ++ b) [ ] (attrValues inputOverlays));
 
