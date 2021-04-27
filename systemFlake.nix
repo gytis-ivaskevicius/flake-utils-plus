@@ -29,8 +29,8 @@
 }@args:
 
 let
-  inherit (flake-utils-plus.lib) eachSystem patchChannel;
-  inherit (builtins) foldl' mapAttrs removeAttrs attrValues attrNames isAttrs isList;
+  inherit (flake-utils-plus.lib) eachSystem patchChannel mergeAny;
+  inherit (builtins) foldl' mapAttrs removeAttrs attrValues attrNames;
 
   # set defaults and validate host arguments
   evalHostArgs =
@@ -45,16 +45,6 @@ let
     }: {
       inherit channelName system output builder modules extraArgs specialArgs;
     };
-
-  # recursively merge attribute sets and lists up to a certain depth
-  mergeAny = lhs: rhs:
-    lhs // mapAttrs
-      (name: value:
-        if isAttrs value then lhs.${name} or { } // value
-        else if isList value then lhs.${name} or [ ] ++ value
-        else value
-      )
-      rhs;
 
   foldHosts = foldl' mergeAny { };
 
