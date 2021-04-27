@@ -30,7 +30,12 @@
 
 let
   inherit (flake-utils-plus.lib) eachSystem patchChannel mergeAny;
-  inherit (builtins) foldl' mapAttrs removeAttrs attrValues attrNames;
+  inherit (builtins) foldl' mapAttrs removeAttrs attrValues attrNames listToAttrs concatMap;
+
+  filterAttrs = pred: set:
+    listToAttrs (concatMap (name: let value = set.${name}; in if pred name value then [ ({ inherit name value; }) ] else [ ]) (attrNames set));
+
+  srcs = filterAttrs (_: value: !value ? outputs) inputs;
 
   # set defaults and validate host arguments
   evalHostArgs =
@@ -168,7 +173,7 @@ mergeAny otherArguments (
       let
         importChannel = name: value: (import (patchChannel system value.input (value.patches or [ ])) {
           inherit system;
-          overlays = sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ]);
+          overlays = [ (final: prev: { inherit srcs; }) ] ++ sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ]);
           config = channelsConfig // (value.config or { });
         }) // { inherit name; inherit (value) input; };
 
