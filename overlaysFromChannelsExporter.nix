@@ -9,6 +9,8 @@ let
 
       inputs: flake inputs to sort out external overlays
 
+      Overlays with an attribute named "__dontExport" will be filtered out.
+
       Returns an attribute set of all packages defined in an overlay by any channel
       intended to be passed to be exported via _self.overlays_. This method of
       sharing has the advantage over _self.packages_, that the user will instantiate
@@ -68,10 +70,11 @@ let
           )
           (overlayNames overlay);
 
-      filterOverlays = channel:
-        filter
-          (overlay: !elem (overlayNames overlay) flattenedInputOverlays)
-          channel.overlays;
+      checkOverlay = overlay:
+        (!elem (overlayNames overlay) flattenedInputOverlays)
+        && (!elem "__dontExport" (overlayNames overlay));
+
+      filterOverlays = channel: filter checkOverlay channel.overlays;
 
     in
     listToAttrs (

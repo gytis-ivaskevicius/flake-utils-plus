@@ -43,6 +43,13 @@
           # Overwrites specified packages to be used from unstable channel.
           inherit (channels.unstable) alacritty ranger;
         })
+        (final: prev: {
+          lib = prev.lib.extend (lfinal: lprev: {
+            utils = utils.lib;
+          });
+          # As long as the attribute exists, overlaysFromChannelsExporter won't export it
+          __dontExport = true;
+        })
         agenix.overlay
       ];
 
