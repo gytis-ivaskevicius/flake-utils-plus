@@ -5,8 +5,10 @@
 , supportedSystems ? flake-utils-plus.lib.defaultSystems
 , inputs
 
-, channels ? { }
-, channelsConfig ? { }
+, streams ? { }
+, streamsConfig ? { }
+, channels ? streams
+, channelsConfig ? streamsConfig
 , sharedOverlays ? [ ]
 
 , nixosProfiles ? { } # will be deprecated soon, use hosts, instead.
@@ -29,7 +31,7 @@
 }@args:
 
 let
-  inherit (flake-utils-plus.lib) eachSystem patchChannel mergeAny;
+  inherit (flake-utils-plus.lib) eachSystem patchStream mergeAny;
   inherit (builtins) foldl' mapAttrs removeAttrs attrValues attrNames listToAttrs concatMap;
 
   filterAttrs = pred: set:
@@ -39,16 +41,16 @@ let
 
   # set defaults and validate host arguments
   evalHostArgs =
-    { channelName ? "nixpkgs"
+    { streamName ? "nixpkgs"
     , system ? "x86_64-linux"
     , output ? "nixosConfigurations"
-    , builder ? channels.${channelName}.input.lib.nixosSystem
+    , builder ? streams.${streamName}.input.lib.nixosSystem
     , modules ? [ ]
     , extraArgs ? { }
       # These are not part of the module system, so they can be used in `imports` lines without infinite recursion
     , specialArgs ? { }
     }: {
-      inherit channelName system output builder modules extraArgs specialArgs;
+      inherit streamName system output builder modules extraArgs specialArgs;
     };
 
   foldHosts = foldl' mergeAny { };
@@ -62,8 +64,10 @@ let
     "hosts"
     "hostDefaults"
     "nixosProfiles"
-    "channels"
-    "channelsConfig"
+    "streams"
+    "streamsConfig"
+    "channels" # deprecated
+    "channelsConfig" # deprecated
     "self"
     "sharedModules" # deprecated
     "sharedOverlays"
@@ -77,30 +81,30 @@ let
     "checksBuilder"
   ];
 
-  getNixpkgs = host: self.pkgs."${host.system}"."${host.channelName}";
+  getNixpkgs = host: self.pkgs."${host.system}"."${host.streamName}";
 
   configurationBuilder = hostname: host': (
     let
       selectedNixpkgs = getNixpkgs host;
       host = evalHostArgs (mergeAny hostDefaults host');
-      patchedChannel = selectedNixpkgs.path;
+      patchedStream = selectedNixpkgs.path;
 
-      specialArgs = host.specialArgs // { channel = selectedNixpkgs; };
+      specialArgs = host.specialArgs // { stream = selectedNixpkgs; };
 
       /* nixos specific arguments */
       # Use lib from patched nixpkgs
       lib = selectedNixpkgs.lib;
       # Use nixos modules from patched nixpkgs
-      baseModules = import (patchedChannel + "/nixos/modules/module-list.nix");
+      baseModules = import (patchedStream + "/nixos/modules/module-list.nix");
       nixosSpecialArgs =
         let
-          f = channelName:
-            { "${channelName}ModulesPath" = toString (channels.${channelName}.input + "/nixos/modules"); };
+          f = streamName:
+            { "${streamName}ModulesPath" = toString (streams.${streamName}.input + "/nixos/modules"); };
         in
-        # Add `<channelName>ModulesPath`s
-        (foldl' (lhs: rhs: lhs // rhs) { } (map f (attrNames channels)))
+        # Add `<streamName>ModulesPath`s
+        (foldl' (lhs: rhs: lhs // rhs) { } (map f (attrNames streams)))
         # Override `modulesPath` because otherwise imports from there will not use patched nixpkgs
-        // { modulesPath = toString (patchedChannel + "/nixos/modules"); };
+        // { modulesPath = toString (patchedStream + "/nixos/modules"); };
       # The only way to find out if a host has `nixpkgs.config` set to
       # the non-default value is by evalling most of the config.
       hostConfig = (lib.evalModules {
@@ -133,7 +137,7 @@ let
                     if (hostConfig.nixpkgs.config == { }) then
                       selectedNixpkgs
                     else
-                      import patchedChannel {
+                      import patchedStream {
                         inherit (host) system;
                         overlays = selectedNixpkgs.overlays;
                         config = selectedNixpkgs.config // config.nixpkgs.config;
@@ -171,13 +175,13 @@ mergeAny otherArguments (
   eachSystem supportedSystems
     (system:
       let
-        importChannel = name: value: (import (patchChannel system value.input (value.patches or [ ])) {
+        importStream = name: value: (import (patchStream system value.input (value.patches or [ ])) {
           inherit system;
           overlays = [ (final: prev: { inherit srcs; }) ] ++ sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ]);
-          config = channelsConfig // (value.config or { });
+          config = streamsConfig // (value.config or { });
         }) // { inherit name; inherit (value) input; };
 
-        pkgs = mapAttrs importChannel channels;
+        pkgs = mapAttrs importStream streams;
 
         mkOutput = output: builder:
           mergeAny

@@ -16,8 +16,8 @@ This flake provides two main features (visible from `flake.nix`):
 - `nixosModules.saneFlakeDefaults` - Configures `nix.*` attributes. Generates `nix.nixPath`/`nix.registry` from flake `inputs`, sets `pkgs.nixUnstable` as the default also enables `ca-references` and `flakes`.
 - `lib.systemFlake { ... }` - Generates a system flake that may then be built.
 - `lib.exporter.modulesFromListExporter [ ./a.nix ./b.nix ]` - Generates modules attributes which looks like this `{ a = import ./a.nix; b = import ./b.nix; }`.
-- `lib.exporter.overlaysFromChannelsExporter channels` - Collects all overlays from channels and exports them as an appropriately namespaced attribute set. Users can instantiate with their nixpkgs version.
-- `lib.builder.packagesFromOverlayBuilderConstructor channels pkgs` - Similar to the overlay generator, but outputs them as packages, instead. Users can use your cache.
+- `lib.exporter.overlaysFromStreamsExporter streams` - Collects all overlays from streams and exports them as an appropriately namespaced attribute set. Users can instantiate with their nixpkgs version.
+- `lib.builder.packagesFromOverlayBuilderConstructor streams pkgs` - Similar to the overlay generator, but outputs them as packages, instead. Users can use your cache.
 
 
 # Examples #
@@ -65,28 +65,28 @@ in flake-utils-plus.lib.systemFlake {
   supportedSystems = [ "x86_64-linux" ];
 
 
-  ################
-  ### channels ###
-  ################
+  #################
+  #### streams ####
+  #################
 
-  # Configuration that is shared between all channels.
-  channelsConfig = { allowBroken = true; };
+  # Configuration that is shared between all streams.
+  streamsConfig = { allowBroken = true; };
 
-  # Overlays which are applied to all channels.
+  # Overlays which are applied to all streams.
   sharedOverlays = [ nur.overlay ];
 
   # Nixpkgs flake reference to be used in the configuration.
-  channels.<name>.input = nixpkgs;
+  streams.<name>.input = nixpkgs;
 
-  # Channel specific config options.
-  channels.<name>.config = { allowUnfree = true; };
+  # Stream specific config options.
+  streams.<name>.config = { allowUnfree = true; };
 
-  # Patches to apply on selected channel.
-  channels.<name>.patches = [ ./someAwesomePatch.patch ];
+  # Patches to apply on selected stream.
+  streams.<name>.patches = [ ./someAwesomePatch.patch ];
 
-  # Overlays to apply on a selected channel.
-  channels.<name>.overlaysBuilder = channels: [
-    (final: prev: { inherit (channels.unstable) neovim; })
+  # Overlays to apply on a selected stream.
+  streams.<name>.overlaysBuilder = streams: [
+    (final: prev: { inherit (streams.unstable) neovim; })
   ];
 
 
@@ -100,8 +100,8 @@ in flake-utils-plus.lib.systemFlake {
   # Default modules to be passed to all hosts.
   hostDefaults.modules = [ utils.nixosModules.saneFlakeDefaults ];
 
-  # Reference to `channels.<name>.*`, defines default channel to be used by hosts. Defaults to "nixpkgs".
-  hostDefaults.channelName = "unstable";
+  # Reference to `streams.<name>.*`, defines default stream to be used by hosts. Defaults to "nixpkgs".
+  hostDefaults.streamName = "unstable";
 
   # Extra arguments to be passed to all modules. Merged with host's extraArgs.
   hostDefaults.extraArgs = { inherit utils inputs; foo = "foo"; };
@@ -114,8 +114,8 @@ in flake-utils-plus.lib.systemFlake {
   # System architecture. Defaults to `defaultSystem` argument.
   hosts.<hostname>.system = "aarch64-linux";
 
-  # <name> of the channel to be used. Defaults to `nixpkgs`;
-  hosts.<hostname>.channelName = "unstable";
+  # <name> of the stream to be used. Defaults to `nixpkgs`;
+  hosts.<hostname>.streamName = "unstable";
 
   # Extra arguments to be passed to the modules.
   hosts.<hostname>.extraArgs = { abc = 123; };
@@ -129,7 +129,7 @@ in flake-utils-plus.lib.systemFlake {
   # Flake output for configuration to be passed to. Defaults to `nixosConfigurations`.
   hosts.<hostname>.output = "darwinConfigurations";
 
-  # System builder. Defaults to `channels.<name>.input.lib.nixosSystem`.
+  # System builder. Defaults to `streams.<name>.input.lib.nixosSystem`.
   # `removeAttrs` workaround due to this issue https://github.com/LnL7/nix-darwin/issues/319
   hosts.<hostname>.builder = args: nix-darwin.lib.darwinSystem (removeAttrs args [ "system" ]);
 
@@ -138,14 +138,14 @@ in flake-utils-plus.lib.systemFlake {
   ### flake output builders ###
   #############################
 
-  # Evaluates to `packages.<system>.coreutils = <unstable-channel-reference>.coreutils`.
-  packagesBuilder = channels: { inherit (channels.unstable) coreutils; };
+  # Evaluates to `packages.<system>.coreutils = <unstable-stream-reference>.coreutils`.
+  packagesBuilder = streams: { inherit (streams.unstable) coreutils; };
 
-  # Evaluates to `defaultPackage.<system>.neovim = <nixpkgs-channel-reference>.neovim`.
-  defaultPackageBuilder = channels: channels.nixpkgs.neovim;
+  # Evaluates to `defaultPackage.<system>.neovim = <nixpkgs-stream-reference>.neovim`.
+  defaultPackageBuilder = streams: streams.nixpkgs.neovim;
 
   # Evaluates to `apps.<system>.custom-neovim  = utils.lib.mkApp { drv = ...; exePath = ...; };`.
-  appsBuilder = channels: with channels.nixpkgs; {
+  appsBuilder = streams: with streams.nixpkgs; {
     custom-neovim = mkApp {
       drv = fancy-neovim;
       exePath = "/bin/nvim";
@@ -153,10 +153,10 @@ in flake-utils-plus.lib.systemFlake {
   };
 
   # Evaluates to `apps.<system>.firefox  = utils.lib.mkApp { drv = ...; };`.
-  defaultAppBuilder = channels: mkApp { drv = channels.nixpkgs.firefox; };
+  defaultAppBuilder = streams: mkApp { drv = streams.nixpkgs.firefox; };
 
-  # Evaluates to `devShell.<system> = <nixpkgs-channel-reference>.mkShell { name = "devShell"; };`.
-  devShellBuilder = channels: channels.nixpkgs.mkShell { name = "devShell"; };
+  # Evaluates to `devShell.<system> = <nixpkgs-stream-reference>.mkShell { name = "devShell"; };`.
+  devShellBuilder = streams: streams.nixpkgs.mkShell { name = "devShell"; };
 
 
   #########################################################

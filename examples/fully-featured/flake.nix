@@ -34,8 +34,8 @@
       hostDefaults = {
         # Default architecture to be used for `hosts` defaults to "x86_64-linux"
         system = "x86_64-linux";
-        # Default channel to be used for `hosts` defaults to "nixpkgs"
-        channelName = "unstable";
+        # Default stream to be used for `hosts` defaults to "nixpkgs"
+        streamName = "unstable";
         # Extra arguments to be passed to modules. Merged with host's extraArgs
         extraArgs = { inherit utils inputs; foo = "foo"; };
         # Default modules to be passed to all hosts.
@@ -52,7 +52,7 @@
 
       };
 
-      # Shared overlays between channels, gets applied to all `channels.<name>.input`
+      # Shared overlays between streams, gets applied to all `streams.<name>.input`
       sharedOverlays = [
         # Overlay imported from `./overlays`. (Defined below)
         self.overlay
@@ -62,35 +62,35 @@
 
 
 
-      # Channel definitions. `channels.<name>.{input,overlaysBuilder,config,patches}`
-      channels.nixpkgs = {
-        # Channel input to import
+      # Stream definitions. `streams.<name>.{input,overlaysBuilder,config,patches}`
+      streams.nixpkgs = {
+        # Stream input to import
         input = nixpkgs;
 
-        # Channel specific overlays
-        overlaysBuilder = channels: [
-          (final: prev: { inherit (channels.unstable) zsh; })
+        # Stream specific overlays
+        overlaysBuilder = streams: [
+          (final: prev: { inherit (streams.unstable) zsh; })
         ];
 
-        # Channel specific configuration. Overwrites `channelsConfig` argument
+        # Stream specific configuration. Overwrites `streamsConfig` argument
         config = {
           allowUnfree = false;
         };
       };
 
-      # Additional channel input
-      channels.unstable.input = unstable;
+      # Additional stream input
+      streams.unstable.input = unstable;
       # Yep, you see it first folks - you can patch nixpkgs!
-      channels.unstable.patches = [ ./myNixpkgsPatch.patch ];
-      channels.unstable.overlaysBuilder = channels: [
+      streams.unstable.patches = [ ./myNixpkgsPatch.patch ];
+      streams.unstable.overlaysBuilder = streams: [
         (final: prev: {
           neovim-nightly = neovim.defaultPackage.${prev.system};
         })
       ];
 
 
-      # Default configuration values for `channels.<name>.config = {...}`
-      channelsConfig = {
+      # Default configuration values for `streams.<name>.config = {...}`
+      streamsConfig = {
         allowBroken = true;
         allowUnfree = true;
       };
@@ -101,8 +101,8 @@
         Morty = {
           # System architecture.
           system = "x86_64-linux";
-          # <name> of the channel to be used. Defaults to `nixpkgs`
-          channelName = "unstable";
+          # <name> of the stream to be used. Defaults to `nixpkgs`
+          streamName = "unstable";
           # Extra arguments to be passed to the modules.
           extraArgs = {
             abc = 123;
@@ -117,41 +117,41 @@
         };
 
         Summer = {
-          channelName = "unstable";
+          streamName = "unstable";
           modules = [ ./configurations/Summer.host.nix ];
         };
       };
 
       # Evaluates to `packages.<system>.attributeKey = "attributeValue"`
-      packagesBuilder = channels: { inherit (channels.unstable) coreutils; };
+      packagesBuilder = streams: { inherit (streams.unstable) coreutils; };
 
       # Evaluates to `defaultPackage.<system>.attributeKey = "attributeValue"`
-      defaultPackageBuilder = channels: channels.nixpkgs.runCommandNoCC "package" { } "echo package > $out";
+      defaultPackageBuilder = streams: streams.nixpkgs.runCommandNoCC "package" { } "echo package > $out";
 
       # Evaluates to `apps.<system>.attributeKey = "attributeValue"`
-      appsBuilder = channels: { package = { type = "app"; program = channels.nixpkgs.runCommandNoCC "package" { } "echo test > $out"; }; };
+      appsBuilder = streams: { package = { type = "app"; program = streams.nixpkgs.runCommandNoCC "package" { } "echo test > $out"; }; };
 
       # Evaluates to `defaultApp.<system>.attributeKey = "attributeValue"`
-      defaultAppBuilder = channels: { type = "app"; program = channels.nixpkgs.runCommandNoCC "package" { } "echo test > $out"; };
+      defaultAppBuilder = streams: { type = "app"; program = streams.nixpkgs.runCommandNoCC "package" { } "echo test > $out"; };
 
       # Evaluates to `devShell.<system> = "attributeValue"`
-      devShellBuilder = channels: channels.nixpkgs.mkShell { name = "devShell"; };
+      devShellBuilder = streams: streams.nixpkgs.mkShell { name = "devShell"; };
 
       # Evaluates to `checks.<system>.attributeKey = "attributeValue"`
-      checksBuilder = channels:
+      checksBuilder = streams:
         let
           booleanCheck = cond:
             if cond
-            then channels.nixpkgs.runCommandNoCC "success" { } "echo success > $out"
-            else channels.nixpkgs.runCommandNoCC "failure" { } "exit 1";
+            then streams.nixpkgs.runCommandNoCC "success" { } "echo success > $out"
+            else streams.nixpkgs.runCommandNoCC "failure" { } "exit 1";
         in
         {
-          check = channels.nixpkgs.runCommandNoCC "test" { } "echo test > $out";
+          check = streams.nixpkgs.runCommandNoCC "test" { } "echo test > $out";
           # Modules (and lib) from patched nixpkgs are used
           summerHasCustomModuleConfigured = booleanCheck (self.nixosConfigurations.Summer.config.patchedModule.test == "test");
           # nixpkgs config from host-specific module is used
           summerHasPackageOverridesConfigured = booleanCheck (self.nixosConfigurations.Summer.config.nixpkgs.pkgs.config ? packageOverrides);
-          # nixpkgs config from channel is also used
+          # nixpkgs config from stream is also used
           summerHasUnfreeConfigured = booleanCheck (self.nixosConfigurations.Summer.config.nixpkgs.pkgs.config ? allowUnfree);
         };
 

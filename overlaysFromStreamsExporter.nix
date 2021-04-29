@@ -1,15 +1,15 @@
 { flake-utils-plus }:
 let
 
-  overlaysFromChannelsExporter = { pkgs, inputs ? { } }:
+  overlaysFromStreamsExporter = { pkgs, inputs ? { } }:
     /**
-      Synopsis: overlaysFromChannelsExporter _{ pkgs, inputs }_
+      Synopsis: overlaysFromStreamsExporter _{ pkgs, inputs }_
 
       pkgs: self.pkgs
 
       inputs: flake inputs to sort out external overlays
 
-      Returns an attribute set of all packages defined in an overlay by any channel
+      Returns an attribute set of all packages defined in an overlay by any stream
       intended to be passed to be exported via _self.overlays_. This method of
       sharing has the advantage over _self.packages_, that the user will instantiate
       overlays with his proper nixpkgs version, and thereby significantly reduce their system's
@@ -19,8 +19,8 @@ let
 
       It can happen that an overlay is not compatible with the version of nixpkgs a user tries
       to instantiate it. In order to provide users with a visual clue for which nixpkgs version
-      an overlay was originally created, we prefix the channle name: "<channelname>/<packagekey>".
-      In the case of the unstable channel, this information is still of varying usefulness,
+      an overlay was originally created, we prefix the channle name: "<streamname>/<packagekey>".
+      In the case of the unstable stream, this information is still of varying usefulness,
       as effective cut dates can vary heavily between repositories.
 
       To ensure only overlays that originate from the flake are exported you can optionally pass
@@ -41,13 +41,13 @@ let
       inherit (builtins) mapAttrs foldl' filter head attrNames attrValues concatMap listToAttrs elem;
       nameValuePair = name: value: { inherit name value; };
 
-      # just pull out one arch from the system-spaced pkgs to get access to channels
+      # just pull out one arch from the system-spaced pkgs to get access to streams
       # overlays can be safely evaluated on any arch
-      channels = head (attrValues pkgs);
+      streams = head (attrValues pkgs);
 
       pathStr = path: builtins.concatStringsSep "/" path;
 
-      channelNames = attrNames channels;
+      streamNames = attrNames streams;
       overlayNames = overlay: attrNames (overlay null null);
 
       # get all overlays from inputs
@@ -57,34 +57,34 @@ let
       # use overlayNames as a way to identify overlays
       flattenedInputOverlays = map overlayNames (foldl' (a: b: a ++ b) [ ] (attrValues inputOverlays));
 
-      extractAndNamespaceEachOverlay = channelName: overlay:
+      extractAndNamespaceEachOverlay = streamName: overlay:
         map
           (overlayName:
             nameValuePair
-              (pathStr [ channelName overlayName ])
+              (pathStr [ streamName overlayName ])
               (final: prev: {
                 ${overlayName} = (overlay final prev).${overlayName};
               })
           )
           (overlayNames overlay);
 
-      filterOverlays = channel:
+      filterOverlays = stream:
         filter
           (overlay: !elem (overlayNames overlay) flattenedInputOverlays)
-          channel.overlays;
+          stream.overlays;
 
     in
     listToAttrs (
       concatMap
-        (channelName:
+        (streamName:
           concatMap
             (overlay:
-              extractAndNamespaceEachOverlay channelName overlay
+              extractAndNamespaceEachOverlay streamName overlay
             )
-            (filterOverlays channels.${channelName})
+            (filterOverlays streams.${streamName})
         )
-        channelNames
+        streamNames
     );
 
 in
-overlaysFromChannelsExporter
+overlaysFromStreamsExporter

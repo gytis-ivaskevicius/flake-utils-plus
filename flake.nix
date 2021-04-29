@@ -9,7 +9,7 @@
       fupArgs = { flake-utils-plus = self; };
       systemFlake = import ./systemFlake.nix fupArgs;
       packagesFromOverlaysBuilderConstructor = import ./packagesFromOverlaysBuilderConstructor.nix fupArgs;
-      overlaysFromChannelsExporter = import ./overlaysFromChannelsExporter.nix fupArgs;
+      overlaysFromStreamsExporter = import ./overlaysFromStreamsExporter.nix fupArgs;
       modulesFromList = import ./moduleFromListExporter.nix fupArgs;
     in
     rec {
@@ -27,7 +27,7 @@
         };
 
         exporter = {
-          inherit overlaysFromChannelsExporter modulesFromList;
+          inherit overlaysFromStreamsExporter modulesFromList;
         };
 
         repl = ./repl.nix;
@@ -42,11 +42,11 @@
             )
             rhs;
 
-        patchChannel = system: channel: patches:
-          if patches == [ ] then channel else
-          (import channel { inherit system; }).pkgs.applyPatches {
-            name = "nixpkgs-patched-${channel.shortRev}";
-            src = channel;
+        patchStream = system: stream: patches:
+          if patches == [ ] then stream else
+          (import stream { inherit system; }).pkgs.applyPatches {
+            name = "nixpkgs-patched-${stream.shortRev}";
+            src = stream;
             patches = patches;
           };
 

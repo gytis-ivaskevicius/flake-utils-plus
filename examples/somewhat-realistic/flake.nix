@@ -24,24 +24,24 @@
 
 
 
-      # Shared overlays between channels, gets applied to all `channels.<name>.input`
+      # Shared overlays between streams, gets applied to all `streams.<name>.input`
       sharedOverlays = [
         # Overlay imported from `./overlays`. (Defined above)
         self.overlay
       ];
 
-      # Channel definitions. `channels.<name>.{input,overlaysBuilder,config,patches}`
-      channels.nixpkgs.input = nixpkgs;
-      channels.unstable.input = unstable;
+      # Stream definitions. `streams.<name>.{input,overlaysBuilder,config,patches}`
+      streams.nixpkgs.input = nixpkgs;
+      streams.unstable.input = unstable;
 
-      # Default configuration values for `channels.<name>.config = {...}`
-      channelsConfig.allowUnfree = true;
+      # Default configuration values for `streams.<name>.config = {...}`
+      streamsConfig.allowUnfree = true;
 
-      # Channel specific overlays
-      channels.nixpkgs.overlaysBuilder = channels: [
+      # Stream specific overlays
+      streams.nixpkgs.overlaysBuilder = streams: [
         (final: prev: {
-          # Overwrites specified packages to be used from unstable channel.
-          inherit (channels.unstable) alacritty ranger;
+          # Overwrites specified packages to be used from unstable stream.
+          inherit (streams.unstable) alacritty ranger;
         })
         agenix.overlay
       ];
@@ -73,8 +73,8 @@
 
 
       hosts.Bob = {
-        # This host uses `channels.unstable.{input,overlaysBuilder,config,patches}` attributes instead of `channels.nixpkgs.<...>`
-        channelName = "unstable";
+        # This host uses `streams.unstable.{input,overlaysBuilder,config,patches}` attributes instead of `streams.nixpkgs.<...>`
+        streamName = "unstable";
 
         # Host specific configuration.
         modules = [
@@ -92,8 +92,8 @@
 
         system = "x86_64-darwin";
 
-        # This host uses `channels.unstable.{input,overlaysBuilder,config,patches}` attributes instead of `channels.nixpkgs.<...>`
-        channelName = "unstable";
+        # This host uses `streams.unstable.{input,overlaysBuilder,config,patches}` attributes instead of `streams.nixpkgs.<...>`
+        streamName = "unstable";
 
         # Host specific configuration.
         modules = [
@@ -105,8 +105,8 @@
 
 
 
-      # export overlays automatically for all packages defined in overlaysBuilder of each channel
-      overlays = utils.lib.exporter.overlaysFromChannelsExporter {
+      # export overlays automatically for all packages defined in overlaysBuilder of each stream
+      overlays = utils.lib.exporter.overlaysFromStreamsExporter {
         inherit (self) pkgs inputs;
       };
 

@@ -1,4 +1,4 @@
-# auto-special args <channelName>ModulesPath for easy backporting of modules
+# auto-special args <streamName>ModulesPath for easy backporting of modules
 { unstableModulesPath, ... }: {
 
   imports = [ "${unstableModulesPath}/installer/cd-dvd/installation-cd-minimal-new-kernel.nix" ];
