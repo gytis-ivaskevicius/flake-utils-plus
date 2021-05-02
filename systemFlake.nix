@@ -42,7 +42,7 @@ let
     { channelName ? "nixpkgs"
     , system ? "x86_64-linux"
     , output ? "nixosConfigurations"
-    , builder ? channels.${channelName}.input.lib.nixosSystem
+    , builder ? (getChannels system).${channelName}.input.lib.nixosSystem
     , modules ? [ ]
     , extraArgs ? { }
       # These are not part of the module system, so they can be used in `imports` lines without infinite recursion
@@ -77,13 +77,15 @@ let
     "checksBuilder"
   ];
 
-  getNixpkgs = host: self.pkgs."${host.system}"."${host.channelName}";
+  getChannels = system: self.pkgs.${system};
+  getNixpkgs = host: (getChannels host.system).${host.channelName};
 
   configurationBuilder = hostname: host': (
     let
       selectedNixpkgs = getNixpkgs host;
       host = evalHostArgs (mergeAny hostDefaults host');
       patchedChannel = selectedNixpkgs.path;
+      channels = getChannels host.system;
 
       specialArgs = host.specialArgs // { channel = selectedNixpkgs; };
 
