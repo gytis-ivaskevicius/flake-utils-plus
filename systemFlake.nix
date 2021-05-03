@@ -175,7 +175,12 @@ mergeAny otherArguments (
       let
         importChannel = name: value: (import (patchChannel system value.input (value.patches or [ ])) {
           inherit system;
-          overlays = [ (final: prev: { inherit srcs; }) ] ++ sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ]);
+          overlays = [
+            (final: prev: {
+              __dontExport = true; # in case user uses overlaysFromChannelsExporter, doesn't hurt for others
+              inherit srcs;
+            })
+          ] ++ sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ]);
           config = channelsConfig // (value.config or { });
         }) // { inherit name; inherit (value) input; };
 
