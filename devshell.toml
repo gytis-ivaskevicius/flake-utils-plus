@@ -72,3 +72,9 @@ name = "nix-build-carl-sr"
 help = "Build Carl (darwin) configuration"
 category = "checks (somewhat realistic example)"
 command = "cd ./examples/somewhat-realistic && nix build .#darwinConfigurations.HostnameThree.config.system.build.toplevel --dry-run"
+
+[[commands]]
+name = "check-derivation-outputs "
+help = "Checks derivation-outputs testcases"
+category = "Tests"
+command = "cd ./tests/derivation-outputs && nix flake show && nix flake check"
