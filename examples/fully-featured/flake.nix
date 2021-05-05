@@ -116,33 +116,11 @@
           output = "someConfigurations";
         };
 
-        Summer = {
-          channelName = "unstable";
-          modules = [ ./configurations/Summer.host.nix ];
-        };
       };
 
 
-      # Evaluates to `checks.<system>.attributeKey = "attributeValue"`
-      checksBuilder = channels:
-        let
-          booleanCheck = cond:
-            if cond
-            then channels.nixpkgs.runCommandNoCC "success" { } "echo success > $out"
-            else channels.nixpkgs.runCommandNoCC "failure" { } "exit 1";
-        in
-        {
-          check = channels.nixpkgs.runCommandNoCC "test" { } "echo test > $out";
-          # Modules (and lib) from patched nixpkgs are used
-          summerHasCustomModuleConfigured = booleanCheck (self.nixosConfigurations.Summer.config.patchedModule.test == "test");
-          # nixpkgs config from host-specific module is used
-          summerHasPackageOverridesConfigured = booleanCheck (self.nixosConfigurations.Summer.config.nixpkgs.pkgs.config ? packageOverrides);
-          # nixpkgs config from channel is also used
-          summerHasUnfreeConfigured = booleanCheck (self.nixosConfigurations.Summer.config.nixpkgs.pkgs.config ? allowUnfree);
-        };
 
       # All other values gets passed down to the flake
-      packages.x86_64-linux.patched-package = self.pkgs.x86_64-linux.unstable.flake-utils-plus-test;
       overlay = import ./overlays;
       abc = 132;
       # etc

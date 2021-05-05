@@ -74,7 +74,13 @@ category = "checks (somewhat realistic example)"
 command = "cd ./examples/somewhat-realistic && nix build .#darwinConfigurations.HostnameThree.config.system.build.toplevel --dry-run"
 
 [[commands]]
-name = "check-derivation-outputs "
+name = "check-derivation-outputs"
 help = "Checks derivation-outputs testcases"
 category = "Tests"
 command = "cd ./tests/derivation-outputs && nix flake show && nix flake check"
+
+[[commands]]
+name = "check-channel-patching"
+help = "Checks channel-patching testcases"
+category = "Tests"
+command = "cd ./tests/channel-patching && nix flake show && nix flake check"
