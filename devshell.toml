@@ -78,3 +78,9 @@ name = "check-channel-patching"
 help = "Checks channel-patching testcases"
 category = "Tests"
 command = "cd ./tests/channel-patching && nix flake show && nix flake check"
+
+[[commands]]
+name = "check-overlays-flow"
+help = "Checks overlays-flow  testcases"
+category = "Tests"
+command = "cd $DEVSHELL_ROOT/tests/overlays-flow && nix flake show && nix flake check"
