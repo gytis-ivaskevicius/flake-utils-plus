@@ -122,20 +122,6 @@
         };
       };
 
-      # Evaluates to `packages.<system>.attributeKey = "attributeValue"`
-      packagesBuilder = channels: { inherit (channels.unstable) coreutils; };
-
-      # Evaluates to `defaultPackage.<system>.attributeKey = "attributeValue"`
-      defaultPackageBuilder = channels: channels.nixpkgs.runCommandNoCC "package" { } "echo package > $out";
-
-      # Evaluates to `apps.<system>.attributeKey = "attributeValue"`
-      appsBuilder = channels: { package = { type = "app"; program = channels.nixpkgs.runCommandNoCC "package" { } "echo test > $out"; }; };
-
-      # Evaluates to `defaultApp.<system>.attributeKey = "attributeValue"`
-      defaultAppBuilder = channels: { type = "app"; program = channels.nixpkgs.runCommandNoCC "package" { } "echo test > $out"; };
-
-      # Evaluates to `devShell.<system> = "attributeValue"`
-      devShellBuilder = channels: channels.nixpkgs.mkShell { name = "devShell"; };
 
       # Evaluates to `checks.<system>.attributeKey = "attributeValue"`
       checksBuilder = channels:
@@ -156,7 +142,6 @@
         };
 
       # All other values gets passed down to the flake
-      checks.x86_64-linux.merge-with-checksBuilder-test = self.pkgs.x86_64-linux.nixpkgs.hello;
       packages.x86_64-linux.patched-package = self.pkgs.x86_64-linux.unstable.flake-utils-plus-test;
       overlay = import ./overlays;
       abc = 132;
