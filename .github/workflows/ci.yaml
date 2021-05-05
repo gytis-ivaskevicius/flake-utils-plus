@@ -34,9 +34,6 @@ jobs:
       - name: Build Rick configuration (fully featured example)
         run: nix develop --command nix-build-rick-ff
 
-      - name: Build Summer checks (fully featured example)
-        run: nix develop --command nix-build-summer-ff
-
       - name: Run `nix flake check` (somewhat realistic example)
         run: nix develop --command "nix-flake-check-rr --show-trace"
 
@@ -61,3 +58,4 @@ jobs:
           extra_nix_config: experimental-features = nix-command flakes
 
       - run: nix develop --command check-derivation-outputs
+      - run: nix develop --command check-channel-patching

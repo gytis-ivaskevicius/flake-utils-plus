@@ -42,12 +42,6 @@ help = "Build Rick configuration"
 category = "checks (fully featured example)"
 command = "cd ./examples/fully-featured && nix build .#someConfigurations.Rick.config.system.build.toplevel --dry-run"
 
-[[commands]]
-name = "nix-build-summer-ff"
-help = "Build Summer configuration"
-category = "checks (fully featured example)"
-command = "cd ./examples/fully-featured && nix build .#checks.x86_64-linux.summerHasUnfreeConfigured && nix build .#checks.x86_64-linux.summerHasPackageOverridesConfigured && nix build .#checks.x86_64-linux.summerHasCustomModuleConfigured"
-
 # Checks for somewhat realistic example
 [[commands]]
 name = "nix-flake-check-sr"
