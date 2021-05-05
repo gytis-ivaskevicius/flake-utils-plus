@@ -9,7 +9,7 @@ packages = [
 name = "fmt"
 help = "Check Nix formatting"
 category = "checks"
-command = "nixpkgs-fmt ${@} ."
+command = "nixpkgs-fmt ${@} $DEVSHELL_ROOT"
 
 [[commands]]
 name = "evalnix"
@@ -22,62 +22,63 @@ command = "fd --extension nix --exec nix-instantiate --parse --quiet {} >/dev/nu
 name = "nix-flake-check-ff"
 help = "Run 'nix flake check'"
 category = "checks (fully featured example)"
-command = "cd ./examples/fully-featured && nix flake check ${@}"
+command = "cd $DEVSHELL_ROOT/examples/fully-featured && nix flake check ${@}"
 
 [[commands]]
 name = "nix-flake-show-ff"
 help = "Run 'nix flake show'"
 category = "checks (fully featured example)"
-command = "cd ./examples/fully-featured && nix flake show ${@}"
+command = "cd $DEVSHELL_ROOT/examples/fully-featured && nix flake show ${@}"
 
 [[commands]]
 name = "nix-build-morty-ff"
 help = "Build Morty configuration"
 category = "checks (fully featured example)"
-command = "cd ./examples/fully-featured && nix build .#nixosConfigurations.Morty.config.system.build.toplevel --dry-run"
+command = "cd $DEVSHELL_ROOT/examples/fully-featured && nix build .#nixosConfigurations.Morty.config.system.build.toplevel --dry-run"
 
 [[commands]]
 name = "nix-build-rick-ff"
 help = "Build Rick configuration"
 category = "checks (fully featured example)"
-command = "cd ./examples/fully-featured && nix build .#someConfigurations.Rick.config.system.build.toplevel --dry-run"
+command = "cd $DEVSHELL_ROOT/examples/fully-featured && nix build .#someConfigurations.Rick.config.system.build.toplevel --dry-run"
 
 # Checks for somewhat realistic example
 [[commands]]
 name = "nix-flake-check-sr"
 help = "Run 'nix flake check'"
 category = "checks (somewhat realistic example)"
-command = "cd ./examples/somewhat-realistic && nix flake check ${@}"
+command = "cd $DEVSHELL_ROOT/examples/somewhat-realistic && nix flake check ${@}"
 
 [[commands]]
 name = "nix-flake-show-sr"
 help = "Run 'nix flake show'"
 category = "checks (somewhat realistic example)"
-command = "cd ./examples/somewhat-realistic && nix flake show ${@}"
+command = "cd $DEVSHELL_ROOT/examples/somewhat-realistic && nix flake show ${@}"
 
 [[commands]]
 name = "nix-build-alice-sr"
 help = "Build Alice configuration"
 category = "checks (somewhat realistic example)"
-command = "cd ./examples/somewhat-realistic && nix build .#nixosConfigurations.HostnameOne.config.system.build.toplevel --dry-run"
+command = "cd $DEVSHELL_ROOT/examples/somewhat-realistic && nix build .#nixosConfigurations.HostnameOne.config.system.build.toplevel --dry-run"
 
 [[commands]]
 name = "nix-build-carl-sr"
 help = "Build Carl (darwin) configuration"
 category = "checks (somewhat realistic example)"
-command = "cd ./examples/somewhat-realistic && nix build .#darwinConfigurations.HostnameThree.config.system.build.toplevel --dry-run"
+command = "cd $DEVSHELL_ROOT/examples/somewhat-realistic && nix build .#darwinConfigurations.HostnameThree.config.system.build.toplevel --dry-run"
+
 
 [[commands]]
 name = "check-derivation-outputs"
 help = "Checks derivation-outputs testcases"
 category = "Tests"
-command = "cd ./tests/derivation-outputs && nix flake show && nix flake check"
+command = "cd $DEVSHELL_ROOT/tests/derivation-outputs && nix flake show && nix flake check"
 
 [[commands]]
 name = "check-channel-patching"
 help = "Checks channel-patching testcases"
 category = "Tests"
-command = "cd ./tests/channel-patching && nix flake show && nix flake check"
+command = "cd $DEVSHELL_ROOT/tests/channel-patching && nix flake show && nix flake check"
 
 [[commands]]
 name = "check-overlays-flow"
