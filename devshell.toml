@@ -6,6 +6,12 @@ packages = [
 ]
 
 [[commands]]
+name = "rm-locks"
+help = "Remove all lock files"
+category = "checks"
+command = "git rm -f $DEVSHELL_ROOT/tests/*/flake.lock ; git rm -f $DEVSHELL_ROOT/examples/*/flake.lock"
+
+[[commands]]
 name = "fmt"
 help = "Check Nix formatting"
 category = "checks"
