@@ -8,10 +8,11 @@
     in
     utils.lib.systemFlake {
       inherit self inputs;
-      supportedSystems = [ "x86_64-linux" "x86_64-darwin" ];
+      supportedSystems = [ "x86_64-linux" "x86_64-darwin" "aarch64-linux" ];
 
       channels.nixpkgs.input = nixpkgs;
       channels.unstable.input = nixpkgs;
+      channels.someChannel.input = nixpkgs;
 
 
 
@@ -20,21 +21,30 @@
       #################
 
       # Hosts
-      hostDefaults.modules = [ base-nixos ];
+      hostDefaults = {
+        output = "someConfigurations";
+        system = "aarch64-linux";
+        channelName = "someChannel";
+        extraArgs.sharedExtraArg = "sharedExtraArg";
+        specialArgs.sharedSpecialArg = "sharedSpecialArg";
 
-      hosts.HostDefaults = { };
+        modules = [
+          base-nixos
+          # Assigning to lib.* so we could assert these options in checks
+          ({ sharedExtraArg, sharedSpecialArg, ... }: {
+            lib = { inherit sharedExtraArg sharedSpecialArg; };
+          })
+        ];
+      };
+
+      hosts.Plain = { };
 
       hosts.Customized = {
-        output = "darwinConfigurations";
-
         #builder = args: nix-darwin.lib.darwinSystem (builtins.removeAttrs args [ "system" ]);
-
+        output = "darwinConfigurations";
         system = "x86_64-darwin";
-
         channelName = "unstable";
-
         extraArgs.hostExtraArg = "hostExtraArg";
-
         specialArgs.hostSpecialArg = "hostSpecialArg";
 
         # Assigning to lib.* so we could assert these options in checks
@@ -53,23 +63,36 @@
 
       checksBuilder = channels:
         let
+          plainHost = self.someConfigurations.Plain;
+          plainHostPkgs = plainHost.config.nixpkgs.pkgs;
+
           customizedHost = self.darwinConfigurations.Customized;
           customizedHostPkgs = customizedHost.config.nixpkgs.pkgs;
         in
         {
 
-          output_valid_1 = hasKey self.darwinConfigurations "Customized";
+          # Plain system with inherited options from hostDefaults
+          system_valid_1 = isEqual plainHostPkgs.system "aarch64-linux";
 
-          system_valid_1 = isEqual customizedHostPkgs.system "x86_64-darwin";
+          channelName_valid_1 = isEqual plainHostPkgs.name "someChannel";
 
-          channelName_valid_1 = isEqual customizedHostPkgs.name "unstable";
+          channelInput_valid_1 = hasKey plainHostPkgs "input";
 
-          channelInput_valid_1 = hasKey customizedHostPkgs "input";
+          extraArgs_valid_1 = hasKey plainHost.config.lib "sharedExtraArg";
 
-          extraArgs_valid_1 = hasKey customizedHost.config.lib "hostExtraArg";
+          specialArgs_valid_1 = hasKey plainHost.config.lib "sharedSpecialArg";
 
-          specialArgs_valid_1 = hasKey customizedHost.config.lib "hostSpecialArg";
 
+          # System with overwritten hostDefaults
+          system_valid_2 = isEqual customizedHostPkgs.system "x86_64-darwin";
+
+          channelName_valid_2 = isEqual customizedHostPkgs.name "unstable";
+
+          channelInput_valid_2 = hasKey customizedHostPkgs "input";
+
+          extraArgs_valid_2 = hasKey customizedHost.config.lib "hostExtraArg";
+
+          specialArgs_valid_2 = hasKey customizedHost.config.lib "hostSpecialArg";
 
 
         };
