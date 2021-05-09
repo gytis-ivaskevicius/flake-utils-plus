@@ -17,5 +17,52 @@ let
   pkgs = import nixpkgsSrc { inherit system; };
   devshell = import devshellSrc { inherit system pkgs; };
 
+  withCategory = category: attrset: attrset // { inherit category; };
+  util = withCategory "utils";
+
+  test = name: withCategory "tests" {
+    name = "check-${name}";
+    help = "Checks ${name} testcases";
+    command = "cd $DEVSHELL_ROOT/tests/${name} && nix flake show && nix flake check";
+  };
+
+  dry-nixos-build = example: host: withCategory "dry-build" {
+    name = "build-${example}-${host}";
+    command = "nix build $DEVSHELL_ROOT/examples/${example}#nixosConfigurations.${host}.config.system.build.toplevel --dry-run";
+  };
+
 in
-devshell.fromTOML ./devshell.toml
+devshell.mkShell {
+  name = "flake-utils-plus";
+  packages = with pkgs;[
+    fd
+    nixpkgs-fmt
+  ];
+
+  commands = [
+    (util {
+      command = "git rm -f $DEVSHELL_ROOT/tests/*/flake.lock ; git rm -f $DEVSHELL_ROOT/examples/*/flake.lock";
+      help = "Remove all lock files";
+      name = "rm-locks";
+    })
+    (util {
+      name = "fmt";
+      help = "Check Nix formatting";
+      command = "nixpkgs-fmt \${@} $DEVSHELL_ROOT";
+    })
+    (util {
+      name = "evalnix";
+      help = "Check Nix parsing";
+      command = "fd --extension nix --exec nix-instantiate --parse --quiet {} >/dev/null";
+    })
+
+    (test "channel-patching")
+    (test "derivation-outputs")
+    (test "hosts-config")
+    (test "overlays-flow")
+    (dry-nixos-build "minimal-multichannel" "Hostname1")
+    (dry-nixos-build "minimal-multichannel" "Hostname2")
+
+  ];
+
+}

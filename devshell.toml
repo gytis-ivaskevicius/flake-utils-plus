@@ -5,24 +5,6 @@ packages = [
   "nixpkgs-fmt",
 ]
 
-[[commands]]
-name = "rm-locks"
-help = "Remove all lock files"
-category = "checks"
-command = "git rm -f $DEVSHELL_ROOT/tests/*/flake.lock ; git rm -f $DEVSHELL_ROOT/examples/*/flake.lock"
-
-[[commands]]
-name = "fmt"
-help = "Check Nix formatting"
-category = "checks"
-command = "nixpkgs-fmt ${@} $DEVSHELL_ROOT"
-
-[[commands]]
-name = "evalnix"
-help = "Check Nix parsing"
-category = "checks"
-command = "fd --extension nix --exec nix-instantiate --parse --quiet {} >/dev/null"
-
 # Checks for fully featured example
 [[commands]]
 name = "nix-flake-check-ff"
@@ -73,27 +55,3 @@ help = "Build Carl (darwin) configuration"
 category = "checks (somewhat realistic example)"
 command = "cd $DEVSHELL_ROOT/examples/somewhat-realistic && nix build .#darwinConfigurations.HostnameThree.config.system.build.toplevel --dry-run"
 
-
-[[commands]]
-name = "check-derivation-outputs"
-help = "Checks derivation-outputs testcases"
-category = "Tests"
-command = "cd $DEVSHELL_ROOT/tests/derivation-outputs && nix flake show && nix flake check"
-
-[[commands]]
-name = "check-channel-patching"
-help = "Checks channel-patching testcases"
-category = "Tests"
-command = "cd $DEVSHELL_ROOT/tests/channel-patching && nix flake show && nix flake check"
-
-[[commands]]
-name = "check-overlays-flow"
-help = "Checks overlays-flow testcases"
-category = "Tests"
-command = "cd $DEVSHELL_ROOT/tests/overlays-flow && nix flake show && nix flake check"
-
-[[commands]]
-name = "check-hosts-config"
-help = "Checks hosts-config testcases"
-category = "Tests"
-command = "cd $DEVSHELL_ROOT/tests/hosts-config && nix flake show && nix flake check"
