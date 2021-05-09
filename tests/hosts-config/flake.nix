@@ -39,8 +39,11 @@
 
       hosts.Plain = { };
 
+      hosts.WithFakeBuilder = {
+        builder = args: { fakeBuilder = "fakeBuilder"; };
+      };
+
       hosts.Customized = {
-        #builder = args: nix-darwin.lib.darwinSystem (builtins.removeAttrs args [ "system" ]);
         output = "darwinConfigurations";
         system = "x86_64-darwin";
         channelName = "unstable";
@@ -94,6 +97,9 @@
 
           specialArgs_valid_2 = hasKey customizedHost.config.lib "hostSpecialArg";
 
+
+          # Eval fakeBuilder
+          builder_applied = isEqual self.someConfigurations.WithFakeBuilder.fakeBuilder "fakeBuilder";
 
         };
 
