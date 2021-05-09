@@ -60,3 +60,4 @@ jobs:
       - run: nix develop --command check-derivation-outputs
       - run: nix develop --command check-channel-patching
       - run: nix develop --command check-overlays-flow
+      - run: nix develop --command check-hosts-config

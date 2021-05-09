@@ -82,6 +82,12 @@ command = "cd $DEVSHELL_ROOT/tests/channel-patching && nix flake show && nix fla
 
 [[commands]]
 name = "check-overlays-flow"
-help = "Checks overlays-flow  testcases"
+help = "Checks overlays-flow testcases"
 category = "Tests"
 command = "cd $DEVSHELL_ROOT/tests/overlays-flow && nix flake show && nix flake check"
+
+[[commands]]
+name = "check-hosts-config"
+help = "Checks hosts-config testcases"
+category = "Tests"
+command = "cd $DEVSHELL_ROOT/tests/hosts-config && nix flake show && nix flake check"

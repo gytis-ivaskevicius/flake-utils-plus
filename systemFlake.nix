@@ -103,6 +103,8 @@ let
         (foldl' (lhs: rhs: lhs // rhs) { } (map f (attrNames channels)))
         # Override `modulesPath` because otherwise imports from there will not use patched nixpkgs
         // { modulesPath = toString (patchedChannel + "/nixos/modules"); };
+
+
       # The only way to find out if a host has `nixpkgs.config` set to
       # the non-default value is by evalling most of the config.
       hostConfig = (lib.evalModules {
@@ -135,11 +137,12 @@ let
                     if (hostConfig.nixpkgs.config == { }) then
                       selectedNixpkgs
                     else
-                      import patchedChannel {
-                        inherit (host) system;
-                        overlays = selectedNixpkgs.overlays ++ hostConfig.nixpkgs.overlays;
-                        config = selectedNixpkgs.config // config.nixpkgs.config;
-                      };
+                      import patchedChannel
+                        {
+                          inherit (host) system;
+                          overlays = selectedNixpkgs.overlays ++ hostConfig.nixpkgs.overlays;
+                          config = selectedNixpkgs.config // config.nixpkgs.config;
+                        } // { inherit (selectedNixpkgs) name input; };
                 }
               else { _module.args.pkgs = selectedNixpkgs; })
 

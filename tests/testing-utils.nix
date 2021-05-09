@@ -1,6 +1,11 @@
 { nixpkgs }:
 
 {
+  # Options that keep Nix from complaining
+  base-nixos = {
+    boot.loader.grub.devices = [ "nodev" ];
+    fileSystems."/" = { device = "test"; fsType = "ext4"; };
+  };
 
   isEqual = a: b:
     if a == b

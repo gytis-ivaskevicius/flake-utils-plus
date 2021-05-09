@@ -68,19 +68,23 @@
         {
 
           # ExistingPkgsFlow
-          fromSharedOverlaysApplied_1 = hasKey existingPkgsFlow "fromSharedOverlays";
+          sharedOverlays_Applied_1 = hasKey existingPkgsFlow "fromSharedOverlays";
 
-          fromChannelSpecificApplied_1 = hasKey existingPkgsFlow "fromChannelSpecific";
+          channelSpecific_Applied_1 = hasKey existingPkgsFlow "fromChannelSpecific";
 
-          fromHostConfigApplied_1 = hasKey existingPkgsFlow "fromHostConfig";
+          hostConfig_Applied_1 = hasKey existingPkgsFlow "fromHostConfig";
+
+          contains_srcs_1 = hasKey existingPkgsFlow "srcs";
 
 
           # ReimportFlow
-          fromSharedOverlaysApplied_2 = hasKey reimportFlow "fromSharedOverlays";
+          sharedOverlays_Applied_2 = hasKey reimportFlow "fromSharedOverlays";
 
-          fromChannelSpecificApplied_2 = hasKey reimportFlow "fromChannelSpecific";
+          channelSpecific_Applied_2 = hasKey reimportFlow "fromChannelSpecific";
 
-          fromHostConfigApplied_2 = hasKey reimportFlow "fromHostConfig";
+          hostConfig_Applied_2 = hasKey reimportFlow "fromHostConfig";
+
+          contains_srcs_2 = hasKey reimportFlow "srcs";
 
         };
 
