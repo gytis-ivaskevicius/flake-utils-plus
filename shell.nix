@@ -28,7 +28,7 @@ let
 
   dry-nixos-build = example: host: withCategory "dry-build" {
     name = "build-${example}-${host}";
-    command = "nix build $DEVSHELL_ROOT/examples/${example}#nixosConfigurations.${host}.config.system.build.toplevel --dry-run";
+    command = "cd $DEVSHELL_ROOT/examples/${example} && nix flake show && nix build .#nixosConfigurations.${host}.config.system.build.toplevel --dry-run";
   };
 
 in
