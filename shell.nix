@@ -40,21 +40,21 @@ devshell.mkShell {
   ];
 
   commands = [
-    (util {
+    {
       command = "git rm -f $DEVSHELL_ROOT/tests/*/flake.lock ; git rm -f $DEVSHELL_ROOT/examples/*/flake.lock";
       help = "Remove all lock files";
       name = "rm-locks";
-    })
-    (util {
+    }
+    {
       name = "fmt";
       help = "Check Nix formatting";
       command = "nixpkgs-fmt \${@} $DEVSHELL_ROOT";
-    })
-    (util {
+    }
+    {
       name = "evalnix";
       help = "Check Nix parsing";
       command = "fd --extension nix --exec nix-instantiate --parse --quiet {} >/dev/null";
-    })
+    }
 
     (test "channel-patching")
     (test "derivation-outputs")
@@ -62,6 +62,7 @@ devshell.mkShell {
     (test "overlays-flow")
     (dry-nixos-build "minimal-multichannel" "Hostname1")
     (dry-nixos-build "minimal-multichannel" "Hostname2")
+    (dry-nixos-build "home-manager+nur+neovim" "Rick")
 
   ];
 
