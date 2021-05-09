@@ -3,15 +3,8 @@
 
   outputs = inputs@{ self, nixpkgs, utils }:
     let
-      mkApp = utils.lib.mkApp;
-
-      packagePname = drvKey: self.packages.x86_64-linux.${drvKey}.pname;
-
-      appHasSuffix = drvKey: suffix: nixpkgs.lib.hasSuffix suffix self.apps.x86_64-linux.${drvKey}.program;
-
-      defaultAppHasSuffix = suffix: nixpkgs.lib.hasSuffix suffix self.defaultApp.x86_64-linux.program;
-
-      pnameFromOutput = output: self.${output}.x86_64-linux.pname;
+      testing-utils = import ../testing-utils.nix;
+      hasKey = testing-utils.hasKey self.pkgs.x86_64-linux.nixpkgs;
     in
     utils.lib.systemFlake {
       inherit self inputs;
@@ -38,17 +31,26 @@
         })
       ];
 
-      # Host
-      hosts.OverlaysTest.modules = [
-        ({ lib, ... }: {
-          nixpkgs.config.overlays = final: prev: {
-            fromHostConfig = prev.hello;
-          };
+      hostDefaults.modules = [
+        {
+          nixpkgs.overlays = [
+            (final: prev: { fromHostConfig = prev.hello; })
+          ];
 
           # To keep Nix from complaining
           boot.loader.grub.devices = [ "nodev" ];
           fileSystems."/" = { device = "test"; fsType = "ext4"; };
-        })
+        }
+      ];
+
+      # Hosts
+      hosts.ExistingPkgsFlow = { };
+
+      hosts.ReimportFlow.modules = [
+        {
+          # Custom configuration from modules causes reimport of nixpkgs
+          nixpkgs.config.allowUnfree = true;
+        }
       ];
 
 
@@ -59,20 +61,25 @@
 
       checksBuilder = channels:
         let
-          hostPkgs = self.nixosConfigurations.OverlaysTest.pkgs;
-          isTrue = cond:
-            if cond
-            then channels.nixpkgs.runCommandNoCC "success" { } "echo success > $out"
-            else channels.nixpkgs.runCommandNoCC "failure" { } "exit 1";
+          existingPkgsFlow = self.nixosConfigurations.ExistingPkgsFlow.pkgs;
+          reimportFlow = self.nixosConfigurations.ReimportFlow.pkgs;
         in
         {
 
-          fromSharedOverlaysApplied = isTrue (hostPkgs ? fromSharedOverlays);
+          # ExistingPkgsFlow
+          fromSharedOverlaysApplied_1 = hasKey existingPkgsFlow "fromSharedOverlays";
 
-          fromChannelSpecificApplied = isTrue (hostPkgs ? fromChannelSpecific);
+          fromChannelSpecificApplied_1 = hasKey existingPkgsFlow "fromChannelSpecific";
 
-          # TODO: Fix this one. Probably false positive
-          #fromHostConfigApplied = isTrue (hostPkgs ? fromHostConfig);
+          fromHostConfigApplied_1 = hasKey existingPkgsFlow "fromHostConfig";
+
+
+          # ReimportFlow
+          fromSharedOverlaysApplied_2 = hasKey reimportFlow "fromSharedOverlays";
+
+          fromChannelSpecificApplied_2 = hasKey reimportFlow "fromChannelSpecific";
+
+          fromHostConfigApplied_2 = hasKey reimportFlow "fromHostConfig";
 
         };
 

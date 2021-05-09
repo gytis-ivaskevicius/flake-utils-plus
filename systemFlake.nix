@@ -137,7 +137,7 @@ let
                     else
                       import patchedChannel {
                         inherit (host) system;
-                        overlays = selectedNixpkgs.overlays;
+                        overlays = selectedNixpkgs.overlays ++ hostConfig.nixpkgs.overlays;
                         config = selectedNixpkgs.config // config.nixpkgs.config;
                       };
                 }
