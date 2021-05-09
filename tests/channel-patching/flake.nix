@@ -2,6 +2,10 @@
   inputs.utils.url = path:../../;
 
   outputs = inputs@{ self, nixpkgs, utils }:
+    let
+      testing-utils = import ../testing-utils.nix { inherit (self.pkgs.x86_64-linux) nixpkgs; };
+      inherit (testing-utils) hasKey isEqual;
+    in
     utils.lib.systemFlake {
       inherit self inputs;
       supportedSystems = [ "x86_64-linux" ];
@@ -48,27 +52,23 @@
       checksBuilder = channels:
         let
           hostConfig = self.nixosConfigurations.PatchedHost.config;
-          isTrue = cond:
-            if cond
-            then channels.nixpkgs.runCommandNoCC "success" { } "echo success > $out"
-            else channels.nixpkgs.runCommandNoCC "failure" { } "exit 1";
         in
         {
 
           # Patched package gets passed to `packageBuilder`
-          patchedPackageGetsPassedToBuilders = isTrue (self.packages.x86_64-linux.flake-utils-plus-test.pname == "hello");
+          patchedPackageGetsPassedToBuilders = isEqual self.packages.x86_64-linux.flake-utils-plus-test.pname "hello";
 
           # Modules (and lib) from patched nixpkgs are used
-          patchedModuleAndFunctionWorks = isTrue (hostConfig.patchedModule.test == "using patched module via patched function");
+          patchedModuleAndFunctionWorks = isEqual hostConfig.patchedModule.test "using patched module via patched function";
 
           # `channelsConfig.*` is used
-          globalChannelConfigWorks = isTrue (hostConfig.nixpkgs.pkgs.config ? allowBroken);
+          globalChannelConfigWorks = hasKey hostConfig.nixpkgs.pkgs.config "allowBroken";
 
           # `channels.nixpkgs.config.*` is also used
-          channelSpecificConfigWorks = isTrue (hostConfig.nixpkgs.pkgs.config ? allowUnfree);
+          channelSpecificConfigWorks = hasKey hostConfig.nixpkgs.pkgs.config "allowUnfree";
 
           # `options.nixpkgs.config.*` is also used
-          modulesNixpkgsConfigWorks = isTrue (hostConfig.nixpkgs.pkgs.config ? packageOverrides);
+          modulesNixpkgsConfigWorks = hasKey hostConfig.nixpkgs.pkgs.config "packageOverrides";
 
         };
 

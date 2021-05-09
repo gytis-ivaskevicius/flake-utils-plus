@@ -3,8 +3,8 @@
 
   outputs = inputs@{ self, nixpkgs, utils }:
     let
-      testing-utils = import ../testing-utils.nix;
-      hasKey = testing-utils.hasKey self.pkgs.x86_64-linux.nixpkgs;
+      testing-utils = import ../testing-utils.nix { inherit (self.pkgs.x86_64-linux) nixpkgs; };
+      inherit (testing-utils) hasKey;
     in
     utils.lib.systemFlake {
       inherit self inputs;
@@ -31,6 +31,8 @@
         })
       ];
 
+
+      # Hosts
       hostDefaults.modules = [
         {
           nixpkgs.overlays = [
@@ -43,7 +45,6 @@
         }
       ];
 
-      # Hosts
       hosts.ExistingPkgsFlow = { };
 
       hosts.ReimportFlow.modules = [
