@@ -41,7 +41,7 @@ devshell.mkShell {
 
   commands = [
     {
-      command = "git rm -f $DEVSHELL_ROOT/tests/*/flake.lock ; git rm -f $DEVSHELL_ROOT/examples/*/flake.lock";
+      command = "git rm --ignore-unmatch -f $DEVSHELL_ROOT/{tests,examples}/*/flake.lock";
       help = "Remove all lock files";
       name = "rm-locks";
     }
@@ -63,7 +63,7 @@ devshell.mkShell {
     (dry-nixos-build "minimal-multichannel" "Hostname1")
     (dry-nixos-build "minimal-multichannel" "Hostname2")
     (dry-nixos-build "home-manager+nur+neovim" "Rick")
-
+    (dry-nixos-build "exporters" "Morty")
   ];
 
 }

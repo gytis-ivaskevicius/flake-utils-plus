@@ -29,6 +29,7 @@ jobs:
       - run: nix develop --command build-home-manager+nur+neovim-Rick
       - run: nix develop --command build-minimal-multichannel-Hostname1
       - run: nix develop --command build-minimal-multichannel-Hostname2
+      - run: nix develop --command build-exporters-Morty
 
       # Check formatting
       - run: nix develop --command fmt --check

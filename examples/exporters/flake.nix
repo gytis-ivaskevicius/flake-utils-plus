@@ -16,6 +16,10 @@
 
       channels.nixpkgs.input = nixpkgs;
 
+      hosts.Morty.modules = with self.nixosModules; [
+        Morty
+      ];
+
       sharedOverlays = [
         self.overlay
       ];
