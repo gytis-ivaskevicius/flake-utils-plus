@@ -7,30 +7,27 @@
     let
       inherit (builtins) isList isAttrs mapAttrs;
       fupArgs = { flake-utils-plus = self; };
-      systemFlake = import ./systemFlake.nix fupArgs;
-      packagesFromOverlaysBuilderConstructor = import ./packagesFromOverlaysBuilderConstructor.nix fupArgs;
-      overlaysFromChannelsExporter = import ./overlaysFromChannelsExporter.nix fupArgs;
-      modulesFromList = import ./moduleFromListExporter.nix fupArgs;
+
+      systemFlake = import ./src/systemFlake.nix fupArgs;
+      modulesFromList = import ./src/modulesFromList.nix fupArgs;
+      fromOverlays = import ./src/fromOverlays.nix fupArgs;
+      internalOverlays = import ./src/internalOverlays.nix fupArgs;
     in
     rec {
 
-      nixosModules.saneFlakeDefaults = import ./modules/saneFlakeDefaults.nix;
+      nixosModules.saneFlakeDefaults = import ./src/saneFlakeDefaults.nix;
 
-      devShell.x86_64-linux = import ./shell.nix { system = "x86_64-linux"; };
+      devShell.x86_64-linux = import ./devShell.nix { system = "x86_64-linux"; };
 
       lib = flake-utils.lib // {
         # modulesFromList is deprecated, will be removed in future releases
         inherit systemFlake modulesFromList;
 
-        builder = {
-          inherit packagesFromOverlaysBuilderConstructor;
+        exporters = {
+          inherit modulesFromList fromOverlays internalOverlays;
         };
 
-        exporter = {
-          inherit overlaysFromChannelsExporter modulesFromList;
-        };
-
-        repl = ./repl.nix;
+        repl = ./src/repl.nix;
 
         # merge nested attribute sets and lists
         mergeAny = lhs: rhs:
