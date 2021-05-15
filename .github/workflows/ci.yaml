@@ -6,7 +6,7 @@ on:
     types: [opened]
 
 jobs:
-  quality-gate:
+  tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2.3.4
@@ -16,36 +16,20 @@ jobs:
           install_url: https://github.com/numtide/nix-flakes-installer/releases/download/nix-3.0pre20201007_5257a25/install
           extra_nix_config: experimental-features = nix-command flakes
 
-      - name: Check Nix parsing
-        run: nix develop --command evalnix
+      # Quick eval
+      - run: nix develop --command evalnix
 
-      - name: Check Nix formatting
-        run: nix develop --command fmt --check
+      # Execute /tests/*
+      - run: nix develop --command check-derivation-outputs
+      - run: nix develop --command check-channel-patching
+      - run: nix develop --command check-overlays-flow
+      - run: nix develop --command check-hosts-config
 
-      - name: Run `nix flake check` (fully featured example)
-        run: nix develop --command "nix-flake-check-ff --show-trace"
+      # Build /examples/*
+      - run: nix develop --command build-home-manager+nur+neovim-Rick
+      - run: nix develop --command build-minimal-multichannel-Hostname1
+      - run: nix develop --command build-minimal-multichannel-Hostname2
+      - run: nix develop --command build-exporters-Morty
 
-      - name: Run `nix flake show` (fully featured example)
-        run: nix develop --command "nix-flake-show-ff show --show-trace"
-
-      - name: Build Morty configuration (fully featured example)
-        run: nix develop --command nix-build-morty-ff
-
-      - name: Build Rick configuration (fully featured example)
-        run: nix develop --command nix-build-rick-ff
-
-      - name: Build Summer checks (fully featured example)
-        run: nix develop --command nix-build-summer-ff
-
-      - name: Run `nix flake check` (somewhat realistic example)
-        run: nix develop --command "nix-flake-check-rr --show-trace"
-
-      - name: Run `nix flake show` (somewhat realistic example)
-        run: nix develop --command "nix-flake-show-rr --show-trace"
-
-      - name: Build Alice configuration (somewhat realistic example)
-        run: nix develop --command nix-build-alice-rr
-
-      - name: Build Carl (darwin) configuration (somewhat realistic example)
-        run: nix develop --command nix-build-carl-rr
-
+      # Check formatting
+      - run: nix develop --command fmt --check
