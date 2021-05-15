@@ -23,18 +23,32 @@ let
   test = name: withCategory "tests" {
     name = "check-${name}";
     help = "Checks ${name} testcases";
-    command = "cd $DEVSHELL_ROOT/tests/${name} && nix flake show && nix flake check";
+    command = ''
+      set -e
+      cd $DEVSHELL_ROOT/tests/${name}
+      nix flake lock --update-input utils
+      nix flake show
+      nix flake check
+      git rm -f flake.lock
+    '';
   };
 
   dry-nixos-build = example: host: withCategory "dry-build" {
     name = "build-${example}-${host}";
-    command = "cd $DEVSHELL_ROOT/examples/${example} && nix flake show && nix build .#nixosConfigurations.${host}.config.system.build.toplevel --dry-run";
+    command = ''
+      set -e
+      cd $DEVSHELL_ROOT/examples/${example}
+      nix flake lock --update-input utils
+      nix flake show
+      nix build .#nixosConfigurations.${host}.config.system.build.toplevel --dry-run
+      git rm -f flake.lock
+    '';
   };
 
 in
 devshell.mkShell {
   name = "flake-utils-plus";
-  packages = with pkgs;[
+  packages = with pkgs; [
     fd
     nixpkgs-fmt
   ];
