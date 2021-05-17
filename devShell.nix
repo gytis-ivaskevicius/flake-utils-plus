@@ -72,6 +72,7 @@ devshell.mkShell {
 
     (test "channel-patching")
     (test "derivation-outputs")
+    (test "derivation-outputs-old")
     (test "hosts-config")
     (test "overlays-flow")
     (dry-nixos-build "minimal-multichannel" "Hostname1")
