@@ -19,6 +19,8 @@
     extraArgs = sharedExtraArgs;
   }
 
+, outputsBuilder ? null
+
 , packagesBuilder ? null
 , defaultPackageBuilder ? null
 , appsBuilder ? null
@@ -69,6 +71,7 @@ let
     "sharedOverlays"
     "supportedSystems"
 
+    "outputsBuilder"
     "packagesBuilder"
     "defaultPackageBuilder"
     "appsBuilder"
@@ -189,24 +192,37 @@ mergeAny otherArguments (
 
         pkgs = mapAttrs importChannel channels;
 
-        mkOutput = output: builder:
+
+        deprecatedBuilders = channels: { }
+        // optionalAttrs (packagesBuilder != null) { packages = packagesBuilder channels; }
+        // optionalAttrs (defaultPackageBuilder != null) { defaultPackage = defaultPackageBuilder channels; }
+        // optionalAttrs (appsBuilder != null) { apps = appsBuilder channels; }
+        // optionalAttrs (defaultAppBuilder != null) { defaultApp = defaultAppBuilder channels; }
+        // optionalAttrs (devShellBuilder != null) { devShell = devShellBuilder channels; }
+        // optionalAttrs (checksBuilder != null) { checks = checksBuilder channels; };
+
+        systemOutputs = (if outputsBuilder == null then deprecatedBuilders else outputsBuilder) pkgs;
+
+        mkOutput = output:
           mergeAny
             # prevent override of nested outputs in otherArguments
             (optionalAttrs (otherArguments ? ${output}.${system})
               { ${output} = otherArguments.${output}.${system}; })
-            (optionalAttrs (args ? ${builder})
-              { ${output} = args.${builder} pkgs; });
+            (optionalAttrs (systemOutputs ? ${output})
+              { ${output} = systemOutputs.${output}; });
+
       in
       { inherit pkgs; }
-      // mkOutput "packages" "packagesBuilder"
-      // mkOutput "defaultPackage" "defaultPackageBuilder"
-      // mkOutput "apps" "appsBuilder"
-      // mkOutput "defaultApp" "defaultAppBuilder"
-      // mkOutput "devShell" "devShellBuilder"
-      // mkOutput "checks" "checksBuilder"
+      // mkOutput "packages"
+      // mkOutput "defaultPackage"
+      // mkOutput "apps"
+      // mkOutput "defaultApp"
+      // mkOutput "devShell"
+      // mkOutput "checks"
     )
   # produces attrset in the shape of
   # { nixosConfigurations = {}; darwinConfigurations = {};  ... }
   # according to profile.output or the default `nixosConfigurations`
   // foldHosts (attrValues (mapAttrs configurationBuilder hosts))
 )
+
