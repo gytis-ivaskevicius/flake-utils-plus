@@ -19,6 +19,8 @@
     extraArgs = sharedExtraArgs;
   }
 
+, outputsBuilder ? channels: { }
+
 , packagesBuilder ? null
 , defaultPackageBuilder ? null
 , appsBuilder ? null
@@ -189,21 +191,11 @@ mergeAny otherArguments (
 
         pkgs = mapAttrs importChannel channels;
 
-        mkOutput = output: builder:
-          mergeAny
-            # prevent override of nested outputs in otherArguments
-            (optionalAttrs (otherArguments ? ${output}.${system})
-              { ${output} = otherArguments.${output}.${system}; })
-            (optionalAttrs (args ? ${builder})
-              { ${output} = args.${builder} pkgs; });
+        outputs = mapAttrs
+          (outputName: output: otherArguments.${outputName}.${system} or { } // output)
+          (outputsBuilder pkgs);
       in
-      { inherit pkgs; }
-      // mkOutput "packages" "packagesBuilder"
-      // mkOutput "defaultPackage" "defaultPackageBuilder"
-      // mkOutput "apps" "appsBuilder"
-      // mkOutput "defaultApp" "defaultAppBuilder"
-      // mkOutput "devShell" "devShellBuilder"
-      // mkOutput "checks" "checksBuilder"
+      { inherit pkgs; } // outputs
     )
   # produces attrset in the shape of
   # { nixosConfigurations = {}; darwinConfigurations = {};  ... }
