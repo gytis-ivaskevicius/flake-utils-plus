@@ -19,14 +19,21 @@
     extraArgs = sharedExtraArgs;
   }
 
-, outputsBuilder ? channels: { }
+, outputsBuilder ? channels: {
+  packages = packagesBuilder channels;
+  defaultPackage = defaultPackageBuilder channels;
+  apps = appsBuilder channels;
+  defaultApp = defaultAppBuilder channels;
+  devShell = devShellBuilder channels;
+  checks = checksBuilder channels;
+}
 
-, packagesBuilder ? null
-, defaultPackageBuilder ? null
-, appsBuilder ? null
-, defaultAppBuilder ? null
-, devShellBuilder ? null
-, checksBuilder ? null
+, packagesBuilder ? _: { }
+, defaultPackageBuilder ? _: { }
+, appsBuilder ? _: { }
+, defaultAppBuilder ? _: { }
+, devShellBuilder ? _: { }
+, checksBuilder ? _: { }
 , ...
 }@args:
 
