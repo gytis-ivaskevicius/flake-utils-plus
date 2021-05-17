@@ -60,7 +60,18 @@ let
           # create list of single-attribute sets that contain each package
           exportPackagesList = map
             (name:
-              { ${name} = flattenedPackages.${name}; }
+              let
+                item = flattenedPackages.${name};
+                exportItem = { ${name} = item; };
+              in
+              if item ? type && item.type == "derivation" then
+              # if its a package export it
+                exportItem
+              else if item ? __dontExport && !item.__dontExport then
+              # if its a package sub-system, __dontExport has to be set to false to export
+                exportItem
+              else
+                { }
             )
             flattenedOverlaysNames;
 
