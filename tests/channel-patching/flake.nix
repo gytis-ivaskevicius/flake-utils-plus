@@ -36,41 +36,43 @@
         })
       ];
 
-      # Using patched channel in builder
-      packagesBuilder = channels: {
-        inherit (channels.nixpkgs) flake-utils-plus-test;
-      };
 
+      outputsBuilder = channels: {
 
-
-
-
-      ######################
-      ### Test execution ###
-      ######################
-
-      checksBuilder = channels:
-        let
-          hostConfig = self.nixosConfigurations.PatchedHost.config;
-        in
-        {
-
-          # Patched package gets passed to `packageBuilder`
-          patchedPackageGetsPassedToBuilders = isEqual self.packages.x86_64-linux.flake-utils-plus-test.pname "hello";
-
-          # Modules (and lib) from patched nixpkgs are used
-          patchedModuleAndFunctionWorks = isEqual hostConfig.patchedModule.test "using patched module via patched function";
-
-          # `channelsConfig.*` is used
-          globalChannelConfigWorks = hasKey hostConfig.nixpkgs.pkgs.config "allowBroken";
-
-          # `channels.nixpkgs.config.*` is also used
-          channelSpecificConfigWorks = hasKey hostConfig.nixpkgs.pkgs.config "allowUnfree";
-
-          # `options.nixpkgs.config.*` is also used
-          modulesNixpkgsConfigWorks = hasKey hostConfig.nixpkgs.pkgs.config "packageOverrides";
-
+        packages = {
+          # Using patched channel
+          inherit (channels.nixpkgs) flake-utils-plus-test;
         };
+
+
+
+        ######################
+        ### Test execution ###
+        ######################
+
+        checks =
+          let
+            hostConfig = self.nixosConfigurations.PatchedHost.config;
+          in
+          {
+
+            # Patched package gets passed to `packageBuilder`
+            patchedPackageGetsPassedToBuilders = isEqual self.packages.x86_64-linux.flake-utils-plus-test.pname "hello";
+
+            # Modules (and lib) from patched nixpkgs are used
+            patchedModuleAndFunctionWorks = isEqual hostConfig.patchedModule.test "using patched module via patched function";
+
+            # `channelsConfig.*` is used
+            globalChannelConfigWorks = hasKey hostConfig.nixpkgs.pkgs.config "allowBroken";
+
+            # `channels.nixpkgs.config.*` is also used
+            channelSpecificConfigWorks = hasKey hostConfig.nixpkgs.pkgs.config "allowUnfree";
+
+            # `options.nixpkgs.config.*` is also used
+            modulesNixpkgsConfigWorks = hasKey hostConfig.nixpkgs.pkgs.config "packageOverrides";
+
+          };
+      };
 
 
     };

@@ -33,8 +33,10 @@
         inherit (self) pkgs inputs;
       };
 
-      # construct packagesBuilder to export all packages defined in overlays
-      #packagesBuilder = fromOverlays self.overlays;
+      outputsBuilder = channels: {
+        # construct packagesBuilder to export all packages defined in overlays
+        packages = fromOverlays self.overlays channels;
+      };
 
       overlay = import ./overlays;
 

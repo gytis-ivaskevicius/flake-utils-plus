@@ -60,33 +60,35 @@
       ### Test execution ###
       ######################
 
-      checksBuilder = channels:
-        let
-          existingPkgsFlow = self.nixosConfigurations.ExistingPkgsFlow.pkgs;
-          reimportFlow = self.nixosConfigurations.ReimportFlow.pkgs;
-        in
-        {
+      outputsBuilder = channels: {
+        checks =
+          let
+            existingPkgsFlow = self.nixosConfigurations.ExistingPkgsFlow.pkgs;
+            reimportFlow = self.nixosConfigurations.ReimportFlow.pkgs;
+          in
+          {
 
-          # ExistingPkgsFlow
-          sharedOverlays_Applied_1 = hasKey existingPkgsFlow "fromSharedOverlays";
+            # ExistingPkgsFlow
+            sharedOverlays_Applied_1 = hasKey existingPkgsFlow "fromSharedOverlays";
 
-          channelSpecific_Applied_1 = hasKey existingPkgsFlow "fromChannelSpecific";
+            channelSpecific_Applied_1 = hasKey existingPkgsFlow "fromChannelSpecific";
 
-          hostConfig_Applied_1 = hasKey existingPkgsFlow "fromHostConfig";
+            hostConfig_Applied_1 = hasKey existingPkgsFlow "fromHostConfig";
 
-          contains_srcs_1 = hasKey existingPkgsFlow "srcs";
+            contains_srcs_1 = hasKey existingPkgsFlow "srcs";
 
 
-          # ReimportFlow
-          sharedOverlays_Applied_2 = hasKey reimportFlow "fromSharedOverlays";
+            # ReimportFlow
+            sharedOverlays_Applied_2 = hasKey reimportFlow "fromSharedOverlays";
 
-          channelSpecific_Applied_2 = hasKey reimportFlow "fromChannelSpecific";
+            channelSpecific_Applied_2 = hasKey reimportFlow "fromChannelSpecific";
 
-          hostConfig_Applied_2 = hasKey reimportFlow "fromHostConfig";
+            hostConfig_Applied_2 = hasKey reimportFlow "fromHostConfig";
 
-          contains_srcs_2 = hasKey reimportFlow "srcs";
+            contains_srcs_2 = hasKey reimportFlow "srcs";
 
-        };
+          };
+      };
 
     };
 }

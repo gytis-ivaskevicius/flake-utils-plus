@@ -72,12 +72,17 @@ devshell.mkShell {
 
     (test "channel-patching")
     (test "derivation-outputs")
+    (test "derivation-outputs-old")
     (test "hosts-config")
     (test "overlays-flow")
+    (test "all" // { command = "check-channel-patching && check-derivation-outputs && check-derivation-outputs-old && check-hosts-config && check-overlays-flow"; })
+
     (dry-nixos-build "minimal-multichannel" "Hostname1")
     (dry-nixos-build "minimal-multichannel" "Hostname2")
     (dry-nixos-build "home-manager+nur+neovim" "Rick")
     (dry-nixos-build "exporters" "Morty")
+    (withCategory "dry-build" { name = "build-all"; command = "build-exporters-Morty && build-home-manager+nur+neovim-Rick && build-minimal-multichannel-Hostname1 && build-minimal-multichannel-Hostname2"; })
+
   ];
 
 }
