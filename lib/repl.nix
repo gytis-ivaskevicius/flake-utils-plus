@@ -7,6 +7,6 @@ in
 { inherit flake; }
 // flake
 // builtins
-// flake.nixosConfigurations.${hostname} or {}
+// flake.nixosConfigurations.${hostname} or { }
 // (removeAttrs nixpkgs.lib [ "options" ])
   // (removeAttrs nixpkgs [ "config" ])

@@ -180,6 +180,12 @@ mergeAny otherArguments (
   eachSystem supportedSystems
     (system:
       let
+        filterAttrs = pred: set:
+          listToAttrs (concatMap (name: let value = set.${name}; in if pred name value then [ ({ inherit name value; }) ] else [ ]) (attrNames set));
+
+        channelFlakes = filterAttrs (_: value: value ? legacyPackages) inputs;
+        channelsFromFlakes = mapAttrs (name: input: { inherit input; }) channelFlakes;
+
         importChannel = name: value: (import (patchChannel system value.input (value.patches or [ ])) {
           inherit system;
           overlays = [
@@ -191,7 +197,7 @@ mergeAny otherArguments (
           config = channelsConfig // (value.config or { });
         }) // { inherit name; inherit (value) input; };
 
-        pkgs = mapAttrs importChannel channels;
+        pkgs = mapAttrs importChannel (mergeAny channelsFromFlakes channels);
 
 
         deprecatedBuilders = channels: { }
