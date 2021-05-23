@@ -50,7 +50,8 @@ let
       # These are not part of the module system, so they can be used in `imports` lines without infinite recursion
     , specialArgs ? { }
     }: {
-      inherit channelName system output builder modules extraArgs specialArgs;
+      inherit channelName system output builder extraArgs specialArgs;
+      modules = modules ++ [ ./autoRegistry.options.nix ];
     };
 
   foldHosts = foldl' mergeAny { };

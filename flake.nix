@@ -15,7 +15,8 @@
     in
     rec {
 
-      nixosModules.saneFlakeDefaults = import ./lib/saneFlakeDefaults.nix;
+      # Deprecated in favor of 'nix.generateRegistryFromInputs = true;'
+      nixosModules.saneFlakeDefaults = { nix.generateRegistryFromInputs = true; };
 
       devShell.x86_64-linux = import ./devShell.nix { system = "x86_64-linux"; };
 
