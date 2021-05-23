@@ -154,7 +154,7 @@ let
               })
 
               (optionalAttrs (options ? nix.package) {
-                nix.package = lib.mkDefault pkgs.nixUnstable;
+                nix.package = lib.mkDefault pkgs.nixFlakes;
               })
 
               {

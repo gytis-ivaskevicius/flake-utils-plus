@@ -9,10 +9,6 @@ let
 in
 {
 
-  nix = {
-    extraOptions = "experimental-features = nix-command ca-references flakes";
-    registry = nixRegistry;
-    package = pkgs.nixUnstable;
-  };
+  nix.registry = nixRegistry;
 
 }
