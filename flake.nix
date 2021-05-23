@@ -8,14 +8,14 @@
       inherit (builtins) isList isAttrs mapAttrs;
       fupArgs = { flake-utils-plus = self; };
 
-      systemFlake = import ./src/systemFlake.nix fupArgs;
-      modulesFromList = import ./src/modulesFromList.nix fupArgs;
-      fromOverlays = import ./src/fromOverlays.nix fupArgs;
-      internalOverlays = import ./src/internalOverlays.nix fupArgs;
+      systemFlake = import ./lib/systemFlake.nix fupArgs;
+      modulesFromList = import ./lib/modulesFromList.nix fupArgs;
+      fromOverlays = import ./lib/fromOverlays.nix fupArgs;
+      internalOverlays = import ./lib/internalOverlays.nix fupArgs;
     in
     rec {
 
-      nixosModules.saneFlakeDefaults = import ./src/saneFlakeDefaults.nix;
+      nixosModules.saneFlakeDefaults = import ./lib/saneFlakeDefaults.nix;
 
       devShell.x86_64-linux = import ./devShell.nix { system = "x86_64-linux"; };
 
@@ -27,7 +27,7 @@
           inherit modulesFromList fromOverlays internalOverlays;
         };
 
-        repl = ./src/repl.nix;
+        repl = ./lib/repl.nix;
 
         # merge nested attribute sets and lists
         mergeAny = lhs: rhs:
