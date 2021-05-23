@@ -34,6 +34,16 @@ let
   inherit (flake-utils-plus.lib) eachSystem patchChannel mergeAny;
   inherit (builtins) foldl' mapAttrs removeAttrs attrValues attrNames listToAttrs concatMap;
 
+  fupOverlay = final: prev: {
+    fup-repl = final.writeShellScriptBin "repl" ''
+      if [ -z "$1" ]; then
+        nix repl ${./repl.nix}
+      else
+        nix repl --arg flakePath $(readlink -f $1 | sed 's|/flake.nix||') ${./repl.nix}
+      fi
+    '';
+  };
+
   filterAttrs = pred: set:
     listToAttrs (concatMap (name: let value = set.${name}; in if pred name value then [ ({ inherit name value; }) ] else [ ]) (attrNames set));
 
@@ -197,7 +207,7 @@ mergeAny otherArguments (
               __dontExport = true; # in case user uses overlaysFromChannelsExporter, doesn't hurt for others
               inherit srcs;
             })
-          ] ++ sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ]);
+          ] ++ sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ]) ++ [ fupOverlay ];
           config = channelsConfig // (value.config or { });
         }) // { inherit name; inherit (value) input; };
 
