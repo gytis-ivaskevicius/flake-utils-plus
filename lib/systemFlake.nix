@@ -155,7 +155,11 @@ let
               })
 
               (optionalAttrs (options ? nix.package) {
-                nix.package = lib.mkDefault pkgs.nixFlakes;
+                nix.package = lib.mkDefault pkgs.nixUnstable;
+              })
+              
+              (optionalAttrs (options ? nix.extraOptions) {
+                nix.extraOptions = lib.mkDefault "experimental-features = nix-command ca-references flakes";
               })
 
               {
