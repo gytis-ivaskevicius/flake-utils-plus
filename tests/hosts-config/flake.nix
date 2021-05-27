@@ -39,6 +39,8 @@
 
       hosts.Plain = { };
 
+      hosts."com.example.myhost" = { };
+
       hosts.WithFakeBuilder = {
         builder = args: { fakeBuilder = "fakeBuilder"; };
       };
@@ -69,6 +71,12 @@
           let
             plainHost = self.someConfigurations.Plain;
             plainHostPkgs = plainHost.config.nixpkgs.pkgs;
+            plainHostName = plainHost.config.networking.hostName;
+            plainHostDomain = plainHost.config.networking.domain;
+
+            reverseDnsHost = self.someConfigurations."com.example.myhost";
+            reverseDnsHostName = reverseDnsHost.config.networking.hostName;
+            reverseDnsHostDomain = reverseDnsHost.config.networking.domain;
 
             customizedHost = self.darwinConfigurations.Customized;
             customizedHostPkgs = customizedHost.config.nixpkgs.pkgs;
@@ -86,6 +94,10 @@
 
             specialArgs_valid_1 = hasKey plainHost.config.lib "sharedSpecialArg";
 
+            hostName_valid_1 = isEqual plainHostName "Plain";
+
+            domain_valid_1 = isEqual plainHostDomain null;
+
 
             # System with overwritten hostDefaults
             system_valid_2 = isEqual customizedHostPkgs.system "x86_64-darwin";
@@ -97,6 +109,12 @@
             extraArgs_valid_2 = hasKey customizedHost.config.lib "hostExtraArg";
 
             specialArgs_valid_2 = hasKey customizedHost.config.lib "hostSpecialArg";
+
+
+            # Hostname and Domain set from reverse DNS name
+            hostName_valid_3 = isEqual reverseDnsHostName "myhost";
+
+            domain_valid_3 = isEqual reverseDnsHostDomain "example.com";
 
 
             # Eval fakeBuilder

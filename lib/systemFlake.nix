@@ -47,6 +47,13 @@ let
   filterAttrs = pred: set:
     listToAttrs (concatMap (name: let value = set.${name}; in if pred name value then [ ({ inherit name value; }) ] else [ ]) (attrNames set));
 
+  reverseList = xs:
+    let l = builtins.length xs; in builtins.genList (n: builtins.elemAt xs (l - n - 1)) l;
+
+  partitionString = sep: s:
+    builtins.filter (v: builtins.isString v) (builtins.split "${sep}" s);
+
+
   srcs = filterAttrs (_: value: !value ? outputs) inputs;
 
   # set defaults and validate host arguments
@@ -94,8 +101,16 @@ let
   getChannels = system: self.pkgs.${system};
   getNixpkgs = host: (getChannels host.system).${host.channelName};
 
-  configurationBuilder = hostname: host': (
+  configurationBuilder = reverseDnsFqdn: host': (
     let
+      dnsLabels = reverseList (partitionString "\\." reverseDnsFqdn);
+      hostname = builtins.head dnsLabels;
+      domain = let
+        domainLabels = builtins.tail dnsLabels;
+      in
+        if domainLabels == [] then null # null is the networking.domain option's default
+        else builtins.concatStringsSep "." domainLabels;
+
       selectedNixpkgs = getNixpkgs host;
       host = evalHostArgs (mergeAny hostDefaults host');
       patchedChannel = selectedNixpkgs.path;
@@ -130,7 +145,7 @@ let
       }).config;
     in
     {
-      ${host.output}.${hostname} = host.builder ({
+      ${host.output}.${reverseDnsFqdn} = host.builder ({
         inherit (host) system;
         modules = [
           ({ pkgs, lib, options, config, ... }: {
@@ -139,6 +154,10 @@ let
             contents = [
               (optionalAttrs (options ? networking.hostName) {
                 networking.hostName = hostname;
+              })
+
+              (optionalAttrs (options ? networking.domain) {
+                networking.domain = domain;
               })
 
               (if options ? nixpkgs.pkgs then
