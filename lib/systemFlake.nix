@@ -108,7 +108,7 @@ let
       domain = let
         domainLabels = builtins.tail dnsLabels;
       in
-        if domainLabels == [] then null # null is the networking.domain option's default
+        if domainLabels == [] then (lib.mkDefault null) # null is the networking.domain option's default
         else builtins.concatStringsSep "." domainLabels;
 
       selectedNixpkgs = getNixpkgs host;
