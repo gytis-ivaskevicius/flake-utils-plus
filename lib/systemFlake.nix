@@ -118,7 +118,7 @@ let
   getChannels = system: self.pkgs.${system};
   getNixpkgs = host: (getChannels host.system).${host.channelName};
 
-  configurationBuilder = reverseDomainName': (
+  configurationBuilder = reverseDomainName: host': (
     let
       dnsLabels = reverseList (partitionString "\\." reverseDomainName);
       hostname = head dnsLabels;
