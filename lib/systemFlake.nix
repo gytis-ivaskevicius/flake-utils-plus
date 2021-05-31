@@ -118,9 +118,9 @@ let
   getChannels = system: self.pkgs.${system};
   getNixpkgs = host: (getChannels host.system).${host.channelName};
 
-  configurationBuilder = reverseDnsFqdn: host': (
+  configurationBuilder = reverseDomainName': (
     let
-      dnsLabels = reverseList (partitionString "\\." reverseDnsFqdn);
+      dnsLabels = reverseList (partitionString "\\." reverseDomainName);
       hostname = head dnsLabels;
       domain = let
         domainLabels = tail dnsLabels;
@@ -162,7 +162,7 @@ let
       }).config;
     in
     {
-      ${host.output}.${reverseDnsFqdn} = host.builder ({
+      ${host.output}.${reverseDomainName} = host.builder ({
         inherit (host) system;
         modules = [
           ({ pkgs, lib, options, config, ... }: {
