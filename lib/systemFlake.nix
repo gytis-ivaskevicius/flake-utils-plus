@@ -32,7 +32,24 @@
 
 let
   inherit (flake-utils-plus.lib) eachSystem patchChannel mergeAny;
-  inherit (builtins) foldl' mapAttrs removeAttrs attrValues attrNames listToAttrs concatMap;
+  inherit (builtins)
+    attrNames
+    attrValues
+    concatMap
+    concatStringsSep
+    elemAt
+    filter
+    foldl'
+    genList
+    head
+    isString
+    length
+    listToAttrs
+    mapAttrs
+    removeAttrs
+    split
+    tail
+    ;
 
   fupOverlay = final: prev: {
     fup-repl = final.writeShellScriptBin "repl" ''
@@ -48,10 +65,10 @@ let
     listToAttrs (concatMap (name: let value = set.${name}; in if pred name value then [ ({ inherit name value; }) ] else [ ]) (attrNames set));
 
   reverseList = xs:
-    let l = builtins.length xs; in builtins.genList (n: builtins.elemAt xs (l - n - 1)) l;
+    let l = length xs; in genList (n: elemAt xs (l - n - 1)) l;
 
   partitionString = sep: s:
-    builtins.filter (v: builtins.isString v) (builtins.split "${sep}" s);
+    filter (v: isString v) (split "${sep}" s);
 
 
   srcs = filterAttrs (_: value: !value ? outputs) inputs;
@@ -104,12 +121,12 @@ let
   configurationBuilder = reverseDnsFqdn: host': (
     let
       dnsLabels = reverseList (partitionString "\\." reverseDnsFqdn);
-      hostname = builtins.head dnsLabels;
+      hostname = head dnsLabels;
       domain = let
-        domainLabels = builtins.tail dnsLabels;
+        domainLabels = tail dnsLabels;
       in
         if domainLabels == [] then (lib.mkDefault null) # null is the networking.domain option's default
-        else builtins.concatStringsSep "." domainLabels;
+        else concatStringsSep "." domainLabels;
 
       selectedNixpkgs = getNixpkgs host;
       host = evalHostArgs (mergeAny hostDefaults host');
