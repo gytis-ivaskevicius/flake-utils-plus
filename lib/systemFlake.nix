@@ -52,6 +52,7 @@ let
     ;
 
   fupOverlay = final: prev: {
+    __dontExport = true;
     fup-repl = final.writeShellScriptBin "repl" ''
       if [ -z "$1" ]; then
         nix repl ${./repl.nix}
