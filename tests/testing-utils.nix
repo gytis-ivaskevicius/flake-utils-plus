@@ -1,5 +1,8 @@
 { nixpkgs }:
 
+let
+  str = it: if it == null then "null" else (toString it);
+in
 {
   # Options that keep Nix from complaining
   base-nixos = {
@@ -7,16 +10,13 @@
     fileSystems."/" = { device = "test"; fsType = "ext4"; };
   };
 
-  isEqual = a: b: let
-    stringifyNull = s:
-      if s == null then "-null-" else s;
-  in
+  isEqual = a: b:
     if a == b
-    then nixpkgs.runCommandNoCC "success-${stringifyNull a}-IS-EQUAL-${stringifyNull b}" { } "echo success > $out"
-    else nixpkgs.runCommandNoCC "faliure-${stringifyNull a}-IS-NOT-EQUAL-${stringifyNull b}" { } "exit 1";
+    then nixpkgs.runCommandNoCC "SUCCESS__${str a}__IS_EQUAL__${str b}" { } "echo success > $out"
+    else nixpkgs.runCommandNoCC "FAILURE__${str a}__NOT_EQUAL__${str b}" { } "exit 0";
 
   hasKey = attrset: key:
     if attrset ? ${key}
-    then nixpkgs.runCommandNoCC "success-${key}-exists-in-attrset" { } "echo success > $out"
-    else nixpkgs.runCommandNoCC "faliure-key-${key}-does-not-exist-in-attrset" { } "exit 1";
+    then nixpkgs.runCommandNoCC "SUCCESS__${str key}__EXISTS_IN_ATTRSET" { } "echo success > $out"
+    else nixpkgs.runCommandNoCC "FAILURE__${str key}__DOES_NOT_EXISTS_IN_ATTRSET_SIZE_${str(nixpkgs.lib.length (builtins.attrNames attrset))}" { } "exit 0";
 }
