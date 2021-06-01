@@ -190,7 +190,7 @@ let
                       import patchedChannel
                         {
                           inherit (host) system;
-                          overlays = selectedNixpkgs.overlays ++ hostConfig.nixpkgs.overlays;
+                          overlays = selectedNixpkgs.overlays;
                           config = selectedNixpkgs.config // config.nixpkgs.config;
                         } // { inherit (selectedNixpkgs) name input; };
                 }
