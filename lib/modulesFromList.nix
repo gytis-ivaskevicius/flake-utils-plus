@@ -1,17 +1,14 @@
 { flake-utils-plus }:
 let
 
-  modulesFromListExporter = args:
+  modulesFromListExporter = paths:
     /**
       Synopsis: modulesFromListExporter _paths_
 
-      paths:    [ <path> <path> ] or { paths = [ ]; _import = <function>; }
+      paths:    [ <path> <path> ]
 
       Returns an attribute set of modules from a list of paths by converting
       the path's basename into the attribute key.
-
-      Optionally, an attrset can be passed containing `paths` and `_import`
-      to control how paths get imported
 
       Example:
 
@@ -25,11 +22,6 @@ let
       **/
 
     let
-
-      # To allow for the default to just pass a list
-      # or pass an attrset with `paths` and `_import`
-      paths = args.paths or args;
-      _import = args._import or import;
 
       removeSuffix = suffix: str:
         let
@@ -47,8 +39,8 @@ let
 
     genAttrs'
       (path: {
-        name = removeSuffix ".toml" (removeSuffix ".nix" (baseNameOf path));
-        value = _import path;
+        name = removeSuffix ".nix" (baseNameOf path);
+        value = import path;
       })
       paths;
 
