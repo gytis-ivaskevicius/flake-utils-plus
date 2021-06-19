@@ -51,22 +51,36 @@ let
           }
 
         # a module function with a _file attr
-        else if ((builtins.isFunction arg) && (hasFileAttr (peek args))) then
+        else if ((builtins.isFunction arg) && (hasFileAttr (peek arg))) then
           {
             name = removeSuffix ".toml" (removeSuffix ".nix" (baseNameOf (peek arg)._file));
             value = arg;
           }
 
-        # a module with a _file attr
-        else if (hasFileAttr arg) then
+        # panic: a module function without a _file attr
+        else if ((builtins.isFunction arg) && (!(hasFileAttr (peek arg)))) then
+          builtins.throw ''
+            module function has no (required) _file argument key: ${builtins.trace (peek arg) "."}
+          ''
+
+        # a simple module with a _file attr
+        else if (builtins.isAttrs arg) && (hasFileAttr arg) then
           {
             name = removeSuffix ".toml" (removeSuffix ".nix" (baseNameOf arg._file));
             value = arg;
           }
 
+        # panic: a simple module with a _file attr
+        else if (builtins.isAttrs arg) && (hasFileAttr arg) then
+          builtins.throw ''
+            simple module has no (required) _file argument key: ${builtins.trace arg "."}
+          ''
+
         # panic: something else
         else
-          builtins.throw "either pass a path or a module with _file key to modulesFromListExporter"
+          builtins.throw ''
+            either pass a path or a module with _file key to modulesFromListExporter: ${builtins.trace arg "."}
+          ''
       )
       args;
 
