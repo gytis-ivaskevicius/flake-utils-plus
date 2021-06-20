@@ -2,10 +2,6 @@
   inputs.utils.url = path:../../;
 
   outputs = inputs@{ self, nixpkgs, utils }:
-    let
-      testing-utils = import ../testing-utils.nix { inherit (self.pkgs.x86_64-linux) nixpkgs; };
-      inherit (testing-utils) hasKey isEqual;
-    in
     utils.lib.systemFlake {
       inherit self inputs;
       supportedSystems = [ "x86_64-linux" ];
@@ -52,6 +48,7 @@
 
         checks =
           let
+            inherit (utils.lib.check-utils channels.nixpkgs) hasKey isEqual;
             hostConfig = self.nixosConfigurations.PatchedHost.config;
           in
           {

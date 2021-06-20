@@ -3,9 +3,6 @@
 
   outputs = inputs@{ self, nixpkgs, utils }:
     let
-      testing-utils = import ../testing-utils.nix { inherit (self.pkgs.x86_64-linux) nixpkgs; };
-      inherit (testing-utils) hasKey isEqual;
-
       mkApp = utils.lib.mkApp;
     in
     utils.lib.systemFlake {
@@ -55,6 +52,7 @@
 
         checks =
           let
+            inherit (utils.lib.check-utils channels.nixpkgs) hasKey isEqual;
             inherit (nixpkgs.lib) hasSuffix;
             getOutput = output: self.${output}.${channels.nixpkgs.system};
 

@@ -3,8 +3,10 @@
 
   outputs = inputs@{ self, nixpkgs, utils }:
     let
-      testing-utils = import ../testing-utils.nix { inherit (self.pkgs.x86_64-linux) nixpkgs; };
-      inherit (testing-utils) hasKey base-nixos isEqual;
+      base-nixos = {
+        boot.loader.grub.devices = [ "nodev" ];
+        fileSystems."/" = { device = "test"; fsType = "ext4"; };
+      };
     in
     utils.lib.systemFlake {
       inherit self inputs;
@@ -69,6 +71,8 @@
       outputsBuilder = channels: {
         checks =
           let
+            inherit (utils.lib.check-utils channels.nixpkgs) hasKey isEqual;
+
             plainHost = self.someConfigurations.Plain;
             plainHostPkgs = plainHost.config.nixpkgs.pkgs;
             plainHostName = plainHost.config.networking.hostName;

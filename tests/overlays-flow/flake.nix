@@ -2,10 +2,6 @@
   inputs.utils.url = path:../../;
 
   outputs = inputs@{ self, nixpkgs, utils }:
-    let
-      testing-utils = import ../testing-utils.nix { inherit (self.pkgs.x86_64-linux) nixpkgs; };
-      inherit (testing-utils) hasKey;
-    in
     utils.lib.systemFlake {
       inherit self inputs;
       supportedSystems = [ "x86_64-linux" ];
@@ -63,6 +59,7 @@
       outputsBuilder = channels: {
         checks =
           let
+            inherit (utils.lib.check-utils channels.nixpkgs) hasKey;
             existingPkgsFlow = self.nixosConfigurations.ExistingPkgsFlow.pkgs;
             reimportFlow = self.nixosConfigurations.ReimportFlow.pkgs;
           in
