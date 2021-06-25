@@ -12,8 +12,10 @@
       modulesFromList = import ./lib/modulesFromList.nix fupArgs;
       fromOverlays = import ./lib/fromOverlays.nix fupArgs;
       internalOverlays = import ./lib/internalOverlays.nix fupArgs;
+      overlay = import ./lib/overlay.nix;
     in
     rec {
+      inherit overlay;
 
       # Deprecated in favor of 'nix.generateRegistryFromInputs = true;'
       nixosModules.saneFlakeDefaults = { nix.generateRegistryFromInputs = true; };

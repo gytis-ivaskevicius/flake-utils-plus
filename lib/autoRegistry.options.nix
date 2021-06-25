@@ -10,9 +10,11 @@ in
 {
   options.nix.generateRegistryFromInputs = lib.mkEnableOption "Generates Nix registry from available inputs.";
 
-  config = lib.mkIf config.nix.generateRegistryFromInputs {
-    nix.registry = nixRegistry;
+  config = {
+    nix.registry =
+      if config.nix.generateRegistryFromInputs
+      then nixRegistry
+      else { self.flake = flakes.self; };
   };
-
 
 }

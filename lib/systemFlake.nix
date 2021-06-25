@@ -51,17 +51,6 @@ let
     tail
     ;
 
-  fupOverlay = final: prev: {
-    __dontExport = true;
-    fup-repl = final.writeShellScriptBin "repl" ''
-      if [ -z "$1" ]; then
-        nix repl ${./repl.nix}
-      else
-        nix repl --arg flakePath $(readlink -f $1 | sed 's|/flake.nix||') ${./repl.nix}
-      fi
-    '';
-  };
-
   filterAttrs = pred: set:
     listToAttrs (concatMap (name: let value = set.${name}; in if pred name value then [ ({ inherit name value; }) ] else [ ]) (attrNames set));
 
@@ -123,10 +112,11 @@ let
     let
       dnsLabels = reverseList (partitionString "\\." reverseDomainName);
       hostname = head dnsLabels;
-      domain = let
-        domainLabels = tail dnsLabels;
-      in
-        if domainLabels == [] then (lib.mkDefault null) # null is the networking.domain option's default
+      domain =
+        let
+          domainLabels = tail dnsLabels;
+        in
+        if domainLabels == [ ] then (lib.mkDefault null) # null is the networking.domain option's default
         else concatStringsSep "." domainLabels;
 
       selectedNixpkgs = getNixpkgs host;
@@ -244,7 +234,7 @@ mergeAny otherArguments (
               __dontExport = true; # in case user uses overlaysFromChannelsExporter, doesn't hurt for others
               inherit srcs;
             })
-          ] ++ sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ]) ++ [ fupOverlay ];
+          ] ++ sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ]) ++ [ flake-utils-plus.overlay ];
           config = channelsConfig // (value.config or { });
         }) // { inherit name; inherit (value) input; };
 
