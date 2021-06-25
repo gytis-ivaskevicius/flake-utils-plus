@@ -2,15 +2,20 @@
 
 let
   inherit (builtins) getFlake head match currentSystem readFile pathExists filter fromJSON;
-  selfFlake = filter (it: it.from.id == "self") (fromJSON (readFile /etc/nix/registry.json)).flakes;
-  flakePath' =
-    if flakePath != null
-    then flakePath
-    else if selfFlake != []
-    then (head selfFlake).to.path
-    else "/etc/nixos";
+  registryPath = /etc/nix/registry.json;
+  selfFlake =
+    if pathExists registryPath
+    then filter (it: it.from.id == "self") (fromJSON (readFile registryPath)).flakes
+    else [ ];
 
-  flake = getFlake (toString flakePath');
+  flakePath' = toString
+    (if flakePath != null
+    then flakePath
+    else if selfFlake != [ ]
+    then (head selfFlake).to.path
+    else "/etc/nixos");
+
+  flake = if pathExists flakePath' then getFlake flakePath' else { };
   hostname = if pathExists hostnamePath then head (match "([a-zA-Z0-9]+)\n" (readFile hostnamePath)) else "";
 
   nixpkgsFromInputsPath = flake.inputs.nixpkgs.outPath or "";
