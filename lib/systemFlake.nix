@@ -196,7 +196,7 @@ let
               })
 
               (optionalAttrs (options ? nix.extraOptions) {
-                nix.extraOptions = "experimental-features = nix-command ca-references flakes";
+                nix.extraOptions = lib.mkDefault "experimental-features = nix-command ca-references flakes";
               })
 
               {
