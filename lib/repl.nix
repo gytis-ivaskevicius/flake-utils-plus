@@ -29,4 +29,4 @@ in
 // (flake.nixosConfigurations or { })
 // flake.nixosConfigurations.${hostname} or { }
 // nixpkgsOutput
-  // { loadFlake = path: getFlake (toString path);}
+  // { loadFlake = path: getFlake (toString path); }
