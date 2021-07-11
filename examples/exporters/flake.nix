@@ -14,12 +14,12 @@
     utils.lib.systemFlake {
       inherit self inputs;
 
-      # explicitly add overlaysBuilder
-      channels.nixpkgs.overlaysBuilder = arg: [
-        (final: prev: { inherit coreutils; })
+      # Channel specific overlays. Overlays `coreutils` from `unstable` channel.
+      channels.nixpkgs.overlaysBuilder = channels: [
+        (final: prev: { inherit (channels.unstable) coreutils; })
       ];
 
-      # propagates to channels.nixpkgs.overlaysBuilder
+      # Propagates to channels.<name>.overlaysBuilder
       sharedOverlays = [
         self.overlay
       ];
@@ -46,4 +46,3 @@
 
     };
 }
-

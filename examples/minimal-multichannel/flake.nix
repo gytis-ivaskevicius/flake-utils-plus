@@ -14,7 +14,7 @@
 
       # Channel definitions.
       # Channels are automatically generated from nixpkgs inputs
-      # e.g the inputs which contain `legacyPackages`
+      # e.g the inputs which contain `legacyPackages` attribute are used.
       channelsConfig.allowUnfree = true;
 
 
@@ -44,4 +44,3 @@
 
     };
 }
-

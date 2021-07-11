@@ -1,41 +1,40 @@
 
 [![Discord](https://img.shields.io/discord/591914197219016707.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.com/invite/RbvHtGa)
 
-Need help? Createn an issue or ping @Gytis#0001 in discord server above.
+Need help? Create an issue or ping @Gytis#0001 in the above Discord Server.
 
-# What is this flake #
+# What is this flake? #
 
-This flake exposes a library abstraction to *painlessly* generate nixos flake configurations.
+Flake-utils-plus exposes a library abstraction to *painlessly* generate NixOS flake configurations.
 
-The biggest design goal is to keep down the fluff. The library is meant to be easy to understand and use. It aims to be far simpler than frameworks such as devos (previously called nixflk).
+The biggest design goal is to keep down the fluff. The library is meant to be easy to understand and use. It aims to be far simpler than frameworks such as DevOS (previously called nixflk).
 
-# Features of flake #
+# Features of the flake #
 
-This flake provides two main features (visible from `flake.nix`):
+FUP provides a few main features (visible from `flake.nix`):
 
-- `nixosModules.saneFlakeDefaults` - Configures `nix.*` attributes. Generates `nix.nixPath`/`nix.registry` from flake `inputs`, sets `pkgs.nixUnstable` as the default also enables `ca-references` and `flakes`.
-- `lib.systemFlake { ... }` - Generates a system flake that may then be built.
-- `lib.exporter.modulesFromListExporter [ ./a.nix ./b.nix ]` - Generates modules attributes which looks like this `{ a = import ./a.nix; b = import ./b.nix; }`.
-- `lib.exporter.overlaysFromChannelsExporter channels` - Collects all overlays from channels and exports them as an appropriately namespaced attribute set. Users can instantiate with their nixpkgs version.
-- `lib.builder.packagesFromOverlayBuilderConstructor channels pkgs` - Similar to the overlay generator, but outputs them as packages, instead. Users can use your cache.
+- `nix.generateRegistryFromInputs` - Generates `nix.registry` from flake `inputs`.
+- `lib.mkFlake { ... }` - Generates a flake using FUP magic.
+- `lib.exportModules [ ./a.nix ./b.nix ]` - Generates module attribute which look like this `{ a = import ./a.nix; b = import ./b.nix; }`.
+- `lib.exportOverlays channels` - Exports all overlays from channels as an appropriately namespaced attribute set. Users can instantiate with their nixpkgs version.
+- `lib.outputsBuilder.packages channels pkgs` - Similar to the overlay generator, but outputs them as packages for the platforms defined in `meta.platforms`. Unlike overlays, these packages are consistent across flakes allowing them to be cached.
 
+# How to use #
 
-# Examples #
+* [Using FUP to configure hosts with Home Manager, NUR and neovim](https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/master/examples/home-manager+nur+neovim)
+
+* [Example of using multiple channels](https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/master/examples/minimal-multichannel)
+
+## Examples
+
+We recommend referring to people's examples below when setting up your system.
 
 - [Gytis Dotfiles (Author of this project)](https://github.com/gytis-ivaskevicius/nixfiles/blob/master/flake.nix)
 - [Fufexan Dotfiles](https://github.com/fufexan/dotfiles/blob/main/flake.nix)
 - [Bobbbay Dotfiles](https://github.com/Bobbbay/dotfiles/blob/master/flake.nix)
 - [Charlotte Dotfiles](https://github.com/chvp/nixos-config/blob/master/flake.nix)
 
-# How to use this flake #
-
-Example flake with all available attributes can be found [Here](https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/master/examples/fully-featured/flake.nix). (WARNING: Quite overwhelming)
-
-And more realistic flake example can be found [Here](https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/master/examples/somewhat-realistic/flake.nix).
-
-I strongly recommend referring to actual people examples above when setting up your system.
-
-Looking to add a kick-ass repl to your config? Create and import something along the lines of this:
+Looking to add a kick-ass repl to your config? Create and import something along these lines:
 ```nix
 { inputs, ... }:
 
@@ -47,7 +46,9 @@ Looking to add a kick-ass repl to your config? Create and import something along
 
 ```
 
-## Documentation as code. Options with their example usage and description.
+# Documentation
+
+Options with their example usage and description.
 
 ```nix
 let
@@ -55,10 +56,10 @@ let
   mkApp = utils.lib.mkApp;
   # If there is a need to get direct reference to nixpkgs - do this:
   pkgs = self.pkgs.x86_64-linux.nixpkgs;
-in flake-utils-plus.lib.systemFlake {
+in flake-utils-plus.lib.mkFlake {
 
 
-  # `self` and `inputs` arguments are REQUIRED!!!!!!!!!!!!!!
+  # `self` and `inputs` arguments are REQUIRED!
   inherit self inputs;
 
   # Supported systems, used for packages, apps, devShell and multiple other definitions. Defaults to `flake-utils.lib.defaultSystems`.
@@ -76,6 +77,7 @@ in flake-utils-plus.lib.systemFlake {
   sharedOverlays = [ nur.overlay ];
 
   # Nixpkgs flake reference to be used in the configuration.
+  # Autogenerated from `inputs` by default.
   channels.<name>.input = nixpkgs;
 
   # Channel specific config options.
@@ -98,7 +100,7 @@ in flake-utils-plus.lib.systemFlake {
   hostDefaults.system = "x86_64-linux";
 
   # Default modules to be passed to all hosts.
-  hostDefaults.modules = [ utils.nixosModules.saneFlakeDefaults ];
+  hostDefaults.modules = [ ./module.nix ./module2 ];
 
   # Reference to `channels.<name>.*`, defines default channel to be used by hosts. Defaults to "nixpkgs".
   hostDefaults.channelName = "unstable";
@@ -135,28 +137,31 @@ in flake-utils-plus.lib.systemFlake {
 
 
   #############################
-  ### flake output builders ###
+  ### flake outputs builder ###
   #############################
 
-  # Evaluates to `packages.<system>.coreutils = <unstable-channel-reference>.coreutils`.
-  packagesBuilder = channels: { inherit (channels.unstable) coreutils; };
 
-  # Evaluates to `defaultPackage.<system>.neovim = <nixpkgs-channel-reference>.neovim`.
-  defaultPackageBuilder = channels: channels.nixpkgs.neovim;
-
-  # Evaluates to `apps.<system>.custom-neovim  = utils.lib.mkApp { drv = ...; exePath = ...; };`.
-  appsBuilder = channels: with channels.nixpkgs; {
-    custom-neovim = mkApp {
-      drv = fancy-neovim;
-      exePath = "/bin/nvim";
+  outputsBuilder = channels: {
+    # Evaluates to `apps.<system>.custom-neovim  = utils.lib.mkApp { drv = ...; exePath = ...; };`.
+    apps = {
+      custom-neovim = mkApp {
+        drv = fancy-neovim;
+        exePath = "/bin/nvim";
+      };
     };
+    
+    # Evaluates to `packages.<system>.coreutils = <unstable-nixpkgs-reference>.package-from-overlays`.
+    packages = { inherit (channels.unstable) package-from-overlays; };
+    
+    # Evaluates to `apps.<system>.firefox  = utils.lib.mkApp { drv = ...; };`.
+    defaultApp = mkApp { drv = channels.nixpkgs.firefox };
+    
+    # Evaluates to `defaultPackage.<system>.neovim = <nixpkgs-channel-reference>.neovim`.
+    defaultPackage = channels.nixpkgs.neovim;
+    
+    # Evaluates to `devShell.<system> = <nixpkgs-channel-reference>.mkShell { name = "devShell"; };`.
+    devShell = channels.nixpkgs.mkShell { name = "devShell"; };
   };
-
-  # Evaluates to `apps.<system>.firefox  = utils.lib.mkApp { drv = ...; };`.
-  defaultAppBuilder = channels: mkApp { drv = channels.nixpkgs.firefox; };
-
-  # Evaluates to `devShell.<system> = <nixpkgs-channel-reference>.mkShell { name = "devShell"; };`.
-  devShellBuilder = channels: channels.nixpkgs.mkShell { name = "devShell"; };
 
 
   #########################################################
@@ -170,4 +175,3 @@ in flake-utils-plus.lib.systemFlake {
 
 }
 ```
-
