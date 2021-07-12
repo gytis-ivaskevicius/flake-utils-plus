@@ -16,10 +16,13 @@
       #################
 
 
-      # Should Get merged with `packagesBuilder`
+      # Should Get merged with corresponding outputsBuilder ouput
       packages.x86_64-linux.coreutils2 = self.pkgs.x86_64-linux.nixpkgs.coreutils;
+      customSystemOutput.x86_64-linux.bar = "bar-string";
 
       outputsBuilder = channels: {
+
+        customSystemOutput = { foo = "foo-string"; };
 
         packages = {
           inherit (channels.nixpkgs) coreutils;
@@ -59,6 +62,7 @@
             packages = getOutput "packages";
             defaultPackage = getOutput "defaultPackage";
             devShell = getOutput "devShell";
+            customSystemOutput = getOutput "customSystemOutput";
 
             isTrue = cond:
               if cond
@@ -66,6 +70,10 @@
               else channels.nixpkgs.runCommandNoCC "failure" { } "exit 1";
           in
           {
+
+            # Custom System Ouput
+            customSystemOutput_valid = isEqual customSystemOutput.foo "foo-string";
+            customSystemOutput_merged = isEqual customSystemOutput.bar "bar-string";
 
             # Packages
             defaultPackage_valid = isEqual defaultPackage.pname "coreutils";

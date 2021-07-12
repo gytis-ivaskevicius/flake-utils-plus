@@ -78,8 +78,6 @@ let
       modules = modules ++ [ ./autoRegistry.options.nix ];
     };
 
-  foldHosts = foldl' mergeAny { };
-
   optionalAttrs = check: value: if check then value else { };
 
   otherArguments = removeAttrs args [
@@ -251,7 +249,8 @@ mergeAny otherArguments (
 
         systemOutputs = (if outputsBuilder == null then deprecatedBuilders else outputsBuilder) pkgs;
 
-        mkOutput = output:
+        mkOutputs = attrs: output:
+          attrs //
           mergeAny
             # prevent override of nested outputs in otherArguments
             (optionalAttrs (otherArguments ? ${output}.${system})
@@ -261,16 +260,11 @@ mergeAny otherArguments (
 
       in
       { inherit pkgs; }
-      // mkOutput "packages"
-      // mkOutput "defaultPackage"
-      // mkOutput "apps"
-      // mkOutput "defaultApp"
-      // mkOutput "devShell"
-      // mkOutput "checks"
+      // (foldl' mkOutputs { } (attrNames systemOutputs))
     )
   # produces attrset in the shape of
   # { nixosConfigurations = {}; darwinConfigurations = {};  ... }
   # according to profile.output or the default `nixosConfigurations`
-  // foldHosts (attrValues (mapAttrs configurationBuilder hosts))
+  // foldl' mergeAny { } (attrValues (mapAttrs configurationBuilder hosts))
 )
 
