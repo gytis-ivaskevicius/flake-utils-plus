@@ -1,11 +1,11 @@
 { flake-utils-plus }:
 let
 
-  packagesFromOverlaysBuilderConstructor = overlays:
+  packagesFromOverlaysBuilder = overlays:
     let
       # overlays: self.overlays
 
-      packagesFromOverlaysBuilder = channels:
+      packagesFromOverlays = channels:
         /**
           Synopsis: packagesFromOverlaysBuilder _channels_
 
@@ -85,7 +85,7 @@ let
         filterPackages system (flattenTree exportPackages);
 
     in
-    packagesFromOverlaysBuilder;
+    packagesFromOverlays;
 
 in
-packagesFromOverlaysBuilderConstructor
+packagesFromOverlaysBuilder

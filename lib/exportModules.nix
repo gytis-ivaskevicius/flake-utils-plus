@@ -1,9 +1,10 @@
-{ flake-utils-plus }:
-let
+{ fup }:
 
-  modulesFromListExporter = args:
+with fup;
+let
+  exportModules = args:
     /**
-      Synopsis: modulesFromListExporter _paths or modules_
+      Synopsis: exportModules _paths or modules_
 
       paths:    [ <path> <module> ]
 
@@ -21,34 +22,19 @@ let
 
       **/
 
-    let
-
-      removeSuffix = suffix: str:
-        let
-          sufLen = builtins.stringLength suffix;
-          sLen = builtins.stringLength str;
-        in
-        if sufLen <= sLen && suffix == builtins.substring (sLen - sufLen) sufLen str then
-          builtins.substring 0 (sLen - sufLen) str
-        else
-          str;
-
-      genAttrs' = func: values: builtins.listToAttrs (map func values);
-
-      hasFileAttr = o: builtins.hasAttr "_file" o;
-      peek = f: f (builtins.functionArgs f);
-
-    in
-
     genAttrs'
       (arg:
 
-        # a regular path to be imported
-        if builtins.isPath arg then
+        # a regular file to be imported
+        if pathIsRegularFile arg then
           {
             name = removeSuffix ".nix" (baseNameOf arg);
             value = import arg;
           }
+
+        # a directory to be recursively imported
+        else if pathIsDirectory arg then
+          rakeLeaves arg
 
         # a module function with a _file attr
         else if ((builtins.isFunction arg) && (hasFileAttr (peek arg))) then
@@ -79,10 +65,10 @@ let
         # panic: something else
         else
           builtins.throw ''
-            either pass a path or a module with _file key to modulesFromListExporter: ${builtins.trace arg "."}
+            either pass a path or a module with _file key to exportModules: ${builtins.trace arg "."}
           ''
       )
       args;
 
 in
-modulesFromListExporter
+exportModules
