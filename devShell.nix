@@ -27,8 +27,8 @@ let
       set -e
       cd $DEVSHELL_ROOT/tests/${name}
       nix flake lock --update-input utils
-      nix flake show
-      nix flake check
+      nix flake show "$@"
+      nix flake check "$@"
       git rm -f flake.lock
     '';
   };
@@ -39,8 +39,8 @@ let
       set -e
       cd $DEVSHELL_ROOT/examples/${example}
       nix flake lock --update-input utils
-      nix flake show
-      nix build .#nixosConfigurations.${host}.config.system.build.toplevel --dry-run
+      nix flake show "$@"
+      nix build .#nixosConfigurations.${host}.config.system.build.toplevel --dry-run "$@"
       git rm -f flake.lock
     '';
   };
