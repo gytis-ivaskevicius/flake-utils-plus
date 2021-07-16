@@ -13,8 +13,8 @@
       inherit self inputs;
 
       # Channel definitions.
-      channels.unstable.input = unstable;
-      channels.nixpkgs.input = nixpkgs;
+      # Channels are automatically generated from nixpkgs inputs
+      # e.g the inputs which contain `legacyPackages` attribute are used.
       channelsConfig.allowUnfree = true;
 
 
@@ -25,9 +25,7 @@
       ];
 
 
-      #############
       ### Hosts ###
-      #############
 
       # Machine using default channel (nixpkgs)
       hosts.Hostname1.modules = [
@@ -46,4 +44,3 @@
 
     };
 }
-

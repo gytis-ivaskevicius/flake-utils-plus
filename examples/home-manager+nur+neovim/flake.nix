@@ -1,5 +1,5 @@
 {
-  description = "A highly awesome system configuration.";
+  description = "Home Manager + NUR + Neovim config";
 
   inputs = {
     nixpkgs.url = github:nixos/nixpkgs/nixos-unstable-small;
@@ -25,7 +25,6 @@
       inherit self inputs;
 
 
-      channels.nixpkgs.input = nixpkgs;
       channelsConfig.allowUnfree = true;
 
       sharedOverlays = [

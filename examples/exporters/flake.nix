@@ -1,5 +1,5 @@
 {
-  description = "A highly awesome system configuration.";
+  description = "FUP exporters demo";
 
   inputs = {
     nixpkgs.url = github:nixos/nixpkgs/nixos-unstable-small;
@@ -14,14 +14,18 @@
     utils.lib.systemFlake {
       inherit self inputs;
 
-      channels.nixpkgs.input = nixpkgs;
+      # Channel specific overlays. Overlays `coreutils` from `unstable` channel.
+      channels.nixpkgs.overlaysBuilder = channels: [
+        (final: prev: { inherit (channels.unstable) coreutils; })
+      ];
+
+      # Propagates to channels.<name>.overlaysBuilder
+      sharedOverlays = [
+        self.overlay
+      ];
 
       hosts.Morty.modules = with self.nixosModules; [
         Morty
-      ];
-
-      sharedOverlays = [
-        self.overlay
       ];
 
       nixosModules = modulesFromList [
@@ -42,4 +46,3 @@
 
     };
 }
-
