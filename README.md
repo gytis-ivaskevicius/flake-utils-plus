@@ -15,9 +15,9 @@ FUP provides a few main features (visible from `flake.nix`):
 
 - `nix.generateRegistryFromInputs` - Generates `nix.registry` from flake `inputs`.
 - `lib.mkFlake { ... }` - Generates a flake using FUP magic.
-- `lib.exportModules [ ./a.nix ./b.nix ]` - Generates module attribute which look like this `{ a = import ./a.nix; b = import ./b.nix; }`.
-- `lib.exportOverlays channels` - Exports all overlays from channels as an appropriately namespaced attribute set. Users can instantiate with their nixpkgs version.
-- `lib.outputsBuilder.packages channels pkgs` - Similar to the overlay generator, but outputs them as packages for the platforms defined in `meta.platforms`. Unlike overlays, these packages are consistent across flakes allowing them to be cached.
+- [`lib.exportModules [ ./a.nix ./b.nix ]`](./lib/exportModules.nix) - Generates module attribute which look like this `{ a = import ./a.nix; b = import ./b.nix; }`.
+- [`lib.exportOverlays channels`](./lib/exportOverlays.nix) - Exports all overlays from channels as an appropriately namespaced attribute set. Users can instantiate with their nixpkgs version.
+- [`lib.outputsBuilder.packages channels pkgs`](./lib/outputsBuilder.nix) - Similar to the overlay generator, but outputs them as packages for the platforms defined in `meta.platforms`. Unlike overlays, these packages are consistent across flakes allowing them to be cached.
 
 # How to use #
 
