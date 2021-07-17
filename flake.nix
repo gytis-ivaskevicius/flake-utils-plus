@@ -8,11 +8,18 @@
       inherit (builtins) isList isAttrs mapAttrs;
       fupArgs = { flake-utils-plus = self; };
 
-      systemFlake = import ./lib/systemFlake.nix fupArgs;
-      modulesFromList = import ./lib/modulesFromList.nix fupArgs;
-      fromOverlays = import ./lib/fromOverlays.nix fupArgs;
-      internalOverlays = import ./lib/internalOverlays.nix fupArgs;
+      mkFlake = import ./lib/mkFlake.nix fupArgs;
+      exportModules = import ./lib/exportModules.nix fupArgs;
+      exportOverlays = import ./lib/exportOverlays.nix fupArgs;
+      exportPackages = import ./lib/exportPackages.nix fupArgs;
+      internal-functions = import ./lib/internal-functions.nix;
       overlay = import ./lib/overlay.nix;
+
+      # Deprecated names of the above
+      systemFlake = mkFlake;
+      modulesFromList = exportModules;
+      fromOverlays = exportOverlays;
+      internalOverlays = exportPackages;
     in
     rec {
       inherit overlay;
@@ -22,10 +29,10 @@
 
       devShell.x86_64-linux = import ./devShell.nix { system = "x86_64-linux"; };
 
-      lib = flake-utils.lib // {
-        # modulesFromList is deprecated, will be removed in future releases
-        inherit systemFlake modulesFromList;
+      lib = flake-utils.lib // internal-functions // {
+        inherit mkFlake exportModules exportOverlays exportPackages;
 
+        # Deprecated - should use top-level functions instead
         exporters = {
           inherit modulesFromList fromOverlays internalOverlays;
         };

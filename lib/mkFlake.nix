@@ -31,7 +31,14 @@
 }@args:
 
 let
-  inherit (flake-utils-plus.lib) eachSystem patchChannel mergeAny;
+  inherit (flake-utils-plus.lib)
+    eachSystem
+    filterAttrs
+    mergeAny
+    partitionString
+    patchChannel
+    reverseList
+    ;
   inherit (builtins)
     attrNames
     attrValues
@@ -50,15 +57,6 @@ let
     split
     tail
     ;
-
-  filterAttrs = pred: set:
-    listToAttrs (concatMap (name: let value = set.${name}; in if pred name value then [ ({ inherit name value; }) ] else [ ]) (attrNames set));
-
-  reverseList = xs:
-    let l = length xs; in genList (n: elemAt xs (l - n - 1)) l;
-
-  partitionString = sep: s:
-    filter (v: isString v) (split "${sep}" s);
 
 
   srcs = filterAttrs (_: value: !value ? outputs) inputs;

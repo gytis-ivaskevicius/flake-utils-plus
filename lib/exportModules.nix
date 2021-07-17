@@ -1,7 +1,15 @@
-{ fup }:
+{ flake-utils-plus }:
 
-with fup;
 let
+  inherit (flake-utils-plus.lib)
+    genAttrs'
+    hasFileAttr
+    pathIsDirectory
+    pathIsRegularFile
+    peek
+    rakeLeaves
+    removeSuffix
+    ;
   exportModules = args:
     /**
       Synopsis: exportModules _paths or modules_
