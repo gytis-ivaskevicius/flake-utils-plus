@@ -2,12 +2,13 @@
   description = "FUP exporters demo";
 
   inputs = {
-    nixpkgs.url = github:nixos/nixpkgs/nixos-unstable-small;
+    nixpkgs.url = github:nixos/nixpkgs/release-21.05;
+    unstable.url = github:nixos/nixpkgs/nixos-unstable-small;
     utils.url = path:../../;
   };
 
 
-  outputs = inputs@{ self, nixpkgs, utils }:
+  outputs = inputs@{ self, nixpkgs, utils, ... }:
     let
       inherit (utils.lib.exporters) internalOverlays fromOverlays modulesFromList;
     in
@@ -16,7 +17,7 @@
 
       # Channel specific overlays. Overlays `coreutils` from `unstable` channel.
       channels.nixpkgs.overlaysBuilder = channels: [
-        (final: prev: { inherit (channels.unstable) coreutils; })
+        (final: prev: { inherit (channels.unstable) ranger; })
       ];
 
       # Propagates to channels.<name>.overlaysBuilder

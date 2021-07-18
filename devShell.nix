@@ -39,7 +39,7 @@ let
       echo -e "\n\n##### Building ${example}-${host}\n"
       cd $DEVSHELL_ROOT/examples/${example}
       nix flake show --no-write-lock-file "$@"
-      nix build .#nixosConfigurations.${host}.config.system.build.toplevel --no-write-lock-file "$@"
+      nix build .#nixosConfigurations.${host}.config.system.build.toplevel --no-write-lock-file --no-link "$@"
     '';
   };
 
