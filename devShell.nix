@@ -25,11 +25,10 @@ let
     help = "Checks ${name} testcases";
     command = ''
       set -e
+      echo -e "\n\n##### Building ${name}\n"
       cd $DEVSHELL_ROOT/tests/${name}
-      nix flake lock --update-input utils
-      nix flake show "$@"
-      nix flake check "$@"
-      git rm -f flake.lock
+      nix flake show --no-write-lock-file "$@"
+      nix flake check --no-write-lock-file "$@"
     '';
   };
 
@@ -37,11 +36,10 @@ let
     name = "build-${example}-${host}";
     command = ''
       set -e
+      echo -e "\n\n##### Building ${example}-${host}\n"
       cd $DEVSHELL_ROOT/examples/${example}
-      nix flake lock --update-input utils
-      nix flake show "$@"
-      nix build .#nixosConfigurations.${host}.config.system.build.toplevel --dry-run "$@"
-      git rm -f flake.lock
+      nix flake show --no-write-lock-file "$@"
+      nix build .#nixosConfigurations.${host}.config.system.build.toplevel --no-write-lock-file "$@"
     '';
   };
 
