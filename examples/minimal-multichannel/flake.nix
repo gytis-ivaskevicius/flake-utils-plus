@@ -8,7 +8,7 @@
   };
 
 
-  outputs = inputs@{ self, nixpkgs, unstable, utils, home-manager }:
+  outputs = inputs@{ self, nixpkgs, unstable, utils }:
     utils.lib.systemFlake {
       inherit self inputs;
 
