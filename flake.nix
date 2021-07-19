@@ -29,13 +29,17 @@
 
       devShell.x86_64-linux = import ./devShell.nix { system = "x86_64-linux"; };
 
-      lib = flake-utils.lib // internal-functions // {
+      lib = flake-utils.lib // {
+        inherit (internal-functions) rakeLeaves;
         inherit mkFlake exportModules exportOverlays exportPackages;
 
         # Deprecated - should use top-level functions instead
         exporters = {
           inherit modulesFromList fromOverlays internalOverlays;
         };
+
+        # DO NOT USE - subject to change without notice
+        internal = internal-functions;
 
         repl = ./lib/repl.nix;
 
