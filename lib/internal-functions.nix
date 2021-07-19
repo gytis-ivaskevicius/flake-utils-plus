@@ -4,11 +4,11 @@ rec {
     listToAttrs (concatMap (name: let value = set.${name}; in if pred name value then [ ({ inherit name value; }) ] else [ ]) (attrNames set));
 
   /* Generate an attribute set by mapping a function over a list of
-     attribute names.
+    attribute names.
 
-     Example:
-       genAttrs [ "foo" "bar" ] (name: "x_" + name)
-       => { foo = "x_foo"; bar = "x_bar"; }
+    Example:
+    genAttrs [ "foo" "bar" ] (name: "x_" + name)
+    => { foo = "x_foo"; bar = "x_bar"; }
   */
   genAttrs' = func: values: builtins.listToAttrs (map func values);
 
@@ -23,8 +23,9 @@ rec {
     let
       lenContent = stringLength content;
       lenSuffix = stringLength suffix;
-    in lenContent >= lenSuffix &&
-       substring (lenContent - lenSuffix) lenContent content == suffix;
+    in
+    lenContent >= lenSuffix &&
+    substring (lenContent - lenSuffix) lenContent content == suffix;
 
   # Definition in nixpkgs
   mapAttrs' = f: set:
@@ -32,9 +33,9 @@ rec {
 
   /* Partition string s based on sep
 
-     Example:
-       partitionString "," "nix,json,yaml"
-       => [ "nix" "json" "yaml" ]
+    Example:
+    partitionString "," "nix,json,yaml"
+    => [ "nix" "json" "yaml" ]
   */
   partitionString = sep: s:
     filter (v: isString v) (split "${sep}" s);
