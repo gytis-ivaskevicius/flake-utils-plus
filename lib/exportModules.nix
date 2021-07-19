@@ -1,7 +1,7 @@
 { flake-utils-plus }:
 
 let
-  inherit (flake-utils-plus.lib)
+  inherit (flake-utils-plus.lib.internal)
     genAttrs'
     hasFileAttr
     pathIsDirectory

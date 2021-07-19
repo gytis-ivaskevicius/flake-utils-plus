@@ -33,10 +33,12 @@
 let
   inherit (flake-utils-plus.lib)
     eachSystem
-    filterAttrs
     mergeAny
-    partitionString
     patchChannel
+    ;
+  inherit (flake-utils-plus.lib.internal)
+    filterAttrs
+    partitionString
     reverseList
     ;
   inherit (builtins)
