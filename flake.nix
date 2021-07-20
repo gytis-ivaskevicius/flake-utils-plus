@@ -18,8 +18,8 @@
       # Deprecated names of the above
       systemFlake = mkFlake;
       modulesFromList = exportModules;
-      fromOverlays = exportOverlays;
-      internalOverlays = exportPackages;
+      fromOverlays = exportPackages;
+      internalOverlays = exportOverlays;
     in
     rec {
       inherit overlay;
