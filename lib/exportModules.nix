@@ -33,19 +33,8 @@ let
     genAttrs'
       (arg:
 
-        # a regular file to be imported
-        if pathIsRegularFile arg then
-          {
-            name = removeSuffix ".nix" (baseNameOf arg);
-            value = import arg;
-          }
-
-        # a directory to be recursively imported
-        else if pathIsDirectory arg then
-          rakeLeaves arg
-
         # a module function with a _file attr
-        else if ((builtins.isFunction arg) && (hasFileAttr (peek arg))) then
+        if ((builtins.isFunction arg) && (hasFileAttr (peek arg))) then
           {
             name = removeSuffix ".toml" (removeSuffix ".nix" (baseNameOf (peek arg)._file));
             value = arg;
@@ -69,6 +58,16 @@ let
           builtins.throw ''
             simple module has no (required) _file argument key: ${builtins.trace arg "."}
           ''
+        # a regular file to be imported
+        else if pathIsRegularFile arg then
+          {
+            name = removeSuffix ".nix" (baseNameOf arg);
+            value = import arg;
+          }
+
+        # a directory to be recursively imported
+        else if pathIsDirectory arg then
+          rakeLeaves arg
 
         # panic: something else
         else
