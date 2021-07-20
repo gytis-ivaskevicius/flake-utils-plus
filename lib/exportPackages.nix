@@ -1,13 +1,13 @@
 { flake-utils-plus }:
 let
 
-  packagesFromOverlaysBuilderConstructor = overlays:
+  exportPackagesBuilder = overlays:
     let
       # overlays: self.overlays
 
-      packagesFromOverlaysBuilder = channels:
+      exportPackages = channels:
         /**
-          Synopsis: packagesFromOverlaysBuilder _channels_
+          Synopsis: exportPackagesBuilder _channels_
 
           channels: builder `channels` argument
 
@@ -27,7 +27,7 @@ let
           overlays = {
           "unstable/firefox" = prev: final: {
           firefox = prev.override { privacySupport = true; };
-          }; 
+          };
           }
 
           self.packages = {
@@ -85,7 +85,7 @@ let
         filterPackages system (flattenTree exportPackages);
 
     in
-    packagesFromOverlaysBuilder;
+    exportPackages;
 
 in
-packagesFromOverlaysBuilderConstructor
+exportPackagesBuilder

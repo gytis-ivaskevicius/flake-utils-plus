@@ -1,9 +1,9 @@
 { flake-utils-plus }:
 let
 
-  overlaysFromChannelsExporter = { pkgs, inputs ? { } }:
+  exportOverlays = { pkgs, inputs ? { } }:
     /**
-      Synopsis: overlaysFromChannelsExporter _{ pkgs, inputs }_
+      Synopsis: exportOverlays _{ pkgs, inputs }_
 
       pkgs: self.pkgs
 
@@ -40,7 +40,17 @@ let
 
       **/
     let
-      inherit (builtins) mapAttrs foldl' filter head attrNames attrValues concatMap listToAttrs elem;
+      inherit (builtins)
+        attrNames
+        attrValues
+        concatMap
+        elem
+        filter
+        foldl'
+        head
+        listToAttrs
+        mapAttrs
+        ;
       nameValuePair = name: value: { inherit name value; };
 
       # just pull out one arch from the system-spaced pkgs to get access to channels
@@ -90,4 +100,4 @@ let
     );
 
 in
-overlaysFromChannelsExporter
+exportOverlays
