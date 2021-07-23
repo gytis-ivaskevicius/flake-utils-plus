@@ -40,12 +40,6 @@ rec {
   partitionString = sep: s:
     filter (v: isString v) (split "${sep}" s);
 
-  # Returns true if the path exists and is a directory, false otherwise
-  pathIsDirectory = p: if builtins.pathExists p then (pathType p) == "directory" else false;
-
-  # Returns true if the path exists and is a regular file, false otherwise
-  pathIsRegularFile = p: if builtins.pathExists p then (pathType p) == "regular" else false;
-
   # Returns the type of a path: regular (for file), symlink, or directory
   pathType = p: getAttr (baseNameOf p) (readDir (dirOf p));
 
@@ -60,31 +54,6 @@ rec {
       builtins.substring 0 (sLen - sufLen) str
     else
       str;
-
-  rakeLeaves =
-    dirPath:
-    let
-      seive = file: type:
-        # Only rake `.nix` files or directories
-        (type == "regular" && hasSuffix ".nix" file) || (type == "directory")
-      ;
-
-      collect = file: type: {
-        name = removeSuffix ".nix" file;
-        value =
-          let
-            path = dirPath + "/${file}";
-          in
-          if (type == "regular")
-            || (type == "directory" && builtins.pathExists (path + "/default.nix"))
-          then path
-          # recurse on directories that don't contain a `default.nix`
-          else rakeLeaves path;
-      };
-
-      files = filterAttrs seive (builtins.readDir dirPath);
-    in
-    filterAttrs (n: v: v != { }) (mapAttrs' collect files);
 
   reverseList = xs:
     let l = length xs; in genList (n: elemAt xs (l - n - 1)) l;

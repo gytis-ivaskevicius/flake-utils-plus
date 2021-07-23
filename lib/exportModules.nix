@@ -4,10 +4,7 @@ let
   inherit (flake-utils-plus.lib.internal)
     genAttrs'
     hasFileAttr
-    pathIsDirectory
-    pathIsRegularFile
     peek
-    rakeLeaves
     removeSuffix
     ;
   exportModules = args:
@@ -58,16 +55,12 @@ let
           builtins.throw ''
             simple module has no (required) _file argument key: ${builtins.trace arg "."}
           ''
-        # a regular file to be imported
-        else if pathIsRegularFile arg then
+        # a regular path to be imported
+        else if builtins.isPath arg then
           {
             name = removeSuffix ".nix" (baseNameOf arg);
             value = import arg;
           }
-
-        # a directory to be recursively imported
-        else if pathIsDirectory arg then
-          rakeLeaves arg
 
         # panic: something else
         else
