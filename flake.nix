@@ -36,7 +36,7 @@
         exporters = {
           inherit modulesFromList fromOverlays internalOverlays;
         };
-        inherit systemFlake;
+        inherit systemFlake modulesFromList;
 
         # DO NOT USE - subject to change without notice
         internal = internal-functions;
