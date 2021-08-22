@@ -1,17 +1,17 @@
 { system ? builtins.currentSystem }:
 let
   # nixpkgs / devshell is only used for development. Don't add it to the flake.lock.
-  nixpkgsGitRev = "246502ae2d5ca9def252abe0ce6363a0f08382a7";
-  devshellGitRev = "1f4fb67b662b65fa7cfe696fc003fcc1e8f7cc36";
+  nixpkgsGitRev = "82d05e980543e1703cbfd3b5ccd1fdcd4b0f1f00";
+  devshellGitRev = "26f25a12265f030917358a9632cd600b51af1d97";
 
   nixpkgsSrc = fetchTarball {
     url = "https://github.com/NixOS/nixpkgs/archive/${nixpkgsGitRev}.tar.gz";
-    sha256 = "sha256-cuCj8CfBrVlEYQM2jfD3psh2jV/sR5HACYkC74WR9KE=";
+    sha256 = "02yqgivv8kxksv7n6vmh22qxprlfjh4rfkgf98w46nssq5ahdb1q";
   };
 
   devshellSrc = fetchTarball {
     url = "https://github.com/numtide/devshell/archive/${devshellGitRev}.tar.gz";
-    sha256 = "03258pq60nppq39571bjxqn75h3rn25bdlrx04k75v20n77xfs5c";
+    sha256 = "sha256:0f6fph5gahm2bmzd399mba6b0h6wp6i1v3gryfmgwp0as7mwqpj7";
   };
 
   pkgs = import nixpkgsSrc { inherit system; };
