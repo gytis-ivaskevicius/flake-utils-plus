@@ -11,19 +11,30 @@ The biggest design goal is to keep down the fluff. The library is meant to be ea
 
 # Features of the flake #
 
-FUP provides a few main features (visible from `flake.nix`):
-
-- `nix.generateRegistryFromInputs` - Generates `nix.registry` from flake `inputs`.
-- `lib.mkFlake { ... }` - Generates a flake using FUP magic.
+Main flake-utils-plus features (Attributes visible from `flake.nix`):
+- Extends [flake-utils](https://github.com/numtide/flake-utils). Everything exported by fu can be used from this flake.
+- `lib.mkFlake { ... }` - Clean and pleasent to use flakes abstraction.
+    - Option `nix.generateRegistryFromInputs` - Generates `nix.registry` from flake `inputs`.
+    - Simple and clean support for multiple `nixpkgs` references.
+    - `nixpkgs` references patching.
+    - `channelsConfig` - Config applied to all `nixpkgs` references.
+    - `hostDefaults` - Default configuration shared between host definitions.
+    - `outputsBuilder` - Clean way to export packages/apps/etc.
+    - `sharedOverlays` - Overlays applied on all imported channels.
 - [`lib.exportModules [ ./a.nix ./b.nix ]`](./lib/exportModules.nix) - Generates module attribute which look like this `{ a = import ./a.nix; b = import ./b.nix; }`.
 - [`lib.exportOverlays channels`](./lib/exportOverlays.nix) - Exports all overlays from channels as an appropriately namespaced attribute set. Users can instantiate with their nixpkgs version.
-- [`lib.outputsBuilder.packages channels pkgs`](./lib/outputsBuilder.nix) - Similar to the overlay generator, but outputs them as packages for the platforms defined in `meta.platforms`. Unlike overlays, these packages are consistent across flakes allowing them to be cached.
+- [`lib.exportPackages self.overlays channels`](./lib/exportPackages.nix) - Similar to the overlay generator, but outputs them as packages for the platforms defined in `meta.platforms`. Unlike overlays, these packages are consistent across flakes allowing them to be cached.
+- `pkgs.fup-repl` - Adds a kick-ass repl. Usage:
+    - `$ repl` - Loads your system repl into scope as well as `pkgs` and `lib` from `nixpkgs` input.
+    - `$ repl /path/to/flake.nix` - Same as above only that it loads specified flake.
 
 # How to use #
 
-* [Using FUP to configure hosts with Home Manager, NUR and neovim](https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/master/examples/home-manager+nur+neovim)
+* [Example of using multiple channels](./examples/minimal-multichannel)
 
-* [Example of using multiple channels](https://github.com/gytis-ivaskevicius/flake-utils-plus/blob/master/examples/minimal-multichannel)
+* [Exporters usage example](./examples/exporters)
+
+* [Using FUP to configure hosts with Home Manager, NUR and neovim](./examples/home-manager+nur+neovim)
 
 ## Examples
 
@@ -34,17 +45,6 @@ We recommend referring to people's examples below when setting up your system.
 - [Bobbbay Dotfiles](https://github.com/Bobbbay/dotfiles/blob/master/flake.nix)
 - [Charlotte Dotfiles](https://github.com/chvp/nixos-config/blob/master/flake.nix)
 
-Looking to add a kick-ass repl to your config? Create and import something along these lines:
-```nix
-{ inputs, ... }:
-
-{
-  environment.shellAliases = {
-    very-cool-nix-repl = "nix repl ${inputs.utils.lib.repl}";
-  };
-}
-
-```
 
 # Documentation
 
@@ -149,16 +149,16 @@ in flake-utils-plus.lib.mkFlake {
         exePath = "/bin/nvim";
       };
     };
-    
+
     # Evaluates to `packages.<system>.coreutils = <unstable-nixpkgs-reference>.package-from-overlays`.
     packages = { inherit (channels.unstable) package-from-overlays; };
-    
+
     # Evaluates to `apps.<system>.firefox  = utils.lib.mkApp { drv = ...; };`.
     defaultApp = mkApp { drv = channels.nixpkgs.firefox };
-    
+
     # Evaluates to `defaultPackage.<system>.neovim = <nixpkgs-channel-reference>.neovim`.
     defaultPackage = channels.nixpkgs.neovim;
-    
+
     # Evaluates to `devShell.<system> = <nixpkgs-channel-reference>.mkShell { name = "devShell"; };`.
     devShell = channels.nixpkgs.mkShell { name = "devShell"; };
   };
