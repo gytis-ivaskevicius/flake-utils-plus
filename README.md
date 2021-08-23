@@ -24,7 +24,7 @@ Main flake-utils-plus features (Attributes visible from `flake.nix`):
 - [`lib.exportModules [ ./a.nix ./b.nix ]`](./lib/exportModules.nix) - Generates module attribute which look like this `{ a = import ./a.nix; b = import ./b.nix; }`.
 - [`lib.exportOverlays channels`](./lib/exportOverlays.nix) - Exports all overlays from channels as an appropriately namespaced attribute set. Users can instantiate with their nixpkgs version.
 - [`lib.exportPackages self.overlays channels`](./lib/exportPackages.nix) - Similar to the overlay generator, but outputs them as packages for the platforms defined in `meta.platforms`. Unlike overlays, these packages are consistent across flakes allowing them to be cached.
-- `pkgs.fup-repl` - Adds a kick-ass repl. Usage:
+- `pkgs.fup-repl` - A package that adds a kick-ass repl. Usage:
     - `$ repl` - Loads your system repl into scope as well as `pkgs` and `lib` from `nixpkgs` input.
     - `$ repl /path/to/flake.nix` - Same as above only that it loads specified flake.
 

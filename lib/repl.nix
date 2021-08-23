@@ -1,8 +1,8 @@
-{ flakePath ? null, hostnamePath ? "/etc/hostname" }:
+{ flakePath ? null, hostnamePath ? "/etc/hostname", registryPath ? /etc/nix/registry.json }:
 
 let
   inherit (builtins) getFlake head match currentSystem readFile pathExists filter fromJSON;
-  registryPath = /etc/nix/registry.json;
+
   selfFlake =
     if pathExists registryPath
     then filter (it: it.from.id == "self") (fromJSON (readFile registryPath)).flakes
@@ -16,7 +16,7 @@ let
     else "/etc/nixos");
 
   flake = if pathExists flakePath' then getFlake flakePath' else { };
-  hostname = if pathExists hostnamePath then head (match "([a-zA-Z0-9]+)\n" (readFile hostnamePath)) else "";
+  hostname = if pathExists hostnamePath then head (match "([a-zA-Z0-9\\-]+)\n" (readFile hostnamePath)) else "";
 
   nixpkgsFromInputsPath = flake.inputs.nixpkgs.outPath or "";
   nixpkgs = flake.pkgs.${currentSystem}.nixpkgs or (if nixpkgsFromInputsPath != "" then import nixpkgsFromInputsPath { } else { });
@@ -29,4 +29,4 @@ in
 // (flake.nixosConfigurations or { })
 // flake.nixosConfigurations.${hostname} or { }
 // nixpkgsOutput
-  // { loadFlake = path: getFlake (toString path); }
+  // { getFlake = path: getFlake (toString path); }
