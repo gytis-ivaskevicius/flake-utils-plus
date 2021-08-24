@@ -13,7 +13,7 @@ The biggest design goal is to keep down the fluff. The library is meant to be ea
 
 Main flake-utils-plus features (Attributes visible from `flake.nix`):
 - Extends [flake-utils](https://github.com/numtide/flake-utils). Everything exported by fu can be used from this flake.
-- `lib.mkFlake { ... }` - Clean and pleasent to use flakes abstraction.
+- `lib.mkFlake { ... }` - Clean and pleasant to use flakes abstraction.
     - Option `nix.generateRegistryFromInputs` - Generates `nix.registry` from flake `inputs`.
     - Simple and clean support for multiple `nixpkgs` references.
     - `nixpkgs` references patching.
@@ -26,7 +26,7 @@ Main flake-utils-plus features (Attributes visible from `flake.nix`):
 - [`lib.exportPackages self.overlays channels`](./lib/exportPackages.nix) - Similar to the overlay generator, but outputs them as packages for the platforms defined in `meta.platforms`. Unlike overlays, these packages are consistent across flakes allowing them to be cached.
 - `pkgs.fup-repl` - A package that adds a kick-ass repl. Usage:
     - `$ repl` - Loads your system repl into scope as well as `pkgs` and `lib` from `nixpkgs` input.
-    - `$ repl /path/to/flake.nix` - Same as above only that it loads specified flake.
+    - `$ repl /path/to/flake.nix` - Same as above but loads the specified flake.
 
 # How to use #
 
