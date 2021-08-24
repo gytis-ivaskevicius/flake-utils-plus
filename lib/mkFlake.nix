@@ -42,6 +42,7 @@ let
     reverseList
     ;
   inherit (builtins)
+    pathExists
     attrNames
     attrValues
     concatMap
@@ -222,7 +223,9 @@ mergeAny otherArguments (
         filterAttrs = pred: set:
           listToAttrs (concatMap (name: let value = set.${name}; in if pred name value then [ ({ inherit name value; }) ] else [ ]) (attrNames set));
 
-        channelFlakes = filterAttrs (_: value: value ? legacyPackages) inputs;
+        # Little hack, we make sure that `legacyPackages` contains `nix` to make sure that we are dealing with nixpkgs.
+        # For some odd reason `devshell` contains `legacyPackages` out put as well
+        channelFlakes = filterAttrs (_: value: value.legacyPackages.x86_64-linux ? nix) inputs;
         channelsFromFlakes = mapAttrs (name: input: { inherit input; }) channelFlakes;
 
         importChannel = name: value: (import (patchChannel system value.input (value.patches or [ ])) {
