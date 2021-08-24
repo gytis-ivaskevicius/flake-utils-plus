@@ -13,7 +13,7 @@ The biggest design goal is to keep down the fluff. The library is meant to be ea
 
 Main flake-utils-plus features (Attributes visible from `flake.nix`):
 - Extends [flake-utils](https://github.com/numtide/flake-utils). Everything exported by fu can be used from this flake.
-- `lib.mkFlake { ... }` - Clean and pleasent to use flakes abstraction.
+- `lib.mkFlake { ... }` - Clean and pleasant to use flakes abstraction.
     - Option `nix.generateRegistryFromInputs` - Generates `nix.registry` from flake `inputs`.
     - Simple and clean support for multiple `nixpkgs` references.
     - `nixpkgs` references patching.
