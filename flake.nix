@@ -14,12 +14,6 @@
       exportPackages = import ./lib/exportPackages.nix fupArgs;
       internal-functions = import ./lib/internal-functions.nix;
       overlay = import ./lib/overlay.nix;
-
-      # Deprecated names of the above
-      systemFlake = mkFlake;
-      modulesFromList = exportModules;
-      fromOverlays = exportPackages;
-      internalOverlays = exportOverlays;
     in
     rec {
       inherit overlay;
@@ -29,7 +23,7 @@
       devShell.x86_64-linux = import ./devShell.nix { system = "x86_64-linux"; };
 
       lib = flake-utils.lib // {
-        inherit mkFlake exportModules exportOverlays exportPackages systemFlake modulesFromList;
+        inherit mkFlake exportModules exportOverlays exportPackages;
 
         # DO NOT USE - subject to change without notice
         internal = internal-functions;
