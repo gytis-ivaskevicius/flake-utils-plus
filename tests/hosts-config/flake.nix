@@ -74,7 +74,7 @@
             inherit (utils.lib.check-utils channels.nixpkgs) hasKey isEqual;
 
             plainHost = self.someConfigurations.Plain;
-            plainHostPkgs = plainHost.config.nixpkgs.pkgs;
+            plainHostPkgs = plainHost._module.args.pkgs;
             plainHostName = plainHost.config.networking.hostName;
             plainHostDomain = plainHost.config.networking.domain;
 
@@ -83,7 +83,7 @@
             reverseDnsHostDomain = reverseDnsHost.config.networking.domain;
 
             customizedHost = self.darwinConfigurations.Customized;
-            customizedHostPkgs = customizedHost.config.nixpkgs.pkgs;
+            customizedHostPkgs = customizedHost._module.args.pkgs;
           in
           {
 
