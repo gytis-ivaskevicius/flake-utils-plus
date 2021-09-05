@@ -68,11 +68,10 @@ devshell.mkShell {
       command = "fd --extension nix --exec nix-instantiate --parse --quiet {} >/dev/null";
     }
 
-    (test "channel-patching")
     (test "derivation-outputs")
     (test "hosts-config")
     (test "overlays-flow")
-    (test "all" // { command = "check-channel-patching && check-derivation-outputs && check-hosts-config && check-overlays-flow"; })
+    (test "all" // { command = "check-derivation-outputs && check-hosts-config && check-overlays-flow"; })
 
     (dry-nixos-build "minimal-multichannel" "Hostname1")
     (dry-nixos-build "minimal-multichannel" "Hostname2")

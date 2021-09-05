@@ -25,7 +25,6 @@ Main flake-utils-plus features (Attributes visible from `flake.nix`):
     - Option [`nix.generateNixPathFromInputs`](./lib/options.nix) - Generate `nix.nixPath` from available inputs.
     - Option [`nix.linkInputs`](./lib/options.nix) - Symlink inputs to /etc/nix/inputs.
     - Simple and clean support for multiple `nixpkgs` references.
-    - `nixpkgs` references patching.
     - `channelsConfig` - Config applied to all `nixpkgs` references.
     - `hostDefaults` - Default configuration shared between host definitions.
     - `outputsBuilder` - Clean way to export packages/apps/etc.
@@ -91,9 +90,6 @@ in flake-utils-plus.lib.mkFlake {
 
   # Channel specific config options.
   channels.<name>.config = { allowUnfree = true; };
-
-  # Patches to apply on selected channel.
-  channels.<name>.patches = [ ./someAwesomePatch.patch ];
 
   # Overlays to apply on a selected channel.
   channels.<name>.overlaysBuilder = channels: [

@@ -43,15 +43,6 @@
               else value
             )
             rhs;
-
-        patchChannel = system: channel: patches:
-          if patches == [ ] then channel else
-          (import channel { inherit system; }).pkgs.applyPatches {
-            name = if channel ? shortRev then "nixpkgs-patched-${channel.shortRev}" else "nixpkgs-patched";
-            src = channel;
-            patches = patches;
-          };
-
       };
     };
 }
