@@ -5,7 +5,9 @@ Need help? Create an issue or ping @Gytis#0001 in the above Discord Server.
 
 # Changing branching policy #
 From now on `master` serves as a development branch (previously `staging` was used for such purposes). Please use tags for stable releases of flake-utils-plus.
-Also, branch [release-1.2.0-without-deprecated-code](https://github.com/gytis-ivaskevicius/flake-utils-plus/tree/release-1.2.0-without-deprecated-code) has been created. It contains a non-backward compatible version of flake-utils-plus. Consider using this branch instead of the latest release.
+In general, with the imporvements in test harness, releases might happen more frequently. Sticking with a tagged release might offer better trade-offs going forward.
+
+Please note, while 1.2.0 retains backwards compatibility, 1.2.1 is the same version with all backwards compatibility removed.
 
 
 # What is this flake? #
