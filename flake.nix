@@ -24,20 +24,12 @@
     rec {
       inherit overlay;
 
-      # Deprecated in favor of 'nix.generateRegistryFromInputs = true;'
-      nixosModules.saneFlakeDefaults = { nix.generateRegistryFromInputs = true; };
       nixosModules.autoGenFromInputs = import ./lib/options.nix;
 
       devShell.x86_64-linux = import ./devShell.nix { system = "x86_64-linux"; };
 
       lib = flake-utils.lib // {
-        inherit mkFlake exportModules exportOverlays exportPackages;
-
-        # Deprecated - should use top-level functions instead
-        exporters = {
-          inherit modulesFromList fromOverlays internalOverlays;
-        };
-        inherit systemFlake modulesFromList;
+        inherit mkFlake exportModules exportOverlays exportPackages systemFlake modulesFromList;
 
         # DO NOT USE - subject to change without notice
         internal = internal-functions;
