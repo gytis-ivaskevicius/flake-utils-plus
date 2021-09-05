@@ -57,7 +57,7 @@
         patchChannel = system: channel: patches:
           if patches == [ ] then channel else
           (import channel { inherit system; }).pkgs.applyPatches {
-            name = "nixpkgs-patched-${channel.shortRev}";
+            name = if channel ? shortRev then "nixpkgs-patched-${channel.shortRev}" else "nixpkgs-patched";
             src = channel;
             patches = patches;
           };
