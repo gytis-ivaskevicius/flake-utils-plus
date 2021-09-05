@@ -1,32 +1,18 @@
 { flake-utils-plus }:
 
 { self
-, defaultSystem ? "x86_64-linux" # will be deprecated soon use hostDefaults.system instead
 , supportedSystems ? flake-utils-plus.lib.defaultSystems
 , inputs
-
 , channels ? { }
 , channelsConfig ? { }
 , sharedOverlays ? [ ]
-
-, nixosProfiles ? { } # will be deprecated soon, use hosts, instead.
-, hosts ? nixosProfiles
-, sharedExtraArgs ? { } # deprecate soon, prefer hostDefaults
-, sharedModules ? [ ] # deprecate soon, prefer hostDefaults
+, hosts ? { }
 , hostDefaults ? {
-    system = defaultSystem;
-    modules = sharedModules;
-    extraArgs = sharedExtraArgs;
+    system = "x86_64-linux";
+    modules = [ ];
+    extraArgs = { };
   }
-
-, outputsBuilder ? null
-
-, packagesBuilder ? null
-, defaultPackageBuilder ? null
-, appsBuilder ? null
-, defaultAppBuilder ? null
-, devShellBuilder ? null
-, checksBuilder ? null
+, outputsBuilder ? _: { }
 , ...
 }@args:
 
@@ -82,8 +68,6 @@ let
   optionalAttrs = check: value: if check then value else { };
 
   otherArguments = removeAttrs args [
-    "defaultSystem" # TODO: deprecated, remove
-    "sharedExtraArgs" # deprecated
     "inputs"
     "hosts"
     "hostDefaults"
@@ -91,17 +75,8 @@ let
     "channels"
     "channelsConfig"
     "self"
-    "sharedModules" # deprecated
     "sharedOverlays"
     "supportedSystems"
-
-    "outputsBuilder"
-    "packagesBuilder"
-    "defaultPackageBuilder"
-    "appsBuilder"
-    "defaultAppBuilder"
-    "devShellBuilder"
-    "checksBuilder"
   ];
 
   getChannels = system: self.pkgs.${system};
@@ -241,16 +216,7 @@ mergeAny otherArguments (
 
         pkgs = mapAttrs importChannel (mergeAny channelsFromFlakes channels);
 
-
-        deprecatedBuilders = channels: { }
-        // optionalAttrs (packagesBuilder != null) { packages = packagesBuilder channels; }
-        // optionalAttrs (defaultPackageBuilder != null) { defaultPackage = defaultPackageBuilder channels; }
-        // optionalAttrs (appsBuilder != null) { apps = appsBuilder channels; }
-        // optionalAttrs (defaultAppBuilder != null) { defaultApp = defaultAppBuilder channels; }
-        // optionalAttrs (devShellBuilder != null) { devShell = devShellBuilder channels; }
-        // optionalAttrs (checksBuilder != null) { checks = checksBuilder channels; };
-
-        systemOutputs = (if outputsBuilder == null then deprecatedBuilders else outputsBuilder) pkgs;
+        systemOutputs = outputsBuilder pkgs;
 
         mkOutputs = attrs: output:
           attrs //
