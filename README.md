@@ -16,6 +16,23 @@ Flake-utils-plus exposes a library abstraction to *painlessly* generate NixOS fl
 
 The biggest design goal is to keep down the fluff. The library is meant to be easy to understand and use. It aims to be far simpler than frameworks such as DevOS (previously called nixflk).
 
+# How to use #
+
+* [Example of using multiple channels](./examples/minimal-multichannel)
+
+* [Exporters usage example](./examples/exporters)
+
+* [Using FUP to configure hosts with Home Manager, NUR and neovim](./examples/home-manager+nur+neovim)
+
+## Examples
+
+We recommend referring to people's examples below when setting up your system.
+
+- [Gytis Dotfiles (Author of this project)](https://github.com/gytis-ivaskevicius/nixfiles/blob/master/flake.nix)
+- [Fufexan Dotfiles](https://github.com/fufexan/dotfiles/blob/main/flake.nix)
+- [Bobbbay Dotfiles](https://github.com/Bobbbay/dotfiles/blob/master/flake.nix)
+- [Charlotte Dotfiles](https://github.com/chvp/nixos-config/blob/master/flake.nix)
+
 # Features of the flake #
 
 Main flake-utils-plus features (Attributes visible from `flake.nix`):
@@ -36,24 +53,6 @@ Main flake-utils-plus features (Attributes visible from `flake.nix`):
 - [`pkgs.fup-repl`](./lib/overlay.nix) - A package that adds a kick-ass repl. Usage:
     - `$ repl` - Loads your system repl into scope as well as `pkgs` and `lib` from `nixpkgs` input.
     - `$ repl /path/to/flake.nix` - Same as above but loads the specified flake.
-
-# How to use #
-
-* [Example of using multiple channels](./examples/minimal-multichannel)
-
-* [Exporters usage example](./examples/exporters)
-
-* [Using FUP to configure hosts with Home Manager, NUR and neovim](./examples/home-manager+nur+neovim)
-
-## Examples
-
-We recommend referring to people's examples below when setting up your system.
-
-- [Gytis Dotfiles (Author of this project)](https://github.com/gytis-ivaskevicius/nixfiles/blob/master/flake.nix)
-- [Fufexan Dotfiles](https://github.com/fufexan/dotfiles/blob/main/flake.nix)
-- [Bobbbay Dotfiles](https://github.com/Bobbbay/dotfiles/blob/master/flake.nix)
-- [Charlotte Dotfiles](https://github.com/chvp/nixos-config/blob/master/flake.nix)
-
 
 # Documentation
 
