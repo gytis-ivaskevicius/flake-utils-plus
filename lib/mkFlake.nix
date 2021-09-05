@@ -76,7 +76,7 @@ let
     , specialArgs ? { }
     }: {
       inherit channelName system output builder extraArgs specialArgs;
-      modules = modules ++ [ ./autoRegistry.options.nix ];
+      modules = modules ++ [ ./options.nix ];
     };
 
   optionalAttrs = check: value: if check then value else { };
