@@ -34,7 +34,6 @@ let
   inherit (flake-utils-plus.lib)
     eachSystem
     mergeAny
-    patchChannel
     ;
   inherit (flake-utils-plus.lib.internal)
     filterAttrs
@@ -42,7 +41,6 @@ let
     reverseList
     ;
   inherit (builtins)
-    pathExists
     attrNames
     attrValues
     concatMap
@@ -52,10 +50,13 @@ let
     foldl'
     genList
     head
+    isAttrs
+    isFunction
     isString
     length
     listToAttrs
     mapAttrs
+    pathExists
     removeAttrs
     split
     tail
@@ -106,6 +107,20 @@ let
 
   getChannels = system: self.pkgs.${system};
   getNixpkgs = host: (getChannels host.system).${host.channelName};
+  mergeNixpkgsConfigs = input: lconf: rconf: (
+    input.lib.evalModules {
+      modules = [
+        "${input}/nixos/modules/misc/assertions.nix"
+        "${input}/nixos/modules/misc/nixpkgs.nix"
+        {
+          nixpkgs.config = lconf;
+        }
+        {
+          nixpkgs.config = rconf;
+        }
+      ];
+    }
+  ).config.nixpkgs.config;
 
   configurationBuilder = reverseDomainName: host': (
     let
@@ -118,18 +133,14 @@ let
         if domainLabels == [ ] then (lib.mkDefault null) # null is the networking.domain option's default
         else concatStringsSep "." domainLabels;
 
-      selectedNixpkgs = getNixpkgs host;
       host = evalHostArgs (mergeAny hostDefaults host');
-      patchedChannel = selectedNixpkgs.path;
+      selectedNixpkgs = getNixpkgs host;
       channels = getChannels host.system;
+      lib = selectedNixpkgs.lib;
 
       specialArgs = host.specialArgs // { channel = selectedNixpkgs; };
 
       /* nixos specific arguments */
-      # Use lib from patched nixpkgs
-      lib = selectedNixpkgs.lib;
-      # Use nixos modules from patched nixpkgs
-      baseModules = import (patchedChannel + "/nixos/modules/module-list.nix");
       nixosSpecialArgs =
         let
           f = channelName:
@@ -137,80 +148,96 @@ let
         in
         # Add `<channelName>ModulesPath`s
         (foldl' (lhs: rhs: lhs // rhs) { } (map f (attrNames channels)))
-        # Override `modulesPath` because otherwise imports from there will not use patched nixpkgs
-        // { modulesPath = toString (patchedChannel + "/nixos/modules"); };
+      ;
 
+      # genericModule MUST work gracefully with distinct module sets and
+      # cannot make any assumption other than the nixpkgs module system
+      # is used.
+      # See: https://github.com/NixOS/nixpkgs/blob/master/lib/modules.nix
+      # Exemplary module sets are: nixos, darwin, home-manager, etc
+      genericModule = preflight: { pkgs, lib, options, ... }: {
+        # 'mkMerge` to separate out each part into its own module
+        _type = "merge";
+        contents = (
+          if ((preflight == null) || (!options ? nixpkgs.pkgs)) then
+          # equivalent to nixpkgs.pkgs = selectedNixpkgs
+            [{ _module.args.pkgs = selectedNixpkgs; }]
+          else
+          # if preflight.nixpkgs.config == {},
+          # then the memorized evaluation of selectedNixpkgs will be used
+          # and we won't incur in an additional (expensive) evaluation.
+          # This works because nixos invokes at some point the same function
+          # with the same arguments as we already have in importChannel.
+          # DYOR:
+          #   -> https://github.com/NixOS/nixpkgs/blob/b63a54f81ce96391e6da6aab5965926e7cdbce47/nixos/modules/misc/nixpkgs.nix#L58-L60
+          #   -> https://github.com/NixOS/nixpkgs/blob/master/pkgs/top-level/default.nix
+          #   -> lib.systems.elaborate is idempotent
+            [
+              {
+                nixpkgs = { inherit (selectedNixpkgs) system overlays; };
+              }
+              {
+                # however, let the module system merge -> advanced config merge (sic!)
+                nixpkgs = { inherit (selectedNixpkgs) config; };
+              }
+              {
+                nixpkgs = { inherit (preflight.config.nixpkgs) config; };
+              }
+            ]
+        )
+        ++
+        [
+          {
+            _module.args = { inherit inputs; } // host.extraArgs;
+          }
+
+          (optionalAttrs (options ? networking.hostName) {
+            networking.hostName = hostname;
+          })
+
+          (optionalAttrs (options ? networking.domain) {
+            networking.domain = domain;
+          })
+
+          (optionalAttrs (options ? system.configurationRevision) {
+            system.configurationRevision = lib.mkIf (self ? rev) self.rev;
+          })
+
+          (optionalAttrs (options ? nix.package) {
+            nix.package = lib.mkDefault pkgs.nixUnstable;
+          })
+
+          (optionalAttrs (options ? nix.extraOptions) {
+            nix.extraOptions = "extra-experimental-features = nix-command ca-references flakes";
+          })
+        ];
+      };
+
+      evalArgs = {
+        inherit (host) system;
+        modules = [ (genericModule null) ] ++ host.modules;
+        inherit specialArgs;
+      }
+      //
+      (optionalAttrs (host.output == "nixosConfigurations") {
+        specialArgs = nixosSpecialArgs // specialArgs;
+      }
+      );
 
       # The only way to find out if a host has `nixpkgs.config` set to
-      # the non-default value is by evalling most of the config.
-      hostConfig = (lib.evalModules {
-        prefix = [ ];
-        check = false;
-        modules = baseModules ++ host.modules;
-        args = { inherit inputs; } // host.extraArgs;
-        specialArgs = nixosSpecialArgs // specialArgs;
-      }).config;
+      # the non-default value is by evalling the config.
+      # If it's not set, repeating the evaluation is cheap since
+      # all module evaluations except misc/nixpkgs.nix are memorized
+      # since `pkgs` would not change.
+      preFlightEvaled = host.builder (evalArgs // {
+        modules = [ (genericModule null) ] ++ host.modules;
+      });
+
     in
     {
-      ${host.output}.${reverseDomainName} = host.builder ({
-        inherit (host) system;
-        modules = [
-          ({ pkgs, lib, options, config, ... }: {
-            # 'mkMerge` to separate out each part into its own module
-            _type = "merge";
-            contents = [
-              (optionalAttrs (options ? networking.hostName) {
-                networking.hostName = hostname;
-              })
-
-              (optionalAttrs (options ? networking.domain) {
-                networking.domain = domain;
-              })
-
-              (if options ? nixpkgs.pkgs then
-                {
-                  nixpkgs.config = selectedNixpkgs.config;
-                  nixpkgs.pkgs =
-                    # Make sure we don't import nixpkgs again if not
-                    # necessary. We can't use `config.nixpkgs.config`
-                    # because that triggers infinite recursion.
-                    if (hostConfig.nixpkgs.config == { }) then
-                      selectedNixpkgs
-                    else
-                      import patchedChannel
-                        {
-                          inherit (host) system;
-                          overlays = selectedNixpkgs.overlays;
-                          config = selectedNixpkgs.config // config.nixpkgs.config;
-                        } // { inherit (selectedNixpkgs) name input; };
-                }
-              else { _module.args.pkgs = selectedNixpkgs; })
-
-              (optionalAttrs (options ? system.configurationRevision) {
-                system.configurationRevision = lib.mkIf (self ? rev) self.rev;
-              })
-
-              (optionalAttrs (options ? nix.package) {
-                nix.package = lib.mkDefault pkgs.nixUnstable;
-              })
-
-              (optionalAttrs (options ? nix.extraOptions) {
-                nix.extraOptions = "extra-experimental-features = nix-command ca-references flakes";
-              })
-
-              {
-                # at this point we assume, that an evaluator at least
-                # uses nixpkgs.lib to evaluate modules.
-                _module.args = { inherit inputs; } // host.extraArgs;
-              }
-            ];
-          })
-        ] ++ host.modules;
-        inherit specialArgs;
-      } // (optionalAttrs (host.output == "nixosConfigurations") {
-        inherit lib baseModules;
-        specialArgs = nixosSpecialArgs // specialArgs;
-      }));
+      ${host.output}.${reverseDomainName} = host.builder (evalArgs // {
+        modules = [ (genericModule preFlightEvaled) ] ++ host.modules;
+      });
     }
   );
 
@@ -220,16 +247,21 @@ mergeAny otherArguments (
   eachSystem supportedSystems
     (system:
       let
-        importChannel = name: value: (import (patchChannel system value.input (value.patches or [ ])) {
+        importChannel = name: value: (import value.input {
           inherit system;
           overlays = [
             (final: prev: {
               __dontExport = true; # in case user uses overlaysFromChannelsExporter, doesn't hurt for others
-              inherit srcs;
+              inherit srcs name;
+              inherit (value) input;
             })
-          ] ++ sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ]) ++ [ flake-utils-plus.overlay ];
-          config = channelsConfig // (value.config or { });
-        }) // { inherit name; inherit (value) input; };
+          ]
+          ++
+          sharedOverlays ++ (if (value ? overlaysBuilder) then (value.overlaysBuilder pkgs) else [ ])
+          ++
+          [ flake-utils-plus.overlay ];
+          config = mergeNixpkgsConfigs value.input channelsConfig (value.config or { });
+        });
 
         pkgs = mapAttrs importChannel channels;
 
