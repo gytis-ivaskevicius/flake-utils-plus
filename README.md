@@ -3,6 +3,9 @@
 
 Need help? Create an issue or ping @Gytis#0001 in the above Discord Server.
 
+# Changing branching policy #
+From now on `master` serves as a development branch (previously `staging` was used for such purposes). Please use tags for stable releases of flake-utils-plus.
+
 # What is this flake? #
 
 Flake-utils-plus exposes a library abstraction to *painlessly* generate NixOS flake configurations.
