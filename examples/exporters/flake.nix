@@ -16,6 +16,7 @@
       inherit self inputs;
 
       # Channel specific overlays. Overlays `coreutils` from `unstable` channel.
+      channels.unstable = {};
       channels.nixpkgs.overlaysBuilder = channels: [
         (final: prev: { inherit (channels.unstable) ranger; })
       ];
