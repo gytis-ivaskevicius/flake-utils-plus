@@ -21,7 +21,6 @@
       # Modules shared between all hosts
       hostDefaults.modules = [
         ./modules/sharedConfigurationBetweenHosts.nix
-        utils.nixosModules.saneFlakeDefaults
       ];
 
 

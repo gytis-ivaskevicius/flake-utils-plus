@@ -10,7 +10,7 @@
 
   outputs = inputs@{ self, nixpkgs, utils, ... }:
     let
-      inherit (utils.lib.exporters) internalOverlays fromOverlays modulesFromList;
+      inherit (utils.lib) exportOverlays exportPackages exportModules;
     in
     utils.lib.systemFlake {
       inherit self inputs;
@@ -29,18 +29,18 @@
         Morty
       ];
 
-      nixosModules = modulesFromList [
+      nixosModules = exportModules [
         ./hosts/Morty.nix
       ];
 
       # export overlays automatically for all packages defined in overlaysBuilder of each channel
-      overlays = internalOverlays {
+      overlays = exportOverlays {
         inherit (self) pkgs inputs;
       };
 
       outputsBuilder = channels: {
         # construct packagesBuilder to export all packages defined in overlays
-        packages = fromOverlays self.overlays channels;
+        packages = exportPackages self.overlays channels;
       };
 
       overlay = import ./overlays;

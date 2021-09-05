@@ -36,7 +36,6 @@
 
       # Modules shared between all hosts
       hostDefaults.modules = [
-        utils.nixosModules.saneFlakeDefaults
         home-manager.nixosModules.home-manager
         ./modules/sharedConfigurationBetweenHosts.nix
       ];
