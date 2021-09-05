@@ -2,7 +2,7 @@
   inputs.utils.url = path:../../;
 
   outputs = inputs@{ self, nixpkgs, utils }:
-    utils.lib.systemFlake {
+    utils.lib.mkFlake {
       inherit self inputs;
       supportedSystems = [ "x86_64-linux" ];
       channels.nixpkgs.input = nixpkgs;

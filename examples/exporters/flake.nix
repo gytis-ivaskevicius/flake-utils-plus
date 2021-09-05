@@ -12,7 +12,7 @@
     let
       inherit (utils.lib) exportOverlays exportPackages exportModules;
     in
-    utils.lib.systemFlake {
+    utils.lib.mkFlake {
       inherit self inputs;
 
       # Channel specific overlays. Overlays `coreutils` from `unstable` channel.

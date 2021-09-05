@@ -9,7 +9,7 @@
 
 
   outputs = inputs@{ self, nixpkgs, unstable, utils }:
-    utils.lib.systemFlake {
+    utils.lib.mkFlake {
       inherit self inputs;
 
       # Channel definitions.

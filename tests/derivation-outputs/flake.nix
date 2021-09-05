@@ -5,7 +5,7 @@
     let
       mkApp = utils.lib.mkApp;
     in
-    utils.lib.systemFlake {
+    utils.lib.mkFlake {
       inherit self inputs;
       supportedSystems = [ "x86_64-linux" ];
       channels.nixpkgs.input = nixpkgs;

@@ -21,7 +21,7 @@
 
 
   outputs = inputs@{ self, nixpkgs, utils, home-manager, neovim, nur }:
-    utils.lib.systemFlake {
+    utils.lib.mkFlake {
       inherit self inputs;
 
 

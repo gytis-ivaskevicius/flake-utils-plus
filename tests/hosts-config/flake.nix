@@ -8,7 +8,7 @@
         fileSystems."/" = { device = "test"; fsType = "ext4"; };
       };
     in
-    utils.lib.systemFlake {
+    utils.lib.mkFlake {
       inherit self inputs;
       supportedSystems = [ "x86_64-linux" "x86_64-darwin" "aarch64-linux" ];
 
