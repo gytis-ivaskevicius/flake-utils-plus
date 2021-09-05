@@ -34,8 +34,6 @@
         # DO NOT USE - subject to change without notice
         internal = internal-functions;
 
-        repl = ./lib/repl.nix;
-
         # merge nested attribute sets and lists
         mergeAny = lhs: rhs:
           lhs // mapAttrs
