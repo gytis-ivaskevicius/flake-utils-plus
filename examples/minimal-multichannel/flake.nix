@@ -16,6 +16,8 @@
       # Channels are automatically generated from nixpkgs inputs
       # e.g the inputs which contain `legacyPackages` attribute are used.
       channelsConfig.allowUnfree = true;
+      channels.nixpkgs.input = nixpkgs;
+      channels.unstable.input = unstable;
 
 
       # Modules shared between all hosts

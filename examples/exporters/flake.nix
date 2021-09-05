@@ -8,7 +8,7 @@
   };
 
 
-  outputs = inputs@{ self, nixpkgs, utils, ... }:
+  outputs = inputs@{ self, nixpkgs, unstable, utils, ... }:
     let
       inherit (utils.lib.exporters) internalOverlays fromOverlays modulesFromList;
     in
@@ -16,9 +16,13 @@
       inherit self inputs;
 
       # Channel specific overlays. Overlays `coreutils` from `unstable` channel.
-      channels.nixpkgs.overlaysBuilder = channels: [
-        (final: prev: { inherit (channels.unstable) ranger; })
-      ];
+      channels.nixpkgs = {
+        input = nixpkgs;
+        overlaysBuilder = channels: [
+          (final: prev: { inherit (channels.unstable) ranger; })
+        ];
+      };
+      channels.unstable.input = unstable;
 
       # Propagates to channels.<name>.overlaysBuilder
       sharedOverlays = [

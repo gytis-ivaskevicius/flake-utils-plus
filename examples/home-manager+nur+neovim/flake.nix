@@ -26,6 +26,7 @@
 
 
       channelsConfig.allowUnfree = true;
+      channels.nixpkgs.input = nixpkgs;
 
       sharedOverlays = [
         nur.overlay

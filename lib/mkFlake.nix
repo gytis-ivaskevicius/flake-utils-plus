@@ -220,14 +220,6 @@ mergeAny otherArguments (
   eachSystem supportedSystems
     (system:
       let
-        filterAttrs = pred: set:
-          listToAttrs (concatMap (name: let value = set.${name}; in if pred name value then [ ({ inherit name value; }) ] else [ ]) (attrNames set));
-
-        # Little hack, we make sure that `legacyPackages` contains `nix` to make sure that we are dealing with nixpkgs.
-        # For some odd reason `devshell` contains `legacyPackages` out put as well
-        channelFlakes = filterAttrs (_: value: value ? legacyPackages && value.legacyPackages.x86_64-linux ? nix) inputs;
-        channelsFromFlakes = mapAttrs (name: input: { inherit input; }) channelFlakes;
-
         importChannel = name: value: (import (patchChannel system value.input (value.patches or [ ])) {
           inherit system;
           overlays = [
@@ -239,7 +231,7 @@ mergeAny otherArguments (
           config = channelsConfig // (value.config or { });
         }) // { inherit name; inherit (value) input; };
 
-        pkgs = mapAttrs importChannel (mergeAny channelsFromFlakes channels);
+        pkgs = mapAttrs importChannel channels;
 
 
         deprecatedBuilders = channels: { }
