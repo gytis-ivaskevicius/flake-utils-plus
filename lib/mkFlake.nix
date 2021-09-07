@@ -77,6 +77,7 @@ let
     "self"
     "sharedOverlays"
     "supportedSystems"
+    "outputsBuilder"
   ];
 
   getChannels = system: self.pkgs.${system};
