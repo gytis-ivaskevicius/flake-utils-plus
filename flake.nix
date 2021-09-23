@@ -14,18 +14,10 @@
       exportPackages = import ./lib/exportPackages.nix fupArgs;
       internal-functions = import ./lib/internal-functions.nix;
       overlay = import ./lib/overlay.nix;
-
-      # Deprecated names of the above
-      systemFlake = mkFlake;
-      modulesFromList = exportModules;
-      fromOverlays = exportPackages;
-      internalOverlays = exportOverlays;
     in
     rec {
       inherit overlay;
 
-      # Deprecated in favor of 'nix.generateRegistryFromInputs = true;'
-      nixosModules.saneFlakeDefaults = { nix.generateRegistryFromInputs = true; };
       nixosModules.autoGenFromInputs = import ./lib/options.nix;
 
       devShell.x86_64-linux = import ./devShell.nix { system = "x86_64-linux"; };
@@ -33,16 +25,8 @@
       lib = flake-utils.lib // {
         inherit mkFlake exportModules exportOverlays exportPackages;
 
-        # Deprecated - should use top-level functions instead
-        exporters = {
-          inherit modulesFromList fromOverlays internalOverlays;
-        };
-        inherit systemFlake modulesFromList;
-
         # DO NOT USE - subject to change without notice
         internal = internal-functions;
-
-        repl = ./lib/repl.nix;
 
         # merge nested attribute sets and lists
         mergeAny = lhs: rhs:
