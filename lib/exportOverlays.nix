@@ -27,7 +27,7 @@ let
 
       To ensure only overlays that originate from the flake are exported you can optionally pass
       a set of flake inputs and any overlay which is taken from an input will be filtered out.
-      Optimally this would be done by detecting flake ownership of each overlay, but that is not 
+      Optimally this would be done by detecting flake ownership of each overlay, but that is not
       possible yet, so this is the next best workaround.
 
       Example:
@@ -58,9 +58,10 @@ let
 
       # Hopefully will fix a couple of edge cases. Even tho `lib` is defined as API here - it is not. Do not use it.
       fakePkgs = {
-        lib = flake-utils-plus.lib.internal;
         callPackage = it: it;
         isFakePkgs = true; # Overlay maintainers may throw an exception in case this key is set in case overlay is not compatible with this function.
+        lib = flake-utils-plus.lib.internal;
+        system = "fake-system";
       };
 
       nameValuePair = name: value: { inherit name value; };
