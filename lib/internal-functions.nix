@@ -12,6 +12,8 @@ rec {
   */
   genAttrs' = func: values: builtins.listToAttrs (map func values);
 
+  getAttrs = names: attrs: genAttrs names (name: attrs.${name});
+
   hasFileAttr = o: builtins.hasAttr "_file" o;
 
   # Definition in nixpkgs
