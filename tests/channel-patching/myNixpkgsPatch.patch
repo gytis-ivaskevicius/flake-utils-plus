@@ -1,8 +1,8 @@
 diff --git a/lib/default.nix b/lib/default.nix
-index 50320669e28..ff835870e4a 100644
+index 5a85c542117..0ed00136d1d 100644
 --- a/lib/default.nix
 +++ b/lib/default.nix
-@@ -145,5 +145,7 @@ let
+@@ -146,5 +146,7 @@ let
        nixType imap;
      inherit (self.versions)
        splitVersion;
@@ -11,10 +11,10 @@ index 50320669e28..ff835870e4a 100644
    });
  in lib
 diff --git a/nixos/modules/module-list.nix b/nixos/modules/module-list.nix
-index f72be732216..fbbf9776a6b 100644
+index c951db5822a..53226de942e 100644
 --- a/nixos/modules/module-list.nix
 +++ b/nixos/modules/module-list.nix
-@@ -1101,4 +1101,10 @@
+@@ -1191,4 +1191,10 @@
    ./virtualisation/vmware-guest.nix
    ./virtualisation/xen-dom0.nix
    ./virtualisation/xe-guest-utilities.nix
@@ -26,13 +26,15 @@ index f72be732216..fbbf9776a6b 100644
 +  })
  ]
 diff --git a/pkgs/top-level/all-packages.nix b/pkgs/top-level/all-packages.nix
-index cdf28b9782c..48ed72bf3c1 100644
+index c904707b7cf..9f0cab1875d 100644
 --- a/pkgs/top-level/all-packages.nix
 +++ b/pkgs/top-level/all-packages.nix
-@@ -31025,4 +31025,6 @@ in
-   lc3tools = callPackage ../development/tools/lc3tools {};
+@@ -12,6 +12,8 @@ with pkgs;
  
-   zktree = callPackage ../applications/misc/zktree {};
-+
+ {
+ 
 +  flake-utils-plus-test = callPackage ../applications/misc/hello { };
- }
++
+   # A stdenv capable of building 32-bit binaries.  On x86_64-linux,
+   # it uses GCC compiled with multilib support; on i686-linux, it's
+   # just the plain stdenv.

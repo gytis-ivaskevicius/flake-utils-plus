@@ -27,7 +27,7 @@ let
 
       To ensure only overlays that originate from the flake are exported you can optionally pass
       a set of flake inputs and any overlay which is taken from an input will be filtered out.
-      Optimally this would be done by detecting flake ownership of each overlay, but that is not 
+      Optimally this would be done by detecting flake ownership of each overlay, but that is not
       possible yet, so this is the next best workaround.
 
       Example:
@@ -44,27 +44,44 @@ let
         attrNames
         attrValues
         concatMap
+        concatStringsSep
         elem
         filter
         foldl'
         head
+        isAttrs
+        isFunction
         listToAttrs
         mapAttrs
+        tryEval
         ;
+
+      # Hopefully will fix a couple of edge cases. Even tho `lib` is defined as API here - it is not. Do not use it.
+      fakePkgs = {
+        callPackage = it: it;
+        isFakePkgs = true; # Overlay maintainers may throw an exception in case this key is set in case overlay is not compatible with this function.
+        lib = flake-utils-plus.lib.internal;
+        system = "fake-system";
+      };
+
       nameValuePair = name: value: { inherit name value; };
 
       # just pull out one arch from the system-spaced pkgs to get access to channels
       # overlays can be safely evaluated on any arch
       channels = head (attrValues pkgs);
 
-      pathStr = path: builtins.concatStringsSep "/" path;
+      pathStr = path: concatStringsSep "/" path;
 
-      channelNames = attrNames channels;
-      overlayNames = overlay: attrNames (overlay null null);
+      overlayNames = overlay:
+        if isOverlay overlay
+        then attrNames (overlay fakePkgs fakePkgs)
+        else [ ];
+
+      isOverlay = it: isFunction it && isFunction (it fakePkgs) && (tryEval (isAttrs (it fakePkgs fakePkgs))).success;
 
       # get all overlays from inputs
       inputOverlays = mapAttrs
-        (_: v: [ v.overlay or (_: _: { }) ] ++ attrValues v.overlays or { })
+        (_: v: (if isOverlay (v.overlay or null) then [ v.overlay ] else [ ]) ++ (filter isOverlay (attrValues (v.overlays or { }))))
         (removeAttrs inputs [ "self" ]);
       # use overlayNames as a way to identify overlays
       flattenedInputOverlays = map overlayNames (foldl' (a: b: a ++ b) [ ] (attrValues inputOverlays));
@@ -96,7 +113,7 @@ let
             )
             (filterOverlays channels.${channelName})
         )
-        channelNames
+        (attrNames channels)
     );
 
 in
