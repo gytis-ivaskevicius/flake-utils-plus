@@ -121,9 +121,10 @@ let
       # the non-default value is by evalling most of the config.
       hostConfig = (lib.evalModules {
         prefix = [ ];
-        check = false;
-        modules = baseModules ++ host.modules;
-        args = { inherit inputs; } // host.extraArgs;
+        modules = baseModules ++ host.modules ++ [{
+          _module.check = false;
+          _module.args = { inherit inputs; };
+        }];
         specialArgs = nixosSpecialArgs // specialArgs;
       }).config;
     in
