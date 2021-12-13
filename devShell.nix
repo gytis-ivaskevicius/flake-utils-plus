@@ -1,17 +1,17 @@
 { system ? builtins.currentSystem }:
 let
   # nixpkgs / devshell is only used for development. Don't add it to the flake.lock.
-  nixpkgsGitRev = "82d05e980543e1703cbfd3b5ccd1fdcd4b0f1f00";
-  devshellGitRev = "26f25a12265f030917358a9632cd600b51af1d97";
+  nixpkgsGitRev = "1a551cf64a7e0be8667f9d6987d2b563a6ea4081";
+  devshellGitRev = "0e56ef21ba1a717169953122c7415fa6a8cd2618";
 
   nixpkgsSrc = fetchTarball {
     url = "https://github.com/NixOS/nixpkgs/archive/${nixpkgsGitRev}.tar.gz";
-    sha256 = "02yqgivv8kxksv7n6vmh22qxprlfjh4rfkgf98w46nssq5ahdb1q";
+    sha256 = "0p63g88j3cnigzyr0qgbpsh7y5y5rgikqhhhbnnr5cdhl5qb9zpx";
   };
 
   devshellSrc = fetchTarball {
     url = "https://github.com/numtide/devshell/archive/${devshellGitRev}.tar.gz";
-    sha256 = "sha256:0f6fph5gahm2bmzd399mba6b0h6wp6i1v3gryfmgwp0as7mwqpj7";
+    sha256 = "1g3aadlccd7c0ypycnirmvmwdx4w9h1gifzd7mchjsmwkd3ii3v5";
   };
 
   pkgs = import nixpkgsSrc { inherit system; };
@@ -20,14 +20,16 @@ let
   withCategory = category: attrset: attrset // { inherit category; };
   util = withCategory "utils";
 
+  rootDir = "$PRJ_ROOT";
+
   test = name: withCategory "tests" {
     name = "check-${name}";
     help = "Checks ${name} testcases";
     command = ''
       set -e
       echo -e "\n\n##### Building ${name}\n"
-      cd $DEVSHELL_ROOT/tests/${name}
-      nix flake show --no-write-lock-file "$@"
+      cd ${rootDir}/tests/${name}
+      nix flake show --allow-import-from-derivation --no-write-lock-file "$@"
       nix flake check --no-write-lock-file "$@"
     '';
   };
@@ -37,7 +39,7 @@ let
     command = ''
       set -e
       echo -e "\n\n##### Building ${example}-${host}\n"
-      cd $DEVSHELL_ROOT/examples/${example}
+      cd ${rootDir}/examples/${example}
       nix flake show --no-write-lock-file "$@"
       nix build .#nixosConfigurations.${host}.config.system.build.toplevel --no-write-lock-file --no-link "$@"
     '';
@@ -53,14 +55,14 @@ devshell.mkShell {
 
   commands = [
     {
-      command = "git rm --ignore-unmatch -f $DEVSHELL_ROOT/{tests,examples}/*/flake.lock";
+      command = "git rm --ignore-unmatch -f ${rootDir}/{tests,examples}/*/flake.lock";
       help = "Remove all lock files";
       name = "rm-locks";
     }
     {
       name = "fmt";
       help = "Check Nix formatting";
-      command = "nixpkgs-fmt \${@} $DEVSHELL_ROOT";
+      command = "nixpkgs-fmt \${@} ${rootDir}";
     }
     {
       name = "evalnix";
