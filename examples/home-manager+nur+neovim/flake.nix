@@ -10,7 +10,6 @@
 
     neovim = {
       url = github:neovim/neovim?dir=contrib;
-      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     home-manager = {
@@ -30,7 +29,8 @@
       sharedOverlays = [
         nur.overlay
         self.overlay
-        neovim.overlay
+        # Use `neovim.packages.${system}.neovim`, for reproducibility with neovim's flake
+        (utils.lib.genPkgOverlay neovim "neovim")
       ];
 
 
