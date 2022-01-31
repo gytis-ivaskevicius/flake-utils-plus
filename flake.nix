@@ -19,6 +19,7 @@
       inherit overlay;
 
       nixosModules.autoGenFromInputs = import ./lib/options.nix;
+      darwinModules.autoGenFromInputs = import ./lib/options.nix;
 
       devShell.x86_64-linux = import ./devShell.nix { system = "x86_64-linux"; };
 
