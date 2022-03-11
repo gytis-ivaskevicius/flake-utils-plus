@@ -140,8 +140,7 @@ in flake-utils-plus.lib.mkFlake {
   hosts.<hostname>.output = "darwinConfigurations";
 
   # System builder. Defaults to `channels.<name>.input.lib.nixosSystem`.
-  # `removeAttrs` workaround due to this issue https://github.com/LnL7/nix-darwin/issues/319
-  hosts.<hostname>.builder = args: nix-darwin.lib.darwinSystem (removeAttrs args [ "system" ]);
+  hosts.<hostname>.builder = nix-darwin.lib.darwinSystem;
 
 
   #############################
