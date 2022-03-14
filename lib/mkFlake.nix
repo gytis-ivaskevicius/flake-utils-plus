@@ -172,7 +172,7 @@ let
               })
 
               (optionalAttrs (options ? nix.extraOptions) {
-                nix.extraOptions = "extra-experimental-features = nix-command ${lib.optionalString (!lib.versionAtLeast config.nix.package.version "2.5pre") "ca-references"} flakes";
+                nix.extraOptions = "extra-experimental-features = nix-command flakes";
               })
 
               {
