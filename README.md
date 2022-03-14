@@ -176,7 +176,7 @@ in flake-utils-plus.lib.mkFlake {
   #########################################################
 
   checks.x86_64-linux.someCheck = pkgs.hello;
-  packages.x86_64-linux.somePackage = pkss.hello;
+  packages.x86_64-linux.somePackage = pkgs.hello;
   overlay = import ./overlays;
   abc = 132;
 
