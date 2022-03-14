@@ -12,8 +12,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: cachix/install-nix-action@v16
         with:
-          install_url: https://github.com/numtide/nix-unstable-installer/releases/download/nix-2.4pre20210604_8e6ee1b/install
-          extra_nix_config: experimental-features = nix-command flakes
+          install_url: https://github.com/numtide/nix-unstable-installer/releases/download/nix-2.8.0pre20220311_d532269/install
 
       # Quick eval
       - run: nix develop --command evalnix
