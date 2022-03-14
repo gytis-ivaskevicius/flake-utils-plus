@@ -12,6 +12,7 @@
       exportModules = import ./lib/exportModules.nix fupArgs;
       exportOverlays = import ./lib/exportOverlays.nix fupArgs;
       exportPackages = import ./lib/exportPackages.nix fupArgs;
+      genPkgOverlay = import ./lib/genPkgOverlay.nix;
       internal-functions = import ./lib/internal-functions.nix;
       overlay = import ./lib/overlay.nix;
     in
@@ -24,7 +25,7 @@
       devShell.x86_64-linux = import ./devShell.nix { system = "x86_64-linux"; };
 
       lib = flake-utils.lib // {
-        inherit mkFlake exportModules exportOverlays exportPackages;
+        inherit mkFlake exportModules exportOverlays exportPackages genPkgOverlay;
 
         # DO NOT USE - subject to change without notice
         internal = internal-functions;
