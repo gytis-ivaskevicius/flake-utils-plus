@@ -24,6 +24,13 @@ in
   };
 
   config = {
+    assertions = [
+      {
+        assertion = !config.nix.generateNixPathFromInputs || config.nix.linkInputs;
+        message = "When using 'nix.generateNixPathFromInputs' please make sure to set 'nix.linkInputs = true'";
+      }
+    ];
+
     nix.registry =
       if config.nix.generateRegistryFromInputs
       then nixRegistry
