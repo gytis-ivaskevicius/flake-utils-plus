@@ -1,21 +1,21 @@
 { system ? builtins.currentSystem }:
 let
   # nixpkgs / devshell is only used for development. Don't add it to the flake.lock.
-  nixpkgsGitRev = "1a551cf64a7e0be8667f9d6987d2b563a6ea4081";
-  devshellGitRev = "0e56ef21ba1a717169953122c7415fa6a8cd2618";
+  nixpkgsGitRev = "1a268c42c8b0550f70da78c136171799481b0d97";
+  devshellGitRev = "59fbe1dfc0de8c3332957c16998a7d16dff365d8";
 
   nixpkgsSrc = fetchTarball {
     url = "https://github.com/NixOS/nixpkgs/archive/${nixpkgsGitRev}.tar.gz";
-    sha256 = "0p63g88j3cnigzyr0qgbpsh7y5y5rgikqhhhbnnr5cdhl5qb9zpx";
+    sha256 = "010d6glxdam0j7kah7h2z79fnqvgs703v6ac53v4hfv1iz7lvzv9";
   };
 
   devshellSrc = fetchTarball {
     url = "https://github.com/numtide/devshell/archive/${devshellGitRev}.tar.gz";
-    sha256 = "1g3aadlccd7c0ypycnirmvmwdx4w9h1gifzd7mchjsmwkd3ii3v5";
+    sha256 = "0zsbgpssr704m8hbdmp5qnr86jv6s5h8jy8f35rlbpc2y0g5ka1d";
   };
 
   pkgs = import nixpkgsSrc { inherit system; };
-  devshell = import devshellSrc { inherit system pkgs; };
+  devshell = import devshellSrc { inherit system; };
 
   withCategory = category: attrset: attrset // { inherit category; };
   util = withCategory "utils";
@@ -68,6 +68,11 @@ devshell.mkShell {
       name = "evalnix";
       help = "Check Nix parsing";
       command = "fd --extension nix --exec nix-instantiate --parse --quiet {} >/dev/null";
+    }
+    {
+      category = "dry-build";
+      name = "build-darwin";
+      command = "nix build ${rootDir}/examples/darwin#darwinConfigurations.Hostname1.system --no-write-lock-file --dry-run";
     }
 
     (test "channel-patching")
