@@ -161,7 +161,7 @@ let
                           config = selectedNixpkgs.config // config.nixpkgs.config;
                         } // { inherit (selectedNixpkgs) name input; };
                 }
-              else {})
+              else { })
 
               (optionalAttrs (options ? system.configurationRevision) {
                 system.configurationRevision = lib.mkIf (self ? rev) self.rev;
@@ -178,7 +178,7 @@ let
               {
                 # at this point we assume, that an evaluator at least
                 # uses nixpkgs.lib to evaluate modules.
-                _module.args = (optionalAttrs (host.output != "darwinConfigurations"){ inherit inputs; }) // host.extraArgs;
+                _module.args = (optionalAttrs (host.output != "darwinConfigurations") { inherit inputs; }) // host.extraArgs;
               }
             ];
           })
