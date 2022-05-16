@@ -6,6 +6,7 @@
   outputs = { self, flake-utils }:
     let
       inherit (builtins) isList isAttrs mapAttrs;
+      inherit (flake-utils.lib) defaultSystems eachSystemMap;
       fupArgs = { flake-utils-plus = self; };
 
       mkFlake = import ./lib/mkFlake.nix fupArgs;
@@ -22,7 +23,7 @@
       nixosModules.autoGenFromInputs = import ./lib/options.nix;
       darwinModules.autoGenFromInputs = import ./lib/options.nix;
 
-      devShell.x86_64-linux = import ./devShell.nix { system = "x86_64-linux"; };
+      devShell = eachSystemMap defaultSystems (system: import ./devShell.nix { inherit system; });
 
       lib = flake-utils.lib // {
         inherit mkFlake exportModules exportOverlays exportPackages genPkgOverlay;

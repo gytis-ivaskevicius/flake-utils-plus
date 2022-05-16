@@ -1,7 +1,8 @@
 {
   inputs.utils.url = path:../../;
+  inputs.nix-darwin.url = github:LnL7/nix-darwin?ref=2f2bdf658d2b79bada78dc914af99c53cad37cba;
 
-  outputs = inputs@{ self, nixpkgs, utils }:
+  outputs = inputs@{ self, nixpkgs, nix-darwin, utils }:
     let
       base-nixos = {
         boot.loader.grub.devices = [ "nodev" ];
@@ -31,7 +32,6 @@
         specialArgs.sharedSpecialArg = "sharedSpecialArg";
 
         modules = [
-          base-nixos
           # Assigning to lib.* so we could assert these options in checks
           ({ sharedExtraArg, sharedSpecialArg, ... }: {
             lib = { inherit sharedExtraArg sharedSpecialArg; };
@@ -39,11 +39,12 @@
         ];
       };
 
-      hosts.Plain = { };
+      hosts.Plain.modules = [ base-nixos ];
 
-      hosts."com.example.myhost" = { };
+      hosts."com.example.myhost".modules = [ base-nixos ];
 
       hosts.WithFakeBuilder = {
+        modules = [ base-nixos ];
         builder = args: { fakeBuilder = "fakeBuilder"; };
       };
 
@@ -53,6 +54,7 @@
         channelName = "unstable";
         extraArgs.hostExtraArg = "hostExtraArg";
         specialArgs.hostSpecialArg = "hostSpecialArg";
+        builder = nix-darwin.lib.darwinSystem;
 
         # Assigning to lib.* so we could assert these options in checks
         modules = [
@@ -83,7 +85,7 @@
             reverseDnsHostDomain = reverseDnsHost.config.networking.domain;
 
             customizedHost = self.darwinConfigurations.Customized;
-            customizedHostPkgs = customizedHost.config.nixpkgs.pkgs;
+            customizedHostPkgs = customizedHost.pkgs;
           in
           {
 
