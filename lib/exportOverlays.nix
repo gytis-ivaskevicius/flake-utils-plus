@@ -60,7 +60,8 @@ let
       fakePkgs = {
         callPackage = it: it;
         isFakePkgs = true; # Overlay maintainers may throw an exception in case this key is set in case overlay is not compatible with this function.
-        lib = flake-utils-plus.lib.internal;
+        # import the lib input from first channel
+        lib = inputs."${(builtins.elemAt (builtins.attrNames channels) 0)}".lib;
         system = "fake-system";
       };
 
