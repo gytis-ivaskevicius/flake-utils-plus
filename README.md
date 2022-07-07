@@ -157,11 +157,11 @@ in flake-utils-plus.lib.mkFlake {
       };
     };
 
-    # Evaluates to `packages.<system>.coreutils = <unstable-nixpkgs-reference>.package-from-overlays`.
+    # Evaluates to `packages.<system>.package-from-overlays = <unstable-nixpkgs-reference>.package-from-overlays`.
     packages = { inherit (channels.unstable) package-from-overlays; };
 
     # Evaluates to `apps.<system>.firefox  = utils.lib.mkApp { drv = ...; };`.
-    defaultApp = mkApp { drv = channels.nixpkgs.firefox };
+    defaultApp = mkApp { drv = channels.nixpkgs.firefox; };
 
     # Evaluates to `defaultPackage.<system>.neovim = <nixpkgs-channel-reference>.neovim`.
     defaultPackage = channels.nixpkgs.neovim;

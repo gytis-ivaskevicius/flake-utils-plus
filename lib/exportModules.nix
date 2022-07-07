@@ -50,7 +50,7 @@ let
             value = arg;
           }
 
-        # panic: a simple module with a _file attr
+        # panic: a simple module without a _file attr
         else if (builtins.isAttrs arg) && !(hasFileAttr arg) then
           builtins.throw ''
             simple module has no (required) _file argument key: ${builtins.trace arg "."}
