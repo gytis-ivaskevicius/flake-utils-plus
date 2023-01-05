@@ -49,7 +49,6 @@ let
         filter
         foldl'
         head
-        isAttrs
         isFunction
         listToAttrs
         mapAttrs
@@ -77,7 +76,7 @@ let
         then attrNames (overlay fakePkgs fakePkgs)
         else [ ];
 
-      isOverlay = it: isFunction it && isFunction (it fakePkgs) && (tryEval (isAttrs (it fakePkgs fakePkgs))).success;
+      isOverlay = it: isFunction it && isFunction (it fakePkgs) && (tryEval (attrNames (it fakePkgs fakePkgs))).success;
 
       # get all overlays from inputs
       inputOverlays = mapAttrs
