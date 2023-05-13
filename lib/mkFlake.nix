@@ -205,7 +205,7 @@ mergeAny otherArguments (
 
         # Little hack, we make sure that `legacyPackages` contains `nix` to make sure that we are dealing with nixpkgs.
         # For some odd reason `devshell` contains `legacyPackages` out put as well
-        channelFlakes = filterAttrs (_: value: value ? legacyPackages && value.legacyPackages.x86_64-linux ? nix) inputs;
+        channelFlakes = filterAttrs (_: value: value ? legacyPackages && value.legacyPackages ? x86_64-linux && value.legacyPackages.x86_64-linux ? nix) inputs;
         channelsFromFlakes = mapAttrs (name: input: { inherit input; }) channelFlakes;
 
         importChannel = name: value: (import (patchChannel system value.input (value.patches or [ ])) {
