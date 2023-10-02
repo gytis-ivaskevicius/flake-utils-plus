@@ -1,5 +1,6 @@
 {
   inputs.utils.url = path:../../;
+  inputs.nixpkgs.url = github:NixOS/nixpkgs/3c4a65f323dd;
 
   outputs = inputs@{ self, nixpkgs, utils }:
     utils.lib.mkFlake {

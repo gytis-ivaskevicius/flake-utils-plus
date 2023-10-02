@@ -1,23 +1,23 @@
 diff --git a/lib/default.nix b/lib/default.nix
-index 5a85c542117..0ed00136d1d 100644
+index 169f013191b8..05e91f1cd27b 100644
 --- a/lib/default.nix
 +++ b/lib/default.nix
-@@ -146,5 +146,7 @@ let
-       nixType imap;
-     inherit (self.versions)
-       splitVersion;
-+
+@@ -10,6 +10,7 @@ let
+   lib = makeExtensible (self: let
+     callLibs = file: import file { lib = self; };
+   in {
 +    patchedFunction = x: x;
-   });
- in lib
+ 
+     # often used, or depending on very little
+     trivial = callLibs ./trivial.nix;
 diff --git a/nixos/modules/module-list.nix b/nixos/modules/module-list.nix
-index c951db5822a..53226de942e 100644
+index ec6f410a48f6..3c6669988d2f 100644
 --- a/nixos/modules/module-list.nix
 +++ b/nixos/modules/module-list.nix
-@@ -1191,4 +1191,10 @@
-   ./virtualisation/vmware-guest.nix
-   ./virtualisation/xen-dom0.nix
+@@ -1505,4 +1505,10 @@
    ./virtualisation/xe-guest-utilities.nix
+   ./virtualisation/xen-dom0.nix
+   { documentation.nixos.extraModules = [ ./virtualisation/qemu-vm.nix ]; }
 +  ({ lib, config, ... }: {
 +    options.patchedModule.test = lib.mkOption {
 +      default = null;
@@ -26,15 +26,13 @@ index c951db5822a..53226de942e 100644
 +  })
  ]
 diff --git a/pkgs/top-level/all-packages.nix b/pkgs/top-level/all-packages.nix
-index c904707b7cf..9f0cab1875d 100644
+index 0c2a44d531df..299ff71619b6 100644
 --- a/pkgs/top-level/all-packages.nix
 +++ b/pkgs/top-level/all-packages.nix
-@@ -12,6 +12,8 @@ with pkgs;
+@@ -42286,4 +42286,6 @@ with pkgs;
+   ssl-proxy = callPackage ../tools/networking/ssl-proxy { };
  
- {
- 
-+  flake-utils-plus-test = callPackage ../applications/misc/hello { };
+   code-maat = callPackage ../development/tools/code-maat {};
 +
-   # A stdenv capable of building 32-bit binaries.  On x86_64-linux,
-   # it uses GCC compiled with multilib support; on i686-linux, it's
-   # just the plain stdenv.
++  flake-utils-plus-test = callPackage ../tools/misc/coreutils { };
+ }
