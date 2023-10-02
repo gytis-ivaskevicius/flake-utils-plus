@@ -2,7 +2,7 @@
   description = "FUP exporters demo";
 
   inputs = {
-    nixpkgs.url = github:nixos/nixpkgs/release-21.05;
+    nixpkgs.url = github:nixos/nixpkgs/nixos-unstable-small; # Lets pretend that this is a stable channel
     unstable.url = github:nixos/nixpkgs/nixos-unstable-small;
     utils.url = path:../../;
   };

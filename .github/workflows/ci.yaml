@@ -1,4 +1,5 @@
 name: CI
+
 on:
   push:
   workflow_dispatch:
@@ -6,22 +7,37 @@ on:
     types: [opened]
 
 jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: nixbuild/nix-quick-install-action@v25
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      # Quick eval
+      - run: nix develop --command evalnix
+      # Check formatting
+      - run: nix develop --command fmt --check
+
   tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: cachix/install-nix-action@v17
-        with:
-          install_url: https://github.com/numtide/nix-unstable-installer/releases/download/nix-2.8.0pre20220311_d532269/install
-
-      # Quick eval
-      - run: nix develop --command evalnix
+      - uses: nixbuild/nix-quick-install-action@v25
+      - uses: DeterminateSystems/magic-nix-cache-action@main
 
       # Execute /tests/*
       - run: nix develop --command check-derivation-outputs
       - run: nix develop --command check-channel-patching
       - run: nix develop --command check-overlays-flow
       - run: nix develop --command check-hosts-config
+
+  build-examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: nixbuild/nix-quick-install-action@v25
+      - uses: DeterminateSystems/magic-nix-cache-action@main
 
       # Build /examples/*
       - run: nix develop --command build-home-manager+nur+neovim-Rick
@@ -30,5 +46,3 @@ jobs:
       - run: nix develop --command build-exporters-Morty
       - run: nix develop --command build-darwin
 
-      # Check formatting
-      - run: nix develop --command fmt --check

@@ -235,8 +235,8 @@ mergeAny otherArguments (
       { inherit pkgs; }
       // (foldl' mkOutputs { } (attrNames systemOutputs))
     )
-  # produces attrset in the shape of
-  # { nixosConfigurations = {}; darwinConfigurations = {};  ... }
-  # according to profile.output or the default `nixosConfigurations`
-  // foldl' mergeAny { } (attrValues (mapAttrs configurationBuilder hosts))
+    # produces attrset in the shape of
+    # { nixosConfigurations = {}; darwinConfigurations = {};  ... }
+    # according to profile.output or the default `nixosConfigurations`
+    // foldl' mergeAny { } (attrValues (mapAttrs configurationBuilder hosts))
 )
