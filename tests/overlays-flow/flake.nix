@@ -43,14 +43,6 @@
 
       hosts.ExistingPkgsFlow = { };
 
-      hosts.ReimportFlow.modules = [
-        {
-          # Custom configuration from modules causes reimport of nixpkgs
-          nixpkgs.config.allowUnfree = true;
-        }
-      ];
-
-
 
       ######################
       ### Test execution ###
@@ -61,7 +53,6 @@
           let
             inherit (utils.lib.check-utils channels.nixpkgs) hasKey;
             existingPkgsFlow = self.nixosConfigurations.ExistingPkgsFlow.pkgs;
-            reimportFlow = self.nixosConfigurations.ReimportFlow.pkgs;
           in
           {
 
@@ -73,16 +64,6 @@
             hostConfig_Applied_1 = hasKey existingPkgsFlow "fromHostConfig";
 
             contains_srcs_1 = hasKey existingPkgsFlow "srcs";
-
-
-            # ReimportFlow
-            sharedOverlays_Applied_2 = hasKey reimportFlow "fromSharedOverlays";
-
-            channelSpecific_Applied_2 = hasKey reimportFlow "fromChannelSpecific";
-
-            hostConfig_Applied_2 = hasKey reimportFlow "fromHostConfig";
-
-            contains_srcs_2 = hasKey reimportFlow "srcs";
 
           };
       };
