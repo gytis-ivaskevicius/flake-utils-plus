@@ -146,7 +146,6 @@ let
 
               (if options ? nixpkgs.pkgs then
                 {
-                  nixpkgs.config = selectedNixpkgs.config;
                   nixpkgs.pkgs =
                     # Make sure we don't import nixpkgs again if not
                     # necessary. We can't use `config.nixpkgs.config`
