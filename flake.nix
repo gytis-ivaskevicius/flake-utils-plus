@@ -15,11 +15,16 @@
       exportPackages = import ./lib/exportPackages.nix fupArgs;
       genPkgOverlay = import ./lib/genPkgOverlay.nix;
       internal-functions = import ./lib/internal-functions.nix;
-      overlay = import ./lib/overlay.nix;
+      overlay = final: prev: {
+        __dontExport = true;
+        fup-repl = final.callPackage ./lib/fup-repl.nix { };
+      };
+
     in
     rec {
       inherit overlay;
 
+      blueprints.fup-repl = ./lib/fup-repl.nix;
       nixosModules.autoGenFromInputs = import ./lib/options.nix;
       darwinModules.autoGenFromInputs = import ./lib/options.nix;
 
