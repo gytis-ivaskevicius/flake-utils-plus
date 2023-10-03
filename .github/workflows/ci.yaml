@@ -10,7 +10,7 @@ jobs:
   eval:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: nixbuild/nix-quick-install-action@v25
       - uses: DeterminateSystems/magic-nix-cache-action@main
 
@@ -22,7 +22,7 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: nixbuild/nix-quick-install-action@v25
       - uses: DeterminateSystems/magic-nix-cache-action@main
 
@@ -35,7 +35,7 @@ jobs:
   build-examples:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: nixbuild/nix-quick-install-action@v25
       - uses: DeterminateSystems/magic-nix-cache-action@main
 
