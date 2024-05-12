@@ -157,8 +157,9 @@ let
                         {
                           inherit (host) system;
                           overlays = selectedNixpkgs.overlays;
-                          config = selectedNixpkgs.config // config.nixpkgs.config;
+                          config = selectedNixpkgs.config // hostConfig.nixpkgs.config;
                         } // { inherit (selectedNixpkgs) name input; };
+                  nixpkgs.config = lib.mkForce { };
                 }
               else { })
 
