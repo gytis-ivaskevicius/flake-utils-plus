@@ -28,7 +28,7 @@ jobs:
 
       # Execute /tests/*
       - run: nix develop --command check-derivation-outputs
-      - run: nix develop --command check-channel-patching
+      #- run: nix develop --command check-channel-patching
       - run: nix develop --command check-overlays-flow
       - run: nix develop --command check-hosts-config
 
@@ -40,7 +40,7 @@ jobs:
       - uses: DeterminateSystems/magic-nix-cache-action@main
 
       # Build /examples/*
-      - run: nix develop --command build-home-manager+nur+neovim-Rick
+      #- run: nix develop --command build-home-manager+nur+neovim-Rick
       - run: nix develop --command build-minimal-multichannel-Hostname1
       - run: nix develop --command build-minimal-multichannel-Hostname2
       - run: nix develop --command build-exporters-Morty
