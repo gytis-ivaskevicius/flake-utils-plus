@@ -1,14 +1,11 @@
 
 [![Discord](https://img.shields.io/discord/568306982717751326.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.com/invite/RbvHtGa)
 
-Need help? Create an issue or ping @Gytis#0001 in the above Discord Server.
+Need help? Create an issue or ping @Gytis.iva in the above Discord Server.
 
 # Changing branching policy #
 From now on `master` serves as a development branch (previously `staging` was used for such purposes). Please use tags for stable releases of flake-utils-plus.
 In general, with the improvements in test harness, releases might happen more frequently. Sticking with a tagged release might offer better trade-offs going forward.
-
-Please note, while 1.2.0 retains backwards compatibility, [1.3.0](https://github.com/gytis-ivaskevicius/flake-utils-plus/releases/tag/v1.3.0) is the same version with all backwards compatibility removed.
-
 
 # What is this flake? #
 
@@ -29,9 +26,7 @@ The biggest design goal is to keep down the fluff. The library is meant to be ea
 We recommend referring to people's examples below when setting up your system.
 
 - [Gytis Dotfiles (Author of this project)](https://github.com/gytis-ivaskevicius/nixfiles/blob/master/flake.nix)
-- [Fufexan Dotfiles](https://github.com/fufexan/dotfiles/blob/main/flake.nix)
-- [Bobbbay Dotfiles](https://github.com/Bobbbay/dotfiles/blob/master/flake.nix)
-- [Charlotte Dotfiles](https://github.com/chvp/nixos-config/blob/master/flake.nix)
+- [Random projects on Github](https://github.com/search?q=path%3A**%2Fflake.nix+flake-utils-plus&type=code)
 
 # Features of the flake #
 
