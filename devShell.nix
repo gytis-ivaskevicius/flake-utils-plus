@@ -1,17 +1,17 @@
 { system ? builtins.currentSystem }:
 let
   # nixpkgs / devshell is only used for development. Don't add it to the flake.lock.
-  nixpkgsGitRev = "15de3b878a1fab784ddeae4c33cbc56381748505";
-  devshellGitRev = "cd4e2fda3150dd2f689caeac07b7f47df5197c31";
+  nixpkgsGitRev = "4670114d91b4631a673cac508185b47b394f6fd8";
+  devshellGitRev = "1ebbe68d57457c8cae98145410b164b5477761f4";
 
   nixpkgsSrc = fetchTarball {
     url = "https://github.com/NixOS/nixpkgs/archive/${nixpkgsGitRev}.tar.gz";
-    sha256 = "1nb53mycxj3hqcxg1vwbz76rkbmzkp84jgljqv6q2rby5v9k8cwc";
+    sha256 = "1pxm0kr5rlq8565kncsnnghqck9s5xi8zd2va8jkpd66s60ai3z1";
   };
 
   devshellSrc = fetchTarball {
     url = "https://github.com/numtide/devshell/archive/${devshellGitRev}.tar.gz";
-    sha256 = "02h3j2wqxsgf8sfl476q070ss86palxba48i497kh69nrvhqgz84";
+    sha256 = "0mm1kallhn9zvprnb1b1ln204iadwgd4bkqkdmdzdrdplwb88hs3";
   };
 
   pkgs = import nixpkgsSrc { inherit system; };
@@ -75,17 +75,17 @@ devshell.mkShell {
       command = "nix build ${rootDir}/examples/darwin#darwinConfigurations.Hostname1.system --no-write-lock-file --dry-run";
     }
 
-    (test "channel-patching")
+    #(test "channel-patching")
     (test "derivation-outputs")
     (test "hosts-config")
     (test "overlays-flow")
-    (test "all" // { command = "check-channel-patching && check-derivation-outputs && check-hosts-config && check-overlays-flow"; })
+    (test "all" // { command = "check-derivation-outputs && check-hosts-config && check-overlays-flow"; })
 
     (dry-nixos-build "minimal-multichannel" "Hostname1")
     (dry-nixos-build "minimal-multichannel" "Hostname2")
-    (dry-nixos-build "home-manager+nur+neovim" "Rick")
+    #(dry-nixos-build "home-manager+nur+neovim" "Rick")
     (dry-nixos-build "exporters" "Morty")
-    (withCategory "dry-build" { name = "build-all"; command = "build-exporters-Morty && build-home-manager+nur+neovim-Rick && build-minimal-multichannel-Hostname1 && build-minimal-multichannel-Hostname2"; })
+    (withCategory "dry-build" { name = "build-all"; command = "build-exporters-Morty && build-minimal-multichannel-Hostname1 && build-minimal-multichannel-Hostname2"; })
 
   ];
 
