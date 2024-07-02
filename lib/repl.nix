@@ -5,7 +5,7 @@ let
 
   selfFlake =
     if pathExists registryPath
-    then filter (it: it.from.id == "self") (fromJSON (readFile registryPath)).flakes
+    then filter (it: it.from.id == "self") (fromJSON (builtins.unsafeDiscardStringContext (readFile registryPath))).flakes
     else [ ];
 
   flakePath' = toString
@@ -21,7 +21,7 @@ let
   nixpkgsFromInputsPath = flake.inputs.nixpkgs.outPath or "";
   nixpkgs = flake.pkgs.${currentSystem}.nixpkgs or (if nixpkgsFromInputsPath != "" then import nixpkgsFromInputsPath { } else { });
 
-  nixpkgsOutput = (removeAttrs (nixpkgs // nixpkgs.lib or { }) [ "options" "config" ]);
+  nixpkgsOutput = removeAttrs (nixpkgs // nixpkgs.lib or { }) [ "options" "config" ];
 in
 { inherit flake; }
 // flake
