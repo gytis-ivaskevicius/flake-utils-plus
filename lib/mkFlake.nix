@@ -28,22 +28,15 @@ let
     reverseList
     ;
   inherit (builtins)
-    pathExists
     attrNames
     attrValues
     concatMap
     concatStringsSep
-    elemAt
-    filter
     foldl'
-    genList
     head
-    isString
-    length
     listToAttrs
     mapAttrs
     removeAttrs
-    split
     tail
     ;
 

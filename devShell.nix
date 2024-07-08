@@ -18,7 +18,6 @@ let
   devshell = import devshellSrc { inherit system; };
 
   withCategory = category: attrset: attrset // { inherit category; };
-  util = withCategory "utils";
 
   rootDir = "$PRJ_ROOT";
 

@@ -1,7 +1,7 @@
 { lib, config, inputs, ... }:
 
 let
-  inherit (lib) mkIf filterAttrs mapAttrsToList mapAttrs' mkOption types;
+  inherit (lib) mkIf filterAttrs mapAttrs' mkOption types;
   mkFalseOption = description: mkOption {
     inherit description;
     default = false;
