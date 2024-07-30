@@ -1,7 +1,7 @@
 { lib, config, inputs, ... }:
 
 let
-  inherit (lib) mkIf filterAttrs mapAttrsToList mapAttrs' mkOption types;
+  inherit (lib) mkIf filterAttrs mapAttrs' mkOption types;
   mkFalseOption = description: mkOption {
     inherit description;
     default = false;
@@ -18,10 +18,10 @@ let
   cfg = config.nix;
 in
 {
-  options = {
-    nix.generateNixPathFromInputs = mkFalseOption "Generate NIX_PATH from available inputs.";
-    nix.generateRegistryFromInputs = mkFalseOption "Generate Nix registry from available inputs.";
-    nix.linkInputs = mkFalseOption "Symlink inputs to /etc/nix/inputs.";
+  options.nix = {
+    generateNixPathFromInputs = mkFalseOption "Generate NIX_PATH from available inputs.";
+    generateRegistryFromInputs = mkFalseOption "Generate Nix registry from available inputs.";
+    linkInputs = mkFalseOption "Symlink inputs to /etc/nix/inputs.";
   };
 
   config = {

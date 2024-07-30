@@ -28,22 +28,15 @@ let
     reverseList
     ;
   inherit (builtins)
-    pathExists
     attrNames
     attrValues
     concatMap
     concatStringsSep
-    elemAt
-    filter
     foldl'
-    genList
     head
-    isString
-    length
     listToAttrs
     mapAttrs
     removeAttrs
-    split
     tail
     ;
 
@@ -103,7 +96,7 @@ let
 
       /* nixos specific arguments */
       # Use lib from patched nixpkgs
-      lib = selectedNixpkgs.lib;
+      inherit (selectedNixpkgs) lib;
       # Use nixos modules from patched nixpkgs
       baseModules = import (patchedChannel + "/nixos/modules/module-list.nix");
       nixosSpecialArgs =
@@ -156,7 +149,7 @@ let
                       import patchedChannel
                         {
                           inherit (host) system;
-                          overlays = selectedNixpkgs.overlays;
+                          inherit (selectedNixpkgs) overlays;
                           config = selectedNixpkgs.config // hostConfig.nixpkgs.config;
                         } // { inherit (selectedNixpkgs) name input; };
                   nixpkgs.config = lib.mkForce { };
@@ -201,7 +194,7 @@ mergeAny otherArguments (
     (system:
       let
         filterAttrs = pred: set:
-          listToAttrs (concatMap (name: let value = set.${name}; in if pred name value then [ ({ inherit name value; }) ] else [ ]) (attrNames set));
+          listToAttrs (concatMap (name: let value = set.${name}; in if pred name value then [{ inherit name value; }] else [ ]) (attrNames set));
 
         # Little hack, we make sure that `legacyPackages` contains `nix` to make sure that we are dealing with nixpkgs.
         # For some odd reason `devshell` contains `legacyPackages` out put as well

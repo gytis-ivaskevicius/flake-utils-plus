@@ -78,7 +78,7 @@ let
           # fold list into one attribute set
           exportPackages = foldl' (lhs: rhs: lhs // rhs) { } exportPackagesList;
 
-          system = (head (attrValues channels)).system;
+          inherit ((head (attrValues channels))) system;
 
         in
         # flatten nested sets with "/" delimiter then drop disallowed packages
