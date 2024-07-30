@@ -1,7 +1,7 @@
 with builtins;
 rec {
   filterAttrs = pred: set:
-    listToAttrs (concatMap (name: let value = set.${name}; in if pred name value then [ ({ inherit name value; }) ] else [ ]) (attrNames set));
+    listToAttrs (concatMap (name: let value = set.${name}; in if pred name value then [{ inherit name value; }] else [ ]) (attrNames set));
 
   /* Generate an attribute set by mapping a function over a list of
     attribute names.
@@ -40,7 +40,7 @@ rec {
     => [ "nix" "json" "yaml" ]
   */
   partitionString = sep: s:
-    filter (v: isString v) (split "${sep}" s);
+    filter isString (split "${sep}" s);
 
   # Returns the type of a path: regular (for file), symlink, or directory
   pathType = p: getAttr (baseNameOf p) (readDir (dirOf p));
