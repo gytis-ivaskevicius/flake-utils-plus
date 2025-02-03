@@ -1,23 +1,24 @@
 diff --git a/lib/default.nix b/lib/default.nix
-index 169f013191b8..05e91f1cd27b 100644
+index f931524002f2..5299719bfd92 100644
 --- a/lib/default.nix
 +++ b/lib/default.nix
-@@ -10,6 +10,7 @@ let
+@@ -10,6 +10,8 @@ let
    lib = makeExtensible (self: let
      callLibs = file: import file { lib = self; };
    in {
 +    patchedFunction = x: x;
++
  
      # often used, or depending on very little
      trivial = callLibs ./trivial.nix;
 diff --git a/nixos/modules/module-list.nix b/nixos/modules/module-list.nix
-index ec6f410a48f6..3c6669988d2f 100644
+index bd3b27c00b55..3cfde568a714 100644
 --- a/nixos/modules/module-list.nix
 +++ b/nixos/modules/module-list.nix
-@@ -1505,4 +1505,10 @@
-   ./virtualisation/xe-guest-utilities.nix
-   ./virtualisation/xen-dom0.nix
-   { documentation.nixos.extraModules = [ ./virtualisation/qemu-vm.nix ]; }
+@@ -1818,4 +1818,10 @@
+       ./image/repart.nix
+     ];
+   }
 +  ({ lib, config, ... }: {
 +    options.patchedModule.test = lib.mkOption {
 +      default = null;
@@ -25,14 +26,10 @@ index ec6f410a48f6..3c6669988d2f 100644
 +    };
 +  })
  ]
-diff --git a/pkgs/top-level/all-packages.nix b/pkgs/top-level/all-packages.nix
-index 0c2a44d531df..299ff71619b6 100644
---- a/pkgs/top-level/all-packages.nix
-+++ b/pkgs/top-level/all-packages.nix
-@@ -42286,4 +42286,6 @@ with pkgs;
-   ssl-proxy = callPackage ../tools/networking/ssl-proxy { };
- 
-   code-maat = callPackage ../development/tools/code-maat {};
-+
-+  flake-utils-plus-test = callPackage ../tools/misc/coreutils { };
- }
+diff --git a/pkgs/by-name/fl/flake-utils-plus-test/package.nix b/pkgs/by-name/fl/flake-utils-plus-test/package.nix
+new file mode 100644
+index 000000000000..ad5323375baf
+--- /dev/null
++++ b/pkgs/by-name/fl/flake-utils-plus-test/package.nix
+@@ -0,0 +1 @@
++{ coreutils }: coreutils

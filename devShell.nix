@@ -74,7 +74,7 @@ devshell.mkShell {
       command = "nix build ${rootDir}/examples/darwin#darwinConfigurations.Hostname1.system --no-write-lock-file --dry-run";
     }
 
-    #(test "channel-patching")
+    (test "channel-patching")
     (test "derivation-outputs")
     (test "hosts-config")
     (test "overlays-flow")
@@ -82,7 +82,7 @@ devshell.mkShell {
 
     (dry-nixos-build "minimal-multichannel" "Hostname1")
     (dry-nixos-build "minimal-multichannel" "Hostname2")
-    #(dry-nixos-build "home-manager+nur+neovim" "Rick")
+    (dry-nixos-build "home-manager+nur+neovim" "Rick")
     (dry-nixos-build "exporters" "Morty")
     (withCategory "dry-build" { name = "build-all"; command = "build-exporters-Morty && build-minimal-multichannel-Hostname1 && build-minimal-multichannel-Hostname2"; })
 
