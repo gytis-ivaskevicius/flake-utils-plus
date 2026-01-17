@@ -47,13 +47,15 @@
             rhs;
 
         patchChannel = system: channel: patches:
+          let
+            pkgs = (import channel { inherit system; }).pkgs;
+          in
           if patches == [ ] then channel else
-          (import channel { inherit system; }).pkgs.applyPatches {
+          pkgs.applyPatches {
             name = if channel ? shortRev then "nixpkgs-patched-${channel.shortRev}" else "nixpkgs-patched";
             src = channel;
-            patches = patches;
+            patches = map (patch: if pkgs.lib.isFunction patch then patch pkgs else patch) patches;
           };
-
       };
     };
 }
