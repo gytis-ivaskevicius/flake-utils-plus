@@ -11,7 +11,7 @@ can work seamlessly within the flake-parts ecosystem.
 
 | FUP feature | flake-parts module equivalent |
 |---|---|
-| `channels` | `fup.channels` — declare multiple nixpkgs inputs with per-channel config, overlays, source patches |
+| `channels` | `fup.channels` — declare multiple nixpkgs inputs with per-channel config and overlays |
 | `sharedOverlays` | `fup.sharedOverlays` — overlays applied to every channel |
 | `hosts` / `hostDefaults` | `fup.hosts` — reverse-DNS hostnames, builder dispatch (NixOS/darwin) |
 | `nix.generateRegistryFromInputs` | `fup.autoRegistry` / `fup.autoNixPath` |

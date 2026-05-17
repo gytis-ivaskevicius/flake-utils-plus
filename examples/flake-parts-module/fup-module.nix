@@ -16,20 +16,6 @@ let
   # Helpers
   # ---------------------------------------------------------------------------
 
-  # Apply patches to a nixpkgs source tree. Same approach as FUP.
-  patchNixpkgs = system: channelInput: patches:
-    if patches == [ ] then channelInput
-    else
-      let
-        bootstrapPkgs = import channelInput { inherit system; };
-        patchedSrc = bootstrapPkgs.applyPatches {
-          name = "nixpkgs-patched";
-          src = channelInput;
-          inherit patches;
-        };
-      in
-      toString patchedSrc;
-
   # Detect whether an input looks like nixpkgs (has x86_64-linux nix).
   isNixpkgsLike = name: value:
     value ? legacyPackages
@@ -109,11 +95,6 @@ in
               Function: (allChannelPkgs) -> [ overlay ].
               Receives every channel's evaluated pkgs for cross-channel references.
             '';
-          };
-          patches = mkOption {
-            type = types.listOf types.path;
-            default = [ ];
-            description = "Patches to apply to nixpkgs source before importing.";
           };
         };
       });
@@ -236,10 +217,7 @@ in
                 allPkgs = mapAttrs
                   (name: ch:
                     let
-                      src =
-                        if ch.patches == [ ] then ch.input
-                        else patchNixpkgs system ch.input ch.patches;
-                      pkgs = import src {
+                      pkgs = import ch.input {
                         inherit system;
                         overlays = cfg.sharedOverlays
                           ++ (if ch.overlaysBuilder != null
@@ -248,7 +226,7 @@ in
                         config = cfg.channelsConfig // ch.config;
                       };
                     in
-                    pkgs // { inherit (ch) input patches; }
+                    pkgs // { inherit (ch) input; }
                   )
                   allChannels;
               in
