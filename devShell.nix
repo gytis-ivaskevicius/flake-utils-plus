@@ -75,6 +75,7 @@ devshell.mkShell {
     }
 
     (test "channel-patching")
+    (test "channel-patching-using-func")
     (test "derivation-outputs")
     (test "hosts-config")
     (test "overlays-flow")
