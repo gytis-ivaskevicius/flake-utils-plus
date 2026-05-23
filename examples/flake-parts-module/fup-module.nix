@@ -3,14 +3,14 @@
 let
   inherit (lib)
     types mkOption mkIf mkDefault
-    mapAttrs filterAttrs optionalAttrs
-    foldl' recursiveUpdate
-    concatStringsSep head tail;
+    mapAttrs mapAttrsToList filterAttrs optionalAttrs
+    foldl' recursiveUpdate unique elem
+    concatStringsSep head tail removeSuffix;
 
   inherit (builtins)
     attrNames attrValues listToAttrs removeAttrs
     concatMap isString filter genList elemAt
-    length toString;
+    length toString baseNameOf;
 
   # ---------------------------------------------------------------------------
   # Helpers
@@ -168,6 +168,34 @@ in
       default = false;
       description = "Generate nix.nixPath from flake inputs (added to host modules).";
     };
+
+    exportOverlays = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Export per-channel overlays as namespaced flake overlays.
+        Each package defined in a channel's overlays is exported as
+        "channelName/packageName" under flake.overlays.
+      '';
+    };
+
+    exportPackages = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Export overlay-defined packages as flake packages per system.
+        Only derivations whose meta.platforms includes the current system are exported.
+      '';
+    };
+
+    nixosModules = mkOption {
+      type = types.listOf types.path;
+      default = [ ];
+      description = ''
+        Paths to NixOS modules to export as flake.nixosModules,
+        keyed by their basename (without .nix extension).
+      '';
+    };
   };
 
   config =
@@ -236,6 +264,46 @@ in
 
       # Convenience accessor
       getChannelsFor = system: channelCache.${system} or { };
+
+      # -----------------------------------------------------------------------
+      # Overlay introspection helpers
+      # -----------------------------------------------------------------------
+
+      # A representative system for overlay name extraction (any will do).
+      oneSystem = head config.systems;
+
+      # Return attribute names defined by an overlay, using real evaluated pkgs
+      # (passed as both final and prev — values are wrong, but keys are correct).
+      # Returns [] if the overlay fails to evaluate (e.g. cross-channel refs).
+      overlayAttrNames = channelName: overlay:
+        let
+          pkgs = channelCache.${oneSystem}.${channelName} or { };
+          result = builtins.tryEval (attrNames (overlay pkgs pkgs));
+        in
+        filter (n: n != "__dontExport") (if result.success then result.value else [ ]);
+
+      # All overlay-defined package names across all channels (deduplicated).
+      allOverlayPackageNames = system:
+        let chanPkgs = getChannelsFor system; in
+        unique (concatMap (channelName:
+          let pkgs = chanPkgs.${channelName} or { }; in
+          concatMap (overlay: overlayAttrNames channelName overlay) (pkgs.overlays or [ ])
+        ) (attrNames allChannels));
+
+      # Build the overlays attrset: "channelName/pkgName" -> single-attr overlay.
+      computedExportedOverlays =
+        listToAttrs (concatMap (channelName:
+          let
+            chanPkgs = channelCache.${oneSystem}.${channelName} or null;
+            overlays = if chanPkgs != null then chanPkgs.overlays or [ ] else [ ];
+          in
+          concatMap (overlay:
+            map (pkgName: {
+              name = "${channelName}/${pkgName}";
+              value = final: prev: { ${pkgName} = (overlay final prev).${pkgName}; };
+            }) (overlayAttrNames channelName overlay)
+          ) overlays
+        ) (attrNames allChannels));
 
       # -----------------------------------------------------------------------
       # Host building
@@ -314,12 +382,42 @@ in
       # -----------------------------------------------------------------------
       perSystem = { system, ... }: {
         config._module.args.fupChannels = getChannelsFor system;
+
+        config.packages = mkIf (cfg.exportPackages && allChannels != { }) (
+          let
+            chanPkgs = getChannelsFor system;
+            mergedPkgs = foldl' recursiveUpdate { } (attrValues chanPkgs);
+            pkgNames = allOverlayPackageNames system;
+            isExportable = name:
+              let pkg = mergedPkgs.${name} or null; in
+              pkg != null
+              && pkg ? type && pkg.type == "derivation"
+              && (!(pkg ? meta && pkg.meta ? platforms)
+                  || elem system pkg.meta.platforms);
+          in
+          listToAttrs (
+            concatMap (name:
+              if isExportable name
+              then [{ inherit name; value = mergedPkgs.${name}; }]
+              else [ ]
+            ) pkgNames
+          )
+        );
       };
 
       # -----------------------------------------------------------------------
-      # Flake-level: build host configuration sets
+      # Flake-level: build host configuration sets, exported overlays, modules
       # -----------------------------------------------------------------------
-      flake = foldl' recursiveUpdate { }
-        (mapAttrsToList buildOneHost cfg.hosts);
+      flake = foldl' recursiveUpdate { } (
+        (mapAttrsToList buildOneHost cfg.hosts)
+        ++ lib.optional (cfg.exportOverlays && allChannels != { } && config.systems != [ ])
+          { overlays = computedExportedOverlays; }
+        ++ lib.optional (cfg.nixosModules != [ ]) {
+          nixosModules = listToAttrs (map (path: {
+            name = removeSuffix ".nix" (baseNameOf (toString path));
+            value = import path;
+          }) cfg.nixosModules);
+        }
+      );
     };
 }

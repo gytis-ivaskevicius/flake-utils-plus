@@ -75,6 +75,15 @@
         # 4. AUTO-REGISTRY
         autoRegistry = true;
         autoNixPath = true;
+
+        # 5. EXPORT OVERLAYS — flake.overlays."nixpkgs/hello-fup", etc.
+        exportOverlays = true;
+
+        # 6. EXPORT PACKAGES — flake.packages.<system>.hello-fup, etc.
+        exportPackages = true;
+
+        # 7. EXPORT MODULES — flake.nixosModules.example-module
+        nixosModules = [ ./example-module.nix ];
       };
 
       # ── Everything else works normally alongside fup options ──
