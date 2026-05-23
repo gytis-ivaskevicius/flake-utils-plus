@@ -18,11 +18,8 @@
 
       channels.nixpkgs = {
         input = nixpkgs;
-        patches = [ 
-          (pkgs: pkgs.fetchpatch {
-            url = "https://raw.githubusercontent.com/gytis-ivaskevicius/flake-utils-plus/afcb15b845e74ac5e998358709b2b5fe42a948d1/tests/channel-patching/myNixpkgsPatch.patch";
-            hash = "sha256-yhpakYrgbv+5DJ4BQDN5WIDaPX9SA745bvIi+OjXTIc=";
-          })
+        patches = [
+          (pkgs: pkgs.runCommand "myNixpkgsPatch.patch" { } "cp ${./myNixpkgsPatch.patch} $out")
         ];
         config.allowUnfree = true;
       };
