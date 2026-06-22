@@ -179,7 +179,6 @@ let
         inherit specialArgs;
       } // (optionalAttrs (host.output == "darwinConfigurations") {
         inherit inputs;
-        pkgs = selectedNixpkgs;
       }) // (optionalAttrs (host.output == "nixosConfigurations") {
         inherit lib baseModules;
         specialArgs = nixosSpecialArgs // specialArgs;

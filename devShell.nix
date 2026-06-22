@@ -79,6 +79,8 @@ devshell.mkShell {
     (test "derivation-outputs")
     (test "hosts-config")
     (test "overlays-flow")
+    (test "nix-darwin-overlays-flow")
+    (test "nix-darwin-overlays-flow-plus-config")
     (test "all" // { command = "check-derivation-outputs && check-hosts-config && check-overlays-flow"; })
 
     (dry-nixos-build "minimal-multichannel" "Hostname1")
