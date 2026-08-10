@@ -18,6 +18,22 @@ let
   cfg = config.nix;
 in
 {
+  options.fup = {
+    channel = {
+      name = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        description = "The flake-utils-plus channel name used for this host.";
+      };
+      input = mkOption {
+        type = types.nullOr types.unspecified;
+        default = null;
+        internal = true;
+        description = "The flake input used for this host's channel.";
+      };
+    };
+  };
+
   options.nix = {
     generateNixPathFromInputs = mkFalseOption "Generate NIX_PATH from available inputs.";
     generateRegistryFromInputs = mkFalseOption "Generate Nix registry from available inputs.";

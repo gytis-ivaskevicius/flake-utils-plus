@@ -78,6 +78,7 @@
             plainHost = self.someConfigurations.Plain;
             plainHostPkgs = plainHost.config.nixpkgs.pkgs;
             plainHostName = plainHost.config.networking.hostName;
+
             plainHostDomain = plainHost.config.networking.domain;
 
             reverseDnsHost = self.someConfigurations."com.example.myhost";
@@ -90,11 +91,11 @@
           {
 
             # Plain system with inherited options from hostDefaults
-            system_valid_1 = isEqual plainHostPkgs.system "aarch64-linux";
+            system_valid_1 = isEqual plainHostPkgs.stdenv.hostPlatform.system "aarch64-linux";
 
-            channelName_valid_1 = isEqual plainHostPkgs.name "someChannel";
+            channelName_valid_1 = isEqual plainHost.config.fup.channel.name "someChannel";
 
-            channelInput_valid_1 = hasKey plainHostPkgs "input";
+            channelInput_valid_1 = hasKey plainHost.config.fup.channel "input";
 
             extraArgs_valid_1 = hasKey plainHost.config.lib "sharedExtraArg";
 
@@ -108,9 +109,9 @@
             # System with overwritten hostDefaults
             system_valid_2 = isEqual customizedHostPkgs.system "x86_64-darwin";
 
-            channelName_valid_2 = isEqual customizedHostPkgs.name "unstable";
+            channelName_valid_2 = isEqual customizedHost.config.fup.channel.name "unstable";
 
-            channelInput_valid_2 = hasKey customizedHostPkgs "input";
+            channelInput_valid_2 = hasKey customizedHost.config.fup.channel "input";
 
             extraArgs_valid_2 = hasKey customizedHost.config.lib "hostExtraArg";
 
