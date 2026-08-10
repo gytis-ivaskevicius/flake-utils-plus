@@ -11,7 +11,7 @@
     in
     utils.lib.mkFlake {
       inherit self inputs;
-      supportedSystems = [ "x86_64-linux" "x86_64-darwin" "aarch64-linux" ];
+      supportedSystems = [ "x86_64-linux" "aarch64-darwin" "aarch64-linux" ];
 
       channels.nixpkgs.input = nixpkgs;
       channels.unstable.input = nixpkgs;
@@ -50,7 +50,7 @@
 
       hosts.Customized = {
         output = "darwinConfigurations";
-        system = "x86_64-darwin";
+        system = "aarch64-darwin";
         channelName = "unstable";
         extraArgs.hostExtraArg = "hostExtraArg";
         specialArgs.hostSpecialArg = "hostSpecialArg";
@@ -107,7 +107,7 @@
 
 
             # System with overwritten hostDefaults
-            system_valid_2 = isEqual customizedHostPkgs.system "x86_64-darwin";
+            system_valid_2 = isEqual customizedHostPkgs.stdenv.hostPlatform.system "aarch64-darwin";
 
             channelName_valid_2 = isEqual customizedHost.config.fup.channel.name "unstable";
 
