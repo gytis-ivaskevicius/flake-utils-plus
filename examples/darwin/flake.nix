@@ -19,6 +19,7 @@
 
         modules = [
           #./hosts/Hostname2.nix
+          { system.stateVersion = 7; }
         ];
       };
 
