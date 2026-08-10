@@ -1,2 +1,3 @@
 examples/*/flake.lock
 examples/*/result
+tests/*/flake.lock

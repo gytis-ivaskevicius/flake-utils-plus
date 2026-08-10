@@ -15,6 +15,8 @@
     utils.lib.mkFlake {
       inherit self inputs;
 
+      supportedSystems = [ "aarch64-darwin" "aarch64-linux" "x86_64-linux" ];
+
       # Channel specific overlays. Overlays `coreutils` from `unstable` channel.
       channels.nixpkgs.overlaysBuilder = channels: [
         (final: prev: { inherit (channels.unstable) ranger; })

@@ -110,16 +110,6 @@ let
         // { modulesPath = toString (patchedChannel + "/nixos/modules"); };
 
 
-      # The only way to find out if a host has `nixpkgs.config` set to
-      # the non-default value is by evalling most of the config.
-      hostConfig = (lib.evalModules {
-        prefix = [ ];
-        modules = baseModules ++ host.modules ++ [{
-          _module.check = false;
-          _module.args = { inherit inputs; };
-        }];
-        specialArgs = nixosSpecialArgs // specialArgs;
-      }).config;
     in
     {
       ${host.output}.${reverseDomainName} = host.builder ({
@@ -138,23 +128,13 @@ let
               })
 
               (if options ? nixpkgs.pkgs then
-                {
-                  nixpkgs.pkgs =
-                    # Make sure we don't import nixpkgs again if not
-                    # necessary. We can't use `config.nixpkgs.config`
-                    # because that triggers infinite recursion.
-                    if (hostConfig.nixpkgs.config == { }) then
-                      selectedNixpkgs
-                    else
-                      import patchedChannel
-                        {
-                          inherit (host) system;
-                          inherit (selectedNixpkgs) overlays;
-                          config = selectedNixpkgs.config // hostConfig.nixpkgs.config;
-                        } // { inherit (selectedNixpkgs) name input; };
-                  nixpkgs.config = lib.mkForce { };
-                }
+                { nixpkgs.pkgs = selectedNixpkgs; }
               else { })
+
+              {
+                fup.channel.name = selectedNixpkgs.name;
+                fup.channel.input = selectedNixpkgs.input;
+              }
 
               (optionalAttrs (options ? system.configurationRevision) {
                 system.configurationRevision = lib.mkIf (self ? rev) self.rev;
